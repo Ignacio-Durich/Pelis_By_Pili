@@ -55,3 +55,8 @@ Cada línea: decisión — motivo — costo si está mal.
 - Se publica el build local con `deploy --no-build` (el CLI actual compila por defecto) — así el build usa `.env.local` y Netlify no necesita variables — si un día se conecta GitHub para builds automáticos, hay que cargar las dos variables `VITE_` en Netlify.
 - La primera publicación ya incluye el login y el espacio (Etapa 1), no la app vacía, porque el código de la Etapa 1 se terminó antes de tener claves; la prueba de instalación de la Task 4 y la de aceptación de la Task 9 se hacen en una sola sesión con los iPhones — ahorra un viaje — si la instalación falla, no se distingue si es por la PWA o por el login (se mira el paso de instalación primero).
 - Las cuentas de prueba `+pareja` y `+tercero` se usaron para la prueba local de la Task 8; su espacio se borró desde el panel antes de la Task 9.
+
+## Revisión final
+- Al abrir la app sin conexión con la sesión vencida, supabase-js emite `INITIAL_SESSION` con `null` y eso mostraba el login en vez de "Sin conexión". `onAuthChange` ahora ignora ese evento y el arranque lo decide solo `getSession` — es el punto 5 del Review Focus del plan — ninguno.
+- Si el servidor responde `already_in_couple` en la pantalla de entrada (la persona aceptó en otra ventana, o se perdió la respuesta), la app vuelve a leer el espacio y muestra el inicio, en vez de dejarla trabada con "Ya sos parte de un espacio". Cambia lo que pedía el plan (mostrar el mensaje), pero la persona sigue sin poder pasarse a otro espacio — ninguno.
+- Nuevo test de seguridad: alguien que es miembro de otro espacio solo ve el suyo. Antes, ningún test habría detectado una política del tipo "cualquier miembro lee todo".
