@@ -1,0 +1,57 @@
+import type { Session } from '@supabase/supabase-js'
+import { isPlausibleEmail, normalizeEmail } from '../../lib/email'
+import { supabase } from '../../lib/supabase'
+
+export type AuthErrorKind = 'invalid_email' | 'rate_limited' | 'wrong_code' | 'network'
+
+export class AuthError extends Error {
+  kind: AuthErrorKind
+  constructor(kind: AuthErrorKind) {
+    super(kind)
+    this.kind = kind
+  }
+}
+
+type SupabaseAuthError = { name: string; status?: number; code?: string }
+
+function isNetwork(error: SupabaseAuthError) {
+  return error.name === 'AuthRetryableFetchError' || error.status === 0
+}
+
+function toAuthError(error: SupabaseAuthError, otherwise: AuthErrorKind): AuthError {
+  if (isNetwork(error)) return new AuthError('network')
+  if (error.status === 429 || error.code?.startsWith('over_')) return new AuthError('rate_limited')
+  return new AuthError(otherwise)
+}
+
+function validEmail(raw: string): string {
+  const email = normalizeEmail(raw)
+  if (!isPlausibleEmail(email)) throw new AuthError('invalid_email')
+  return email
+}
+
+export async function requestCode(email: string): Promise<void> {
+  const { error } = await supabase.auth.signInWithOtp({ email: validEmail(email) })
+  if (error) throw toAuthError(error, 'invalid_email')
+}
+
+export async function verifyCode(email: string, code: string): Promise<void> {
+  const { error } = await supabase.auth.verifyOtp({ email: validEmail(email), token: code, type: 'email' })
+  if (error) throw toAuthError(error, 'wrong_code')
+}
+
+export async function getSession(): Promise<Session | null> {
+  const { data, error } = await supabase.auth.getSession()
+  // Sin red no sabemos si hay sesión; cualquier otro error (sesión vencida) es "sin sesión".
+  if (error && isNetwork(error)) throw new AuthError('network')
+  return data.session
+}
+
+export function onAuthChange(cb: (session: Session | null) => void): () => void {
+  const { data } = supabase.auth.onAuthStateChange((_event, session) => cb(session))
+  return () => data.subscription.unsubscribe()
+}
+
+export async function signOut(): Promise<void> {
+  await supabase.auth.signOut()
+}

@@ -13,6 +13,7 @@
     "generate-pwa-assets": "pwa-assets-generator"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.117.2",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
