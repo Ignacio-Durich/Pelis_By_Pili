@@ -18,14 +18,18 @@ export function AuthGate({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null | undefined>(undefined)
   const [offline, setOffline] = useState(false)
 
-  function load() {
-    setOffline(false)
-    setSession(undefined)
+  function fetchSession() {
     getSession().then(setSession, () => setOffline(true))
   }
 
+  function retry() {
+    setOffline(false)
+    setSession(undefined)
+    fetchSession()
+  }
+
   useEffect(() => {
-    load()
+    fetchSession()
     return onAuthChange((s) => {
       setOffline(false)
       setSession(s)
@@ -36,7 +40,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
     return (
       <main className="screen">
         <p>{messages.network}</p>
-        <button onClick={load}>Reintentar</button>
+        <button onClick={retry}>Reintentar</button>
       </main>
     )
   }
