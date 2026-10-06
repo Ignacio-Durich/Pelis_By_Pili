@@ -96,6 +96,18 @@ test('a user already in a couple cannot accept another invite', async () => {
   expect(rows?.every((r) => r.couple_id === coupleA)).toBe(true)
 })
 
+test('a member of another couple sees only their own couple', async () => {
+  const G = await createTestUser()
+  const { data: coupleG } = await rpc(G, 'create_couple')
+  await rpc(G, 'create_invite')
+  for (const [table, column] of [['couples', 'id'], ['couple_members', 'couple_id'], ['invites', 'couple_id']]) {
+    const { data, error } = await G.client.from(table).select('*')
+    expect(error).toBeNull()
+    expect(data?.length).toBeGreaterThan(0)
+    expect(data?.every((row) => row[column] === coupleG)).toBe(true)
+  }
+})
+
 test('non-members cannot create invites', async () => {
   const { error } = await rpc(C, 'create_invite')
   expect(error?.message).toBe('not_a_member')
