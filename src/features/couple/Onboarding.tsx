@@ -18,6 +18,11 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
       onDone()
     } catch (e) {
       const kind = e instanceof CoupleError ? e.kind : 'network'
+      // Ya está en un espacio (lo aceptó en otra ventana, o se perdió la respuesta): volver a leerlo.
+      if (kind === 'already_in_couple') {
+        if (token) window.history.replaceState(null, '', '/')
+        return onDone()
+      }
       // Una invitación rechazada no sirve más: se descarta para poder crear un espacio propio.
       if (token && kind !== 'network') window.history.replaceState(null, '', '/')
       setError(kind)
