@@ -50,4 +50,11 @@ Impacto en el plan: afecta ya a la Etapa 1, no solo a las siguientes. La novia d
 - Antes de publicar se revisó `dist/`: no contiene los nombres ni los valores de `SUPABASE_SERVICE_ROLE_KEY`, `TMDB_API_KEY` ni `OMDB_API_KEY`.
 - Netlify creó el sitio con protección de acceso (respondía 401 con login de Netlify); Nacho la desactivó en Visitor access.
 - Verificado con curl: `/` responde `HTTP/2 200`; el manifest tiene `"display":"standalone"` y `"short_name":"Pelis"`; `/sw.js` y el apple-touch-icon responden 200; las rutas de la SPA (`/?invite=…`, `/alguna/ruta`) responden 200.
-- Prueba en los iPhones: pendiente.
+- Prueba en los iPhones (2026-10-06, Nacho y su novia): instalada desde Safari con "Agregar a pantalla de inicio", abre a pantalla completa desde el ícono en los dos iPhones. Versiones de iOS: no informadas.
+
+## Cierre de la Etapa 1 (2026-10-06)
+
+- Antes de publicar: `npm test` 64/64, `npm run test:security` 11/11 contra el proyecto real, `npm run typecheck` y `npm run build` sin errores.
+- Prueba de aceptación en los dos iPhones (Nacho y su novia), según Nacho, "funcionó todo": login con código de 6 dígitos desde la app instalada, creación del espacio, invitación por enlace aceptada en Safari, ingreso desde la app instalada, sesión conservada al cerrar y reabrir, cerrar sesión y volver a entrar.
+- Tercera persona: probado en local (Task 8) con el mismo enlace usado → "Esta invitación no es válida o ya se usó"; y por los tests de seguridad (nadie ajeno lee ni escribe nada del espacio).
+- Comportamiento esperado, no un error: quien acepta la invitación en Safari tiene que volver a pedir un código la primera vez que abre la app instalada, porque en iOS la app de la pantalla de inicio no comparte la sesión con Safari. Pasa una sola vez por persona. Posible mejora para más adelante: aceptar la invitación con un código escrito dentro de la app instalada.
