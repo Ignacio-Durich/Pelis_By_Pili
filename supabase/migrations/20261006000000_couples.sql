@@ -34,6 +34,8 @@ alter table public.invites enable row level security;
 -- Supabase da todos los privilegios a anon y authenticated por defecto; RLS no cubre truncate.
 revoke all on public.couples, public.couple_members, public.invites from anon, authenticated;
 grant select on public.couples, public.couple_members, public.invites to authenticated;
+-- Explícito por si el proyecto no expone tablas nuevas automáticamente (lo usan los tests de seguridad).
+grant all on public.couples, public.couple_members, public.invites to service_role;
 
 -- security definer para que la política de couple_members no se llame a sí misma.
 create function public.is_member(p_couple_id uuid)
