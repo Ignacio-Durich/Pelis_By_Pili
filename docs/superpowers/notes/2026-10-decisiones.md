@@ -16,3 +16,12 @@ Cada línea: decisión — motivo — costo si está mal.
 - Colores: `theme_color` y `background_color` `#1b1b2f`; ícono placeholder "PP" amarillo sobre fondo oscuro — el plan los deja a elección — se cambian en dos líneas.
 - `registerType: 'autoUpdate'` en vite-plugin-pwa — las nuevas versiones se toman solas, sin pantalla de "actualizar" — una versión vieja puede verse hasta recargar.
 - El postinstall de esbuild quedó sin aprobar (npm 11 pide aprobar scripts); `tsx` y Vite funcionan igual con el binario opcional — no correr scripts de instalación sin necesidad — si algo falla, `npm install-scripts approve esbuild`.
+
+## Task 6
+- Errores de Supabase Auth (devuelve `{ error }`, no lanza): red = `name` `AuthRetryableFetchError` o `status` 0 (incluye 502/503/504); límite = `status` 429 o `code` que empieza con `over_`; cualquier otro error al pedir el código = `invalid_email` y al verificarlo = `wrong_code` — es lo que muestra el código de `@supabase/auth-js` 2.117 — confirmar con un email real en el paso 6.
+- `getSession` con un error que no es de red (por ejemplo, sesión vencida) devuelve "sin sesión" y muestra el login — no hay nada que reintentar — ninguno.
+- Texto para `invalid_email`: "Ese email no parece válido" — el plan no lo fija — una línea.
+- Botón "Usar otro email" en el paso del código — en la app instalada no hay botón de recargar, así que un email mal escrito dejaba a la persona trabada — un botón de más.
+- El campo del código usa `inputMode="numeric"` y `autoComplete="one-time-code"` — teclado numérico y sugerencia del código en iOS — ninguno.
+- Tests de UI con `fireEvent` de Testing Library, sin agregar `@testing-library/user-event` — alcanza y evita una dependencia — ninguno.
+- Se agregó `src/vite-env.d.ts` con el tipo de `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` — typecheck de `import.meta.env` — ninguno.
