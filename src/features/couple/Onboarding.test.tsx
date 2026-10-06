@@ -51,7 +51,6 @@ test('with ?invite=abc offers Unirme, accepts and cleans the URL', async () => {
 
 test.each<[CoupleErrorKind, string]>([
   ['invite_invalid', 'Esta invitación no es válida o ya se usó'],
-  ['already_in_couple', 'Ya sos parte de un espacio'],
   ['couple_full', 'Ese espacio ya tiene dos personas'],
   ['network', 'Sin conexión. Probá de nuevo.'],
 ])('accepting with %s shows its message and does not join', async (kind, text) => {
@@ -80,4 +79,11 @@ test('a network error keeps the invite to retry', async () => {
   await screen.findByText('Sin conexión. Probá de nuevo.')
   expect(screen.getByRole('button', { name: 'Unirme' })).toBeEnabled()
   expect(window.location.search).toBe('?invite=abc')
+})
+
+test('already_in_couple re-reads the couple instead of dead-ending', async () => {
+  api.createCouple.mockRejectedValue(new CoupleError('already_in_couple'))
+  render(<Onboarding onDone={onDone} />)
+  fireEvent.click(screen.getByRole('button', { name: 'Crear nuestro espacio' }))
+  await vi.waitFor(() => expect(onDone).toHaveBeenCalled())
 })
