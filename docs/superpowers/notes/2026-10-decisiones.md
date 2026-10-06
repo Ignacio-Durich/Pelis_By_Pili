@@ -50,3 +50,8 @@ Cada línea: decisión — motivo — costo si está mal.
 - `vitest.security.config.ts` toma las variables de `.env.local` con `loadEnv` de Vite; `tsconfig.node.json` incluye `tests/` — typecheck de los tests de seguridad — ninguno.
 - `supabase init` creó `supabase/config.toml` (configuración del stack local; no se sube al proyecto remoto) — `supabase link` y `db push` lo necesitan — ninguno.
 - Proyecto de Supabase creado sin "Automatically expose new tables" (lo recomienda el propio panel); la migración da los permisos a mano, incluido `grant all` a `service_role` para los tests de seguridad — no depender de permisos automáticos — ninguno.
+
+## Tasks 4 y 9
+- Se publica el build local con `deploy --no-build` (el CLI actual compila por defecto) — así el build usa `.env.local` y Netlify no necesita variables — si un día se conecta GitHub para builds automáticos, hay que cargar las dos variables `VITE_` en Netlify.
+- La primera publicación ya incluye el login y el espacio (Etapa 1), no la app vacía, porque el código de la Etapa 1 se terminó antes de tener claves; la prueba de instalación de la Task 4 y la de aceptación de la Task 9 se hacen en una sola sesión con los iPhones — ahorra un viaje — si la instalación falla, no se distingue si es por la PWA o por el login (se mira el paso de instalación primero).
+- Las cuentas de prueba `+pareja` y `+tercero` se usaron para la prueba local de la Task 8; su espacio se borró desde el panel antes de la Task 9.
