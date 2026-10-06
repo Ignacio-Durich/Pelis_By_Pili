@@ -48,7 +48,10 @@ export async function getSession(): Promise<Session | null> {
 }
 
 export function onAuthChange(cb: (session: Session | null) => void): () => void {
-  const { data } = supabase.auth.onAuthStateChange((_event, session) => cb(session))
+  // INITIAL_SESSION llega con null también ante un error de red; el arranque lo decide getSession.
+  const { data } = supabase.auth.onAuthStateChange((event, session) => {
+    if (event !== 'INITIAL_SESSION') cb(session)
+  })
   return () => data.subscription.unsubscribe()
 }
 

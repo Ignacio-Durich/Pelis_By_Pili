@@ -4,10 +4,11 @@ const auth = vi.hoisted(() => ({
   signInWithOtp: vi.fn(),
   verifyOtp: vi.fn(),
   getSession: vi.fn(),
+  onAuthStateChange: vi.fn(),
 }))
 vi.mock('../../lib/supabase', () => ({ supabase: { auth } }))
 
-import { AuthError, getSession, requestCode, verifyCode } from './authApi'
+import { AuthError, getSession, onAuthChange, requestCode, verifyCode } from './authApi'
 
 const rateLimit = { name: 'AuthApiError', status: 429, code: 'over_email_send_rate_limit', message: 'rate' }
 const network = { name: 'AuthRetryableFetchError', status: 0, code: undefined, message: 'Failed to fetch' }
@@ -70,4 +71,18 @@ test('getSession returns the session or null', async () => {
 test('getSession maps a fetch failure to network', async () => {
   auth.getSession.mockResolvedValue({ data: { session: null }, error: network })
   expect(await kindOf(getSession())).toBe('network')
+})
+
+test('onAuthChange ignores INITIAL_SESSION so an offline start is decided by getSession', () => {
+  let emit: (event: string, session: unknown) => void = () => {}
+  auth.onAuthStateChange.mockImplementation((callback) => {
+    emit = callback
+    return { data: { subscription: { unsubscribe: vi.fn() } } }
+  })
+  const cb = vi.fn()
+  onAuthChange(cb)
+  emit('INITIAL_SESSION', null)
+  expect(cb).not.toHaveBeenCalled()
+  emit('SIGNED_IN', { user: { id: 'u1' } })
+  expect(cb).toHaveBeenCalledWith({ user: { id: 'u1' } })
 })
