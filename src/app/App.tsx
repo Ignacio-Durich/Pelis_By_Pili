@@ -1,3 +1,13 @@
+import { AuthGate } from '../features/auth/AuthGate'
+import { CoupleGate } from '../features/couple/CoupleGate'
+import { Home } from './Home'
+
 export function App() {
-  return <h1>Pelis By Pili</h1>
+  return (
+    <AuthGate>
+      <CoupleGate>
+        <Home />
+      </CoupleGate>
+    </AuthGate>
+  )
 }

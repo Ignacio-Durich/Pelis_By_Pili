@@ -25,3 +25,17 @@ Cada línea: decisión — motivo — costo si está mal.
 - El campo del código usa `inputMode="numeric"` y `autoComplete="one-time-code"` — teclado numérico y sugerencia del código en iOS — ninguno.
 - Tests de UI con `fireEvent` de Testing Library, sin agregar `@testing-library/user-event` — alcanza y evita una dependencia — ninguno.
 - Se agregó `src/vite-env.d.ts` con el tipo de `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` — typecheck de `import.meta.env` — ninguno.
+
+## Task 7
+- `getMyCouple` lee `couple_members` sin filtrar por usuario: RLS solo devuelve las filas del propio espacio y cada persona está en un solo espacio (`unique (user_id)`), así que `memberCount` es la cantidad de filas — una consulta en vez de dos — si un día una persona pudiera estar en dos espacios, habría que filtrar.
+- El token va en el enlace con `encodeURIComponent` — inocuo con tokens hexadecimales — ninguno.
+
+## Task 8
+- `CoupleGate` expone el espacio por React context; `useCouple()` devuelve `{ coupleId, memberCount }` y vive en `src/features/couple/coupleContext.ts` (separado para que funcione el fast refresh de Vite) — Home y Settings no reciben props — ninguno.
+- `App.test.tsx` ahora simula sesión y espacio y espera el heading "Pelis By Pili" en Home — App pasó a componer AuthGate → CoupleGate → Home — ninguno.
+- Si una invitación se rechaza por algo que no es la red (`invite_invalid`, `already_in_couple`, `couple_full`), se limpia el `?invite=` de la URL y aparece "Crear nuestro espacio" debajo del mensaje; ante error de red se conserva para reintentar — si no, la persona quedaba trabada frente a una invitación inútil — un tercero podría crear su propio espacio vacío (no ve nada del otro).
+- Quien ya tiene espacio y abre un enlace de invitación ve su propio inicio: `CoupleGate` ni llama a `acceptInvite` — el servidor igual lo rechazaría — el `?invite=` queda en la URL hasta cerrar la app.
+- Texto para `not_a_member`: "No sos parte de este espacio" — el plan no lo fija — una línea.
+- En Ajustes el enlace se muestra en un campo de solo lectura además del botón "Copiar enlace", con un "¡Copiado!" al copiar — si el portapapeles falla, se puede seleccionar a mano — ninguno.
+- La cantidad de miembros se lee al abrir la app; quien invitó deja de ver "Esperando a tu pareja" al recargar, no en tiempo real — el plan lo acepta así (Task 8, paso 5) — tiempo real llega en la etapa 2.
+- Estilos: tema oscuro, ancho máximo 390 px, áreas seguras con `env(safe-area-inset-*)`, barra de pestañas fija abajo, inputs de 17 px para que Safari no haga zoom — el plan pide "estilos mínimos" — cosmético.
