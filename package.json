@@ -10,7 +10,8 @@
     "typecheck": "tsc -b",
     "lint": "oxlint",
     "preview": "vite preview",
-    "generate-pwa-assets": "pwa-assets-generator"
+    "generate-pwa-assets": "pwa-assets-generator",
+    "test:security": "vitest run --config vitest.security.config.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",

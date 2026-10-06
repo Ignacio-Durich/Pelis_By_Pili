@@ -39,3 +39,13 @@ Cada línea: decisión — motivo — costo si está mal.
 - En Ajustes el enlace se muestra en un campo de solo lectura además del botón "Copiar enlace", con un "¡Copiado!" al copiar — si el portapapeles falla, se puede seleccionar a mano — ninguno.
 - La cantidad de miembros se lee al abrir la app; quien invitó deja de ver "Esperando a tu pareja" al recargar, no en tiempo real — el plan lo acepta así (Task 8, paso 5) — tiempo real llega en la etapa 2.
 - Estilos: tema oscuro, ancho máximo 390 px, áreas seguras con `env(safe-area-inset-*)`, barra de pestañas fija abajo, inputs de 17 px para que Safari no haga zoom — el plan pide "estilos mínimos" — cosmético.
+
+## Task 5
+- Además de RLS sin políticas de escritura, la migración hace `revoke all` a `anon` y `authenticated` sobre las tres tablas y solo devuelve `select` a `authenticated` — Supabase les da todos los privilegios por defecto y RLS no cubre `truncate`; además así un `update` directo falla con error en vez de afectar 0 filas en silencio — si algún día hace falta escribir desde el cliente, hay que dar el grant.
+- El tope de dos miembros toma un lock sobre la fila del espacio en el trigger — sin eso, dos altas simultáneas podían dejar tres miembros — una espera mínima en altas simultáneas.
+- `create_couple` y `accept_invite` convierten el choque con `unique (user_id)` en `already_in_couple` — así el doble toque simultáneo devuelve el código esperado y el espacio sobrante se descarta (rollback) — ninguno.
+- El token de invitación son 64 caracteres hexadecimales de dos `gen_random_uuid()` — aleatorio criptográfico sin depender de la extensión pgcrypto — ninguno.
+- `accept_invite` valida primero el token (inexistente, usado o vencido = `invite_invalid`) y después si la persona ya tiene espacio — no revela nada del token a quien ya está en un espacio — ninguno.
+- Sin Docker en la Mac, la migración se validó antes de aplicarla en un Postgres en WASM (PGlite, en una carpeta temporal fuera del proyecto) simulando `auth.uid()` y los roles de Supabase: 25 de 25 chequeos equivalentes a los tests de seguridad, y una mutación (política abierta) falla como debe. No reemplaza a `npm run test:security` contra el proyecto real.
+- `vitest.security.config.ts` toma las variables de `.env.local` con `loadEnv` de Vite; `tsconfig.node.json` incluye `tests/` — typecheck de los tests de seguridad — ninguno.
+- `supabase init` creó `supabase/config.toml` (configuración del stack local; no se sube al proyecto remoto) — `supabase link` y `db push` lo necesitan — ninguno.
