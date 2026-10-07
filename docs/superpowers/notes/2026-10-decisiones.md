@@ -105,3 +105,5 @@ Cada línea: decisión — motivo — costo si está mal.
 - `AddTitle` solo distingue "ya está en la lista" de cualquier otro error (que se muestra como "No se pudo agregar") — ninguno.
 - El detalle abierto se elige por `id` y toma siempre la versión más nueva del título de la lista: al marcar vista o puntuar, la pantalla se actualiza sola por Realtime. Si el título se quita, el detalle se cierra — ninguno.
 - En las tarjetas de "Vistas" se muestra la fecha y los puntajes en lugar de "La agregó" y la nota de origen, que siguen en el detalle — ninguno.
+- Revisión final: `title_scores` pasa a tener una clave propia al azar (`id`), con `(title_id, user_id)` como `unique`. Realtime manda la clave de cada fila borrada a cualquier suscriptor, y con la clave anterior un ajeno veía ids de usuarios de otros espacios. Reproducido con un test antes de corregirlo — ninguno.
+- Revisión final: si todo lo de la lista ya se vio, "Por ver" dice "No queda nada por ver" (el plan no fijaba ese texto); "Nuestra lista está vacía" queda para cuando no hay ningún título — ninguno.
