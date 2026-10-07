@@ -1,6 +1,13 @@
 import { supabase } from '../../lib/supabase'
+import type { Couple } from './coupleContext'
 
-export type CoupleErrorKind = 'already_in_couple' | 'couple_full' | 'invite_invalid' | 'not_a_member' | 'network'
+export type CoupleErrorKind =
+  | 'already_in_couple'
+  | 'couple_full'
+  | 'invite_invalid'
+  | 'not_a_member'
+  | 'invalid_name'
+  | 'network'
 
 export class CoupleError extends Error {
   kind: CoupleErrorKind
@@ -10,7 +17,7 @@ export class CoupleError extends Error {
   }
 }
 
-const knownKinds: string[] = ['already_in_couple', 'couple_full', 'invite_invalid', 'not_a_member']
+const knownKinds: string[] = ['already_in_couple', 'couple_full', 'invite_invalid', 'not_a_member', 'invalid_name']
 
 // Las funciones SQL lanzan excepciones cuyo mensaje es exactamente el código.
 function toCoupleError(error: { message: string }): CoupleError {
@@ -23,12 +30,20 @@ async function rpc(name: string, args?: Record<string, string>): Promise<string>
   return data as string
 }
 
-export async function getMyCouple(): Promise<{ coupleId: string; memberCount: number } | null> {
+export async function getMyCouple(): Promise<Couple | null> {
   // RLS solo deja ver las filas del propio espacio, y cada persona está en un solo espacio.
-  const { data, error } = await supabase.from('couple_members').select('couple_id')
+  const { data, error } = await supabase.from('couple_members').select('couple_id, user_id, display_name')
   if (error) throw toCoupleError(error)
   if (data.length === 0) return null
-  return { coupleId: data[0].couple_id as string, memberCount: data.length }
+  return {
+    coupleId: data[0].couple_id as string,
+    memberCount: data.length,
+    members: data.map((m) => ({ userId: m.user_id as string, displayName: m.display_name as string | null })),
+  }
+}
+
+export async function setDisplayName(name: string): Promise<void> {
+  await rpc('set_display_name', { p_name: name })
 }
 
 export const createCouple = () => rpc('create_couple')

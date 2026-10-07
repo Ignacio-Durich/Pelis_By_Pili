@@ -1,6 +1,7 @@
 import type { Session } from '@supabase/supabase-js'
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import { AuthError, getSession, onAuthChange, requestCode, verifyCode, type AuthErrorKind } from './authApi'
+import { SessionContext } from './sessionContext'
 
 const messages: Record<AuthErrorKind, string> = {
   invalid_email: 'Ese email no parece válido',
@@ -46,7 +47,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
   }
   if (session === undefined) return <main className="screen">Cargando…</main>
   if (session === null) return <LoginForm />
-  return <>{children}</>
+  return <SessionContext.Provider value={session}>{children}</SessionContext.Provider>
 }
 
 function LoginForm() {

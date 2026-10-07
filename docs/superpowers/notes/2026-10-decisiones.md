@@ -71,3 +71,8 @@ Cada línea: decisión — motivo — costo si está mal.
 - Realtime no filtra los `DELETE` (y con RLS solo manda el `id` del borrado), así que la app escucha los `INSERT` filtrados por espacio y los `DELETE` sin filtro, y ante cualquiera vuelve a pedir la lista. Verificado en local: un tercero de otro espacio recibe solo `{ id }` de los borrados ajenos, nunca el título ni el espacio — costo: cada borrado de cualquier espacio hace que las demás apps recarguen su lista (con dos personas, nada).
 - Justo después de `npx supabase db reset`, Realtime local tarda unos segundos en tomar la tabla publicada y el primer test de tiempo real puede fallar; en la corrida siguiente pasa (reproducido dos veces). No es un error del código — si molesta, esperar unos segundos tras el reset.
 - Los `db push` de las Tasks 1 y 2 se piden juntos a Nacho, para molestarlo una sola vez — ninguno.
+
+## Task 2
+- Helper de tests `src/test/providers.tsx` (`withCouple`, `nacho`, `pili`): envuelve con sesión y espacio, porque ahora varios componentes necesitan el usuario actual y los miembros — ninguno.
+- En Ajustes, si a alguno de los dos le falta el nombre, la frase queda sin nombres ("Son dos personas en este espacio") en vez de mostrar un hueco — ninguno.
+- `getMyCouple` devuelve el tipo `Couple` de `coupleContext.ts` en vez de repetirlo — ninguno.
