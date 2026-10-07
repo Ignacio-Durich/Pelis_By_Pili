@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useCouple, useMemberName } from '../couple/coupleContext'
 import { AddTitle } from './AddTitle'
 import { imdbScore, rtScore } from './ratings'
@@ -15,6 +15,20 @@ export function TitleList() {
   const [removeFailed, setRemoveFailed] = useState(false)
   const [adding, setAdding] = useState(false)
   const [selected, setSelected] = useState<Title | null>(null)
+  // La ventana es la que scrollea: al abrir una pantalla se sube al principio y al volver
+  // se recupera el lugar de la lista.
+  const listScroll = useRef(0)
+
+  function openScreen(show: () => void) {
+    listScroll.current = window.scrollY
+    show()
+    window.scrollTo(0, 0)
+  }
+
+  function backToList(hide: () => void) {
+    hide()
+    requestAnimationFrame(() => window.scrollTo(0, listScroll.current))
+  }
 
   const load = useCallback(() => {
     listTitles(coupleId).then(
@@ -50,8 +64,8 @@ export function TitleList() {
     }
   }
 
-  if (selected) return <TitleDetail title={selected} onClose={() => setSelected(null)} />
-  if (adding) return <AddTitle coupleId={coupleId} titles={titles ?? []} onClose={() => setAdding(false)} />
+  if (selected) return <TitleDetail title={selected} onClose={() => backToList(() => setSelected(null))} />
+  if (adding) return <AddTitle coupleId={coupleId} titles={titles ?? []} onClose={() => backToList(() => setAdding(false))} />
 
   return (
     <section className="titles">
@@ -68,7 +82,7 @@ export function TitleList() {
       <ul className="title-list">
         {titles?.map((t) => (
           <li key={t.id}>
-            <button className="open" aria-label={`Ver ${t.title}`} onClick={() => setSelected(t)}>
+            <button className="open" aria-label={`Ver ${t.title}`} onClick={() => openScreen(() => setSelected(t))}>
               <TitleCard title={t.title} originalTitle={t.originalTitle} year={t.year} mediaType={t.mediaType} posterPath={t.posterPath}>
                 <small>{`IMDb ${imdbScore(t.imdbRating)} · RT ${rtScore(t.rottenTomatoes)}`}</small>
                 <small>{`La agregó ${nameOf(t.addedBy)}`}</small>
@@ -81,7 +95,7 @@ export function TitleList() {
           </li>
         ))}
       </ul>
-      <button className="add" aria-label="Agregar" onClick={() => setAdding(true)}>
+      <button className="add" aria-label="Agregar" onClick={() => openScreen(() => setAdding(true))}>
         +
       </button>
     </section>
