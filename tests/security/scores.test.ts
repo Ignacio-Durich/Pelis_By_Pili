@@ -141,9 +141,11 @@ test('the partner receives score changes in realtime and an outsider does not', 
   const outsider = listenScores(C, 'scores-c')
   await Promise.all([partner.ready, outsider.ready])
   await A.client.rpc('set_my_score', { p_title_id: T, p_score: 4.5, p_note: null })
+  // Puede llegar antes algún cambio de los tests anteriores: se busca el 4,5.
+  const got = () => partner.events.some((e) => Number((e.new as Row).score) === 4.5)
   const end = Date.now() + 10_000
-  while (!partner.events.length && Date.now() < end) await sleep(100)
-  expect(Number((partner.events[0]?.new as Row | undefined)?.score)).toBe(4.5)
+  while (!got() && Date.now() < end) await sleep(100)
+  expect(got()).toBe(true)
   await sleep(3000)
   expect(outsider.events).toEqual([])
   await Promise.all([partner.stop(), outsider.stop()])
