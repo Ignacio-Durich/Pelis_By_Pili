@@ -65,3 +65,11 @@ Impacto en el plan: afecta ya a la Etapa 1, no solo a las siguientes. La novia d
 - Publicado en https://pelis-by-pili.netlify.app. `dist/` sin los nombres ni los valores de las claves secretas, y sin referencias al Supabase local. La función `tmdb-search` está desplegada en el proyecto real con el secreto `TMDB_API_KEY`; responde al preflight CORS desde la URL de Netlify.
 - Prueba de aceptación en los dos iPhones (Nacho y Pili), según Nacho, "funcionó todo": cada uno cargó su nombre; un título agregado por uno aparece en el otro sin recargar, con "La agregó <nombre>" y la nota; búsqueda por nombre en inglés; aviso "Ya está en la lista (la agregó …)"; la lista se pone al día al volver de segundo plano; quitar un título lo saca de los dos. Versiones de iOS: no informadas.
 - La etapa queda terminada: una persona agrega un título y a la otra le aparece sin recargar.
+
+## Cierre de la Etapa 3 (2026-10-07)
+
+- Antes de publicar: `npm test` 148/148; `npm run test:security` 42/42 contra el Supabase local y `npm run test:security:remote` 42/42 contra el proyecto real (una sola corrida); typecheck y build sin errores.
+- Publicado en https://pelis-by-pili.netlify.app. `dist/` sin claves secretas ni la URL local; el logo de TMDB se sirve en `/tmdb-logo.svg`. Función `title-detail` desplegada con `verify_jwt = false` desde `supabase/config.toml` y el secreto `OMDB_API_KEY`; responde al preflight CORS desde la URL de Netlify.
+- Rotten Tomatoes en series, con las claves reales: Breaking Bad sí (96%); Dark y The Office no. Metacritic no aparece en ninguna de las tres. La app muestra "—" en esos casos.
+- Prueba de aceptación en los dos iPhones (Nacho y Pili), según Nacho, "funcionó todo": puntajes en la tarjeta sin abrirla, detalle de una película y una serie con sinopsis, los cuatro puntajes con fecha y dónde verla en Argentina con "Fuente: JustWatch", y las tres atribuciones en Ajustes. Qué serie abrieron y si tenía Rotten Tomatoes: no informado.
+- La etapa queda terminada: una película y una serie muestran sus puntajes y las atribuciones están visibles.
