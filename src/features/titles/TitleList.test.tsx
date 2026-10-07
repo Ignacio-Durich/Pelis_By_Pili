@@ -34,6 +34,11 @@ const angelito: Title = {
   originNote: 'un reel',
   addedBy: 'u2',
   createdAt: '2026-10-07T12:00:00Z',
+  imdbRating: '7.7/10',
+  rottenTomatoes: '67%',
+  metacritic: null,
+  tmdbRating: 7.4,
+  ratingsUpdatedAt: '2026-10-07T13:00:00Z',
 }
 const sinDatos: Title = { ...angelito, id: 't2', tmdbId: 5, mediaType: 'tv', title: 'Serie rara', originalTitle: 'Serie rara', year: null, posterPath: null, originNote: null, addedBy: 'u1' }
 
