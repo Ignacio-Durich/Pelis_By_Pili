@@ -205,7 +205,7 @@ anonymous_users = 30
 # Number of sessions that can be refreshed in a 5 minute interval per IP address.
 token_refresh = 150
 # Number of sign up and sign-in requests that can be made in a 5 minute interval per IP address (excludes anonymous users).
-sign_in_sign_ups = 1000  # alto solo en local: cada corrida de los tests de seguridad hace entrar a ~15 usuarios
+sign_in_sign_ups = 1000  # alto solo en local (tests de seguridad). No correr `supabase config push` con este valor.
 # Number of OTP / Magic link verifications that can be made in a 5 minute interval per IP address.
 token_verifications = 30
 # Number of Web3 logins that can be made in a 5 minute interval per IP address.
@@ -422,3 +422,8 @@ enabled = true
 # formatted with uppercase keywords, indent 2, max width 180, trailing commas,
 # and column/key alignment. Set to "null" to emit raw, unformatted SQL.
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":180,\"commaStyle\":\"trailing\"}"
+
+# La función valida la sesión ella misma con getClaims (acepta solo role = authenticated).
+# Así un deploy o un serve sin --no-verify-jwt no rompe la búsqueda.
+[functions.tmdb-search]
+verify_jwt = false
