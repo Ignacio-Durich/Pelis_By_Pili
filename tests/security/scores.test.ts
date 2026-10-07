@@ -164,3 +164,30 @@ test('anonymous clients cannot call the functions', async () => {
   expect((await anon.rpc('set_watched', { p_title_id: T, p_watched: true })).error).not.toBeNull()
   expect((await anon.rpc('set_my_score', { p_title_id: T, p_score: 5, p_note: null })).error).not.toBeNull()
 })
+
+test('an outsider listening to score deletes learns no user or couple', async () => {
+  const deletes: RealtimePostgresChangesPayload<Row>[] = []
+  const channel = C.client
+    .channel('scores-deletes-c')
+    .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'title_scores' }, (p) => deletes.push(p))
+  await new Promise<void>((resolve, reject) => {
+    channel.on('system', {}, (p: { extension?: string; status?: string }) => {
+      if (p.extension === 'postgres_changes' && p.status === 'ok') resolve()
+    })
+    channel.subscribe((status) => {
+      if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') reject(new Error(status))
+    })
+  })
+  const scored = await addTitle(1399)
+  await A.client.rpc('set_watched', { p_title_id: scored, p_watched: true })
+  await A.client.rpc('set_my_score', { p_title_id: scored, p_score: 7, p_note: null })
+  await A.client.from('titles').delete().eq('id', scored)
+  await sleep(4000)
+  for (const p of deletes) {
+    const old = p.old as Row
+    expect(old.user_id).toBeUndefined()
+    expect(old.couple_id).toBeUndefined()
+    expect(old.title_id).toBeUndefined()
+  }
+  await C.client.removeChannel(channel)
+}, 30_000)
