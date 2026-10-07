@@ -9,7 +9,14 @@ vi.mock('../features/auth/authApi', async (importOriginal) => ({
 }))
 vi.mock('../features/couple/coupleApi', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../features/couple/coupleApi')>()),
-  getMyCouple: vi.fn().mockResolvedValue({ coupleId: 'c1', memberCount: 2 }),
+  getMyCouple: vi.fn().mockResolvedValue({
+    coupleId: 'c1',
+    memberCount: 2,
+    members: [
+      { userId: 'u1', displayName: 'Nacho' },
+      { userId: 'u2', displayName: 'Pili' },
+    ],
+  }),
 }))
 
 import { App } from './App'

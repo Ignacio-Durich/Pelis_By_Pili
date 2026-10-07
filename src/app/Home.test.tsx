@@ -3,15 +3,11 @@ import { expect, test, vi } from 'vitest'
 
 vi.mock('../lib/supabase', () => ({ supabase: {} }))
 
-import { CoupleContext } from '../features/couple/coupleContext'
+import { nacho, pili, withCouple } from '../test/providers'
 import { Home } from './Home'
 
 function renderHome(memberCount: number) {
-  render(
-    <CoupleContext.Provider value={{ coupleId: 'c1', memberCount }}>
-      <Home />
-    </CoupleContext.Provider>,
-  )
+  render(withCouple(<Home />, memberCount === 1 ? [nacho] : [nacho, pili]))
 }
 
 test('the Lista tab shows the empty list and nothing else', () => {

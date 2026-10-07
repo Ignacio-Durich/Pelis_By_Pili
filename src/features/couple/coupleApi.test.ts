@@ -3,7 +3,7 @@ import { beforeEach, expect, test, vi } from 'vitest'
 const db = vi.hoisted(() => ({ rpc: vi.fn(), select: vi.fn(), from: vi.fn() }))
 vi.mock('../../lib/supabase', () => ({ supabase: { rpc: db.rpc, from: db.from } }))
 
-import { acceptInvite, CoupleError, createCouple, createInvite, getMyCouple } from './coupleApi'
+import { acceptInvite, CoupleError, createCouple, createInvite, getMyCouple, setDisplayName } from './coupleApi'
 
 beforeEach(() => {
   vi.resetAllMocks()
@@ -22,9 +22,29 @@ test('getMyCouple is null without rows', async () => {
   expect(db.from).toHaveBeenCalledWith('couple_members')
 })
 
-test('getMyCouple counts the members of the couple', async () => {
-  db.select.mockResolvedValue({ data: [{ couple_id: 'c1' }, { couple_id: 'c1' }], error: null })
-  expect(await getMyCouple()).toEqual({ coupleId: 'c1', memberCount: 2 })
+test('getMyCouple returns the members with their names', async () => {
+  db.select.mockResolvedValue({
+    data: [
+      { couple_id: 'c1', user_id: 'u1', display_name: 'Nacho' },
+      { couple_id: 'c1', user_id: 'u2', display_name: null },
+    ],
+    error: null,
+  })
+  expect(await getMyCouple()).toEqual({
+    coupleId: 'c1',
+    memberCount: 2,
+    members: [
+      { userId: 'u1', displayName: 'Nacho' },
+      { userId: 'u2', displayName: null },
+    ],
+  })
+  expect(db.select).toHaveBeenCalledWith('couple_id, user_id, display_name')
+})
+
+test('setDisplayName calls set_display_name', async () => {
+  db.rpc.mockResolvedValue({ data: null, error: null })
+  await setDisplayName('Pili')
+  expect(db.rpc).toHaveBeenCalledWith('set_display_name', { p_name: 'Pili' })
 })
 
 test('getMyCouple maps a fetch failure to network', async () => {
@@ -42,7 +62,7 @@ test('createCouple, createInvite and acceptInvite return the RPC result', async 
   expect(db.rpc).toHaveBeenLastCalledWith('accept_invite', { p_token: 'abc' })
 })
 
-test.each(['already_in_couple', 'couple_full', 'invite_invalid', 'not_a_member'])(
+test.each(['already_in_couple', 'couple_full', 'invite_invalid', 'not_a_member', 'invalid_name'])(
   'the Postgres error %s keeps its kind',
   async (code) => {
     db.rpc.mockResolvedValue({ data: null, error: { message: code, code: 'P0001' } })

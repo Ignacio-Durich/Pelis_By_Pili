@@ -1,10 +1,13 @@
 import { useEffect, useState, type ReactNode } from 'react'
+import { useUserId } from '../auth/sessionContext'
 import { getMyCouple } from './coupleApi'
 import { CoupleContext, type Couple } from './coupleContext'
 import { coupleMessages } from './messages'
+import { NameForm } from './NameForm'
 import { Onboarding } from './Onboarding'
 
 export function CoupleGate({ children }: { children: ReactNode }) {
+  const userId = useUserId()
   // undefined = cargando, null = sin espacio
   const [couple, setCouple] = useState<Couple | null | undefined>(undefined)
   const [offline, setOffline] = useState(false)
@@ -31,5 +34,6 @@ export function CoupleGate({ children }: { children: ReactNode }) {
   }
   if (couple === undefined) return <main className="screen">Cargando…</main>
   if (couple === null) return <Onboarding onDone={reload} />
+  if (!couple.members.find((m) => m.userId === userId)?.displayName) return <NameForm onDone={reload} />
   return <CoupleContext.Provider value={couple}>{children}</CoupleContext.Provider>
 }

@@ -15,6 +15,7 @@ vi.mock('../../lib/supabase', () => ({ supabase: {} }))
 
 import { AuthError } from './authApi'
 import { AuthGate } from './AuthGate'
+import { useUserId } from './sessionContext'
 
 const session = { user: { id: 'u1' } }
 let authListener: (s: unknown) => void
@@ -114,4 +115,18 @@ test('a sign-in event renders the children', async () => {
   await goToCodeStep()
   authListener(session)
   expect(await screen.findByText('contenido privado')).toBeInTheDocument()
+})
+
+function ShowUserId() {
+  return <p>{`usuario ${useUserId()}`}</p>
+}
+
+test('with a session the children can read the user id', async () => {
+  api.getSession.mockResolvedValue(session)
+  render(
+    <AuthGate>
+      <ShowUserId />
+    </AuthGate>,
+  )
+  expect(await screen.findByText('usuario u1')).toBeInTheDocument()
 })
