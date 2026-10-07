@@ -40,3 +40,18 @@ export async function cleanup(): Promise<void> {
   if (coupleIds.length > 0) await admin.from('couples').delete().in('id', coupleIds)
   for (const id of createdUserIds.splice(0)) await admin.auth.admin.deleteUser(id)
 }
+
+type TestUser = { id: string; client: SupabaseClient }
+
+// a crea el espacio; si viene b, a lo invita y b acepta.
+export async function createCouple(a: TestUser, b?: TestUser): Promise<string> {
+  const { data: coupleId, error } = await a.client.rpc('create_couple')
+  if (error) throw error
+  if (b) {
+    const { data: token, error: inviteError } = await a.client.rpc('create_invite')
+    if (inviteError) throw inviteError
+    const { error: acceptError } = await b.client.rpc('accept_invite', { p_token: token })
+    if (acceptError) throw acceptError
+  }
+  return coupleId
+}
