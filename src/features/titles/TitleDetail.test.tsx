@@ -1,17 +1,20 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 
-const api = vi.hoisted(() => ({ fetchTitleDetail: vi.fn(), removeTitle: vi.fn() }))
+const api = vi.hoisted(() => ({ fetchTitleDetail: vi.fn(), removeTitle: vi.fn(), setWatched: vi.fn(), setMyScore: vi.fn() }))
 vi.mock('./detailApi', () => ({ fetchTitleDetail: api.fetchTitleDetail }))
 vi.mock('./titlesApi', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./titlesApi')>()),
   removeTitle: api.removeTitle,
+  setWatched: api.setWatched,
+  setMyScore: api.setMyScore,
 }))
 vi.mock('../../lib/supabase', () => ({ supabase: {} }))
 
 import { withCouple } from '../../test/providers'
 import type { TitleDetail as Detail } from './detailApi'
 import { TitleDetail } from './TitleDetail'
+import { TitleError } from './titlesApi'
 import type { Title } from './titlesApi'
 
 const parasitos: Title = {
@@ -160,4 +163,49 @@ test('never shows null or undefined, even with nothing saved', async () => {
   renderDetail(bare)
   await screen.findByText('Sin información de dónde verla')
   expect(document.body.textContent).not.toMatch(/null|undefined/)
+})
+
+test('a title to watch offers Marcar como vista and explains how to score', async () => {
+  api.fetchTitleDetail.mockReturnValue(new Promise(() => {}))
+  api.setWatched.mockResolvedValue(undefined)
+  renderDetail()
+  expect(screen.getByText('Márquenla como vista para puntuarla.')).toBeInTheDocument()
+  expect(screen.queryByRole('heading', { name: 'Tu puntaje' })).not.toBeInTheDocument()
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Marcar como vista' })))
+  expect(api.setWatched).toHaveBeenCalledWith('t1', true)
+})
+
+const watched: Title = {
+  ...parasitos,
+  status: 'watched',
+  watchedAt: '2026-10-07T20:00:00Z',
+  scores: [{ userId: 'u2', score: 6.5, note: 'Muy buena', updatedAt: '2026-10-07T21:00:00Z' }],
+}
+
+test('a watched title shows the date, both scores and my score editor', () => {
+  api.fetchTitleDetail.mockReturnValue(new Promise(() => {}))
+  renderDetail(watched)
+  expect(screen.getByText('Vista el 7/10/2026')).toBeInTheDocument()
+  expect(screen.getByRole('heading', { name: 'Nuestros puntajes' })).toBeInTheDocument()
+  expect(screen.getByText('Nacho: todavía no puntuó')).toBeInTheDocument()
+  expect(screen.getByText('Pili: 6,5')).toBeInTheDocument()
+  expect(screen.getByText('Muy buena')).toBeInTheDocument()
+  expect(screen.getByRole('heading', { name: 'Tu puntaje' })).toBeInTheDocument()
+  expect(screen.queryByText('Márquenla como vista para puntuarla.')).not.toBeInTheDocument()
+})
+
+test('my score editor starts with my own score', () => {
+  api.fetchTitleDetail.mockReturnValue(new Promise(() => {}))
+  renderDetail({ ...watched, scores: [...watched.scores, { userId: 'u1', score: 9, note: null, updatedAt: '' }] })
+  expect(screen.getByText('Nacho: 9')).toBeInTheDocument()
+  expect(screen.getByLabelText('Del 1 al 10')).toHaveValue('9')
+})
+
+test('Volver a Por ver unmarks, and a failure says so', async () => {
+  api.fetchTitleDetail.mockReturnValue(new Promise(() => {}))
+  api.setWatched.mockRejectedValueOnce(new TitleError('network'))
+  renderDetail(watched)
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Volver a Por ver' })))
+  expect(api.setWatched).toHaveBeenCalledWith('t1', false)
+  expect(screen.getByText('No se pudo guardar. Probá de nuevo.')).toBeInTheDocument()
 })

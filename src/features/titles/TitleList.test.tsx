@@ -183,3 +183,53 @@ test('the detail opens at the top and Volver returns to the same place in the li
   expect(scrollTo).toHaveBeenLastCalledWith(0, 640)
   Object.defineProperty(window, 'scrollY', { value: 0, configurable: true })
 })
+
+const visto = (id: string, title: string, watchedAt: string, scores: Title['scores'] = []): Title => ({
+  ...angelito,
+  id,
+  tmdbId: Number(id.slice(1)) + 1000,
+  title,
+  originalTitle: title,
+  status: 'watched',
+  watchedAt,
+  scores,
+})
+
+test('Por ver and Vistas tabs split the list, newest watched first', async () => {
+  api.listTitles.mockResolvedValue([
+    angelito,
+    visto('t7', 'Vista antes', '2026-10-01T20:00:00Z'),
+    visto('t8', 'Vista después', '2026-10-07T20:00:00Z', [{ userId: 'u1', score: 8.75, note: null, updatedAt: '' }]),
+  ])
+  renderList()
+  expect(await screen.findByText('Mi pobre angelito')).toBeInTheDocument()
+  expect(screen.queryByText('Vista antes')).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Por ver' })).toHaveAttribute('aria-pressed', 'true')
+  expect(screen.getByRole('button', { name: 'Agregar' })).toBeInTheDocument()
+
+  fireEvent.click(screen.getByRole('button', { name: 'Vistas' }))
+  expect(screen.getByRole('heading', { name: 'Vistas' })).toBeInTheDocument()
+  expect(screen.queryByText('Mi pobre angelito')).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Agregar' })).not.toBeInTheDocument()
+  const names = screen.getAllByRole('button', { name: /^Ver / }).map((b) => b.getAttribute('aria-label'))
+  expect(names).toEqual(['Ver Vista después', 'Ver Vista antes'])
+  expect(screen.getByText('Vista el 7/10/2026')).toBeInTheDocument()
+  expect(screen.getByText('Nacho 8,75 · Pili —')).toBeInTheDocument()
+})
+
+test('an empty Vistas says so', async () => {
+  renderList()
+  await screen.findByText('Nuestra lista está vacía')
+  fireEvent.click(screen.getByRole('button', { name: 'Vistas' }))
+  expect(screen.getByText('Todavía no vieron nada juntos')).toBeInTheDocument()
+})
+
+test('the open detail follows the list when it reloads', async () => {
+  api.listTitles.mockResolvedValue([angelito])
+  renderList()
+  fireEvent.click(await screen.findByRole('button', { name: 'Ver Mi pobre angelito' }))
+  expect(screen.getByRole('button', { name: 'Marcar como vista' })).toBeInTheDocument()
+  api.listTitles.mockResolvedValue([{ ...angelito, status: 'watched', watchedAt: '2026-10-07T20:00:00Z' }])
+  await act(async () => notify())
+  expect(await screen.findByText('Vista el 7/10/2026')).toBeInTheDocument()
+})
