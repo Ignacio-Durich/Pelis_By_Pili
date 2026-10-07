@@ -5,7 +5,7 @@ import { anonClient, cleanup, createCouple, createTestUser } from './helpers.ts'
 
 type User = { id: string; client: SupabaseClient }
 let A: User, B: User, C: User
-let parasite: string, dark: string
+let parasite: string, dark: string, aew: string
 
 async function detail(client: SupabaseClient, titleId: unknown) {
   const { data, error } = await client.functions.invoke<TitleDetail>('title-detail', { body: { titleId } })
@@ -23,6 +23,8 @@ beforeAll(async () => {
   }
   parasite = await add(496243, 'movie', 'Parásitos')
   dark = await add(70523, 'tv', 'Dark')
+  // Sin sinopsis en es-AR (verificado el 2026-10-07): sale de las traducciones.
+  aew = await add(108847, 'tv', 'AEW Dark')
 })
 afterAll(cleanup)
 
@@ -63,4 +65,9 @@ test('outsiders get 404', async () => {
 test('an invalid id gets 400 and anonymous callers get 401', async () => {
   expect((await detail(A.client, 'abc')).status).toBe(400)
   expect((await detail(anonClient(), parasite)).status).toBe(401)
+})
+
+test('a title without an es-AR synopsis gets one from another language', async () => {
+  const { data } = await detail(A.client, aew)
+  expect(data?.overview).not.toBe('')
 })

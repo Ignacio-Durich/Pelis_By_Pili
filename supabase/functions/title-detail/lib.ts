@@ -72,3 +72,21 @@ export function mergeRatings(
   const tmdb = tmdbScore === null ? null : Math.round(tmdbScore * 10) / 10
   return { ratings: { ...fromOmdb, tmdb, updatedAt: now.toISOString() }, stale: false, save: true }
 }
+
+// TMDB da vote_average 0 cuando nadie votó (estrenos, títulos raros): eso es "sin puntaje", no un 0.
+export function tmdbScoreOf(details: { vote_average?: number; vote_count?: number }): number | null {
+  return details.vote_count ? (details.vote_average ?? null) : null
+}
+
+type Translation = { iso_639_1: string; iso_3166_1: string; data?: { overview?: string } }
+
+// es-AR no cae solo a otro idioma: si viene vacía, se busca en las traducciones (misma consulta).
+export function pickOverview(details: { overview?: string; translations?: { translations?: Translation[] } }): string {
+  if (details.overview) return details.overview
+  const all = details.translations?.translations ?? []
+  for (const [lang, country] of [['es', 'MX'], ['es', 'ES'], ['en', 'US']]) {
+    const text = all.find((t) => t.iso_639_1 === lang && t.iso_3166_1 === country)?.data?.overview
+    if (text) return text
+  }
+  return ''
+}

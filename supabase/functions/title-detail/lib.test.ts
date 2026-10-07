@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { mergeRatings, needsRefresh, parseTitleId, pickImdbId, toProviders, type StoredRatings } from './lib.ts'
+import { mergeRatings, needsRefresh, parseTitleId, pickImdbId, pickOverview, tmdbScoreOf, toProviders, type StoredRatings } from './lib.ts'
 
 const now = new Date('2026-10-07T15:00:00Z')
 const daysAgo = (n: number) => new Date(now.getTime() - n * 86_400_000).toISOString()
@@ -90,4 +90,20 @@ test('mergeRatings without an IMDb id saves only the TMDB score', () => {
     stale: false,
     save: true,
   })
+})
+
+test('a title without votes has no TMDB score', () => {
+  expect(tmdbScoreOf({ vote_average: 0, vote_count: 0 })).toBeNull()
+  expect(tmdbScoreOf({ vote_average: 8.5, vote_count: 1200 })).toBe(8.5)
+  expect(tmdbScoreOf({})).toBeNull()
+})
+
+test('pickOverview falls back through es-MX, es-ES and en-US translations', () => {
+  const tr = (iso_639_1: string, iso_3166_1: string, overview: string) => ({ iso_639_1, iso_3166_1, data: { overview } })
+  expect(pickOverview({ overview: 'Argentina' })).toBe('Argentina')
+  expect(
+    pickOverview({ overview: '', translations: { translations: [tr('en', 'US', 'English'), tr('es', 'ES', 'España')] } }),
+  ).toBe('España')
+  expect(pickOverview({ overview: '', translations: { translations: [tr('en', 'US', 'English'), tr('es', 'MX', '')] } })).toBe('English')
+  expect(pickOverview({})).toBe('')
 })

@@ -1,7 +1,7 @@
 // Edge Function (Deno): detalle de un título de la lista (sinopsis, puntajes y plataformas en AR).
 // Los puntajes se guardan en el título y se renuevan como mucho una vez por semana.
 import { createClient } from 'npm:@supabase/supabase-js@2'
-import { mergeRatings, needsRefresh, parseTitleId, pickImdbId, toProviders, type TitleDetail } from './lib.ts'
+import { mergeRatings, needsRefresh, parseTitleId, pickImdbId, pickOverview, tmdbScoreOf, toProviders, type TitleDetail } from './lib.ts'
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -46,7 +46,7 @@ Deno.serve(async (req) => {
   let details
   try {
     details = await getJson(
-      `https://api.themoviedb.org/3/${title.media_type}/${title.tmdb_id}?language=es-AR&append_to_response=external_ids,watch/providers&api_key=${Deno.env.get('TMDB_API_KEY')}`,
+      `https://api.themoviedb.org/3/${title.media_type}/${title.tmdb_id}?language=es-AR&append_to_response=external_ids,watch/providers,translations&api_key=${Deno.env.get('TMDB_API_KEY')}`,
     )
   } catch {
     return json(502, { error: 'upstream' })
@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
       Error: 'limit (sin respuesta)',
     }))
   }
-  const { ratings, stale, save } = mergeRatings(stored, omdb, details.vote_average ?? null, now)
+  const { ratings, stale, save } = mergeRatings(stored, omdb, tmdbScoreOf(details), now)
   if (save) {
     await service
       .from('titles')
@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
   }
 
   const body: TitleDetail = {
-    overview: details.overview ?? '',
+    overview: pickOverview(details),
     ratings,
     ratingsStale: stale,
     providers: toProviders(details['watch/providers']?.results?.AR),
