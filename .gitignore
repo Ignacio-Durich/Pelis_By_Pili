@@ -30,3 +30,4 @@ dist-ssr
 .superpowers/
 .claude/
 .netlify/
+graphify-out/
