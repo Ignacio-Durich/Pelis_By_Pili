@@ -89,3 +89,12 @@ Cada línea: decisión — motivo — costo si está mal.
 - **Realtime:** el canal avisa `SUBSCRIBED` al unirse, pero el servidor empieza a escuchar la base un momento después y lo avisa con un mensaje de sistema ("Subscribed to PostgreSQL"; medido: ~8 ms sin carga, más con carga). Un título agregado en ese hueco no llegaba. La app ahora recarga la lista con ese aviso y no con `SUBSCRIBED`, y el test de seguridad espera lo mismo. Antes del cambio el test fallaba de forma intermitente (con la suite completa y siempre tras reiniciar la base); después, 6 de 6 corridas seguidas en verde, incluida la primera tras reiniciar — ninguno.
 - En `supabase/config.toml` (solo el Supabase local) `sign_in_sign_ups` sube de 30 a 1000 cada 5 minutos: cada corrida de los tests de seguridad hace entrar a ~15 usuarios. Contra el proyecto real conviene correrlos de a una vez: la cuarta corrida seguida chocó con el límite de Supabase — ninguno.
 - Se salteó la prueba local con dos sesiones contra el proyecto real (Task 5, paso 5): el espacio real ya tiene a Nacho y Pili y no admite una cuenta de prueba. La cubren el test de seguridad de tiempo real contra el proyecto real y la prueba en los iPhones — costo: la primera prueba de la interfaz contra el proyecto real es la de los iPhones.
+
+# Etapa 3
+
+## Tasks 1 a 5
+- `tmdb_rating` (numeric en Postgres) se convierte con `Number()` al leerlo, porque puede llegar como texto — ninguno.
+- La tarjeta de la lista es un botón con nombre accesible "Ver <título>", para distinguirlo del botón "Quitar <título>" — ninguno.
+- Mientras carga el detalle, o si falla, se muestran los puntajes guardados en la lista; la sinopsis y las plataformas aparecen cuando responde la función — ninguno.
+- Si OMDb no responde (red o tiempo), la función lo trata como el límite diario: devuelve los puntajes guardados con el aviso "Hoy no se pudieron actualizar los puntajes" y no cambia la fecha — ninguno.
+- Entorno local: después de `npx supabase db reset`, Kong deja de servir las plantillas de email y el código llega con la plantilla por defecto (con link). Lo arregla `npx supabase stop && npx supabase start`. No afecta los tests ni el proyecto real — ninguno.

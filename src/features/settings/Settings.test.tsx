@@ -66,3 +66,12 @@ test('shows the TMDB attribution', () => {
   renderSettings(2)
   expect(screen.getByText('This product uses the TMDB API but is not endorsed or certified by TMDB.')).toBeInTheDocument()
 })
+
+test('shows the TMDB logo, JustWatch and OMDb attributions', () => {
+  renderSettings(2)
+  expect(screen.getByAltText('TMDB')).toHaveAttribute('src', '/tmdb-logo.svg')
+  expect(screen.getByText('Datos de dónde ver cada título: JustWatch.')).toBeInTheDocument()
+  expect(
+    screen.getByText('Puntajes de IMDb, Rotten Tomatoes y Metacritic vía OMDb API (CC BY-NC 4.0). No afiliado con IMDb.'),
+  ).toBeInTheDocument()
+})
