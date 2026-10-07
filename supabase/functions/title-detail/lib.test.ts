@@ -1,5 +1,17 @@
 import { expect, test } from 'vitest'
-import { mergeRatings, needsRefresh, parseTitleId, pickImdbId, pickOverview, tmdbScoreOf, toProviders, type StoredRatings } from './lib.ts'
+import {
+  mergeRatings,
+  needsRefresh,
+  parseTitleId,
+  pickGenres,
+  pickImdbId,
+  pickOverview,
+  pickRuntime,
+  streamingNames,
+  tmdbScoreOf,
+  toProviders,
+  type StoredRatings,
+} from './lib.ts'
 
 const now = new Date('2026-10-07T15:00:00Z')
 const daysAgo = (n: number) => new Date(now.getTime() - n * 86_400_000).toISOString()
@@ -106,4 +118,24 @@ test('pickOverview falls back through es-MX, es-ES and en-US translations', () =
   ).toBe('España')
   expect(pickOverview({ overview: '', translations: { translations: [tr('en', 'US', 'English'), tr('es', 'MX', '')] } })).toBe('English')
   expect(pickOverview({})).toBe('')
+})
+
+test('pickRuntime uses the movie runtime or an episode length', () => {
+  expect(pickRuntime({ runtime: 132 })).toBe(132)
+  expect(pickRuntime({ runtime: 0, episode_run_time: [], last_episode_to_air: { runtime: 56 } })).toBe(56)
+  expect(pickRuntime({ episode_run_time: [45, 50] })).toBe(45)
+  expect(pickRuntime({})).toBeNull()
+})
+
+test('pickGenres returns names without repeats', () => {
+  expect(pickGenres({ genres: [{ name: 'Drama' }, { name: 'Crimen' }, { name: 'Drama' }] })).toEqual(['Drama', 'Crimen'])
+  expect(pickGenres({})).toEqual([])
+})
+
+test('streamingNames keeps subscription and free platforms', () => {
+  const p = (name: string) => ({ name, logoPath: null })
+  expect(
+    streamingNames({ link: null, subscription: [p('Netflix'), p('Prime Video')], rent: [p('Apple TV')], buy: [], free: [p('Pluto TV'), p('Netflix')] }),
+  ).toEqual(['Netflix', 'Prime Video', 'Pluto TV'])
+  expect(streamingNames(null)).toEqual([])
 })
