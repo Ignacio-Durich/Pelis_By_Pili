@@ -107,3 +107,12 @@ Cada línea: decisión — motivo — costo si está mal.
 - En las tarjetas de "Vistas" se muestra la fecha y los puntajes en lugar de "La agregó" y la nota de origen, que siguen en el detalle — ninguno.
 - Revisión final: `title_scores` pasa a tener una clave propia al azar (`id`), con `(title_id, user_id)` como `unique`. Realtime manda la clave de cada fila borrada a cualquier suscriptor, y con la clave anterior un ajeno veía ids de usuarios de otros espacios. Reproducido con un test antes de corregirlo — ninguno.
 - Revisión final: si todo lo de la lista ya se vio, "Por ver" dice "No queda nada por ver" (el plan no fijaba ese texto); "Nuestra lista está vacía" queda para cuando no hay ningún título — ninguno.
+
+# Etapa 5
+
+- La función de detalle guarda duración, géneros y plataformas en cada apertura (TMDB ya se consultó), no solo cada 7 días como los puntajes — ninguno.
+- Helper de tests `src/test/titles.ts` (`makeTitle`) para los títulos de ejemplo nuevos — ninguno.
+- Hook `useTitles` (cargar y seguir la lista), extraído de `TitleList` para que lo use también la ruleta — ninguno.
+- La función pura de la ruleta se llama `pick.ts` y no `roulette.ts`: en macOS el sistema de archivos no distingue mayúsculas y `./Roulette` resolvía al archivo equivocado — ninguno.
+- La ruleta queda oculta (no desmontada) mientras se ve el detalle de su resultado, para no perder el resultado ni los vetos; y una sesión por combinación de filtros (`key`), así cambiar un filtro renueva los vetos — ninguno.
+- La plataforma "Universal+ Amazon Channel" y similares aparecen tal como las da TMDB/JustWatch — si molestan, se pueden ocultar más adelante.

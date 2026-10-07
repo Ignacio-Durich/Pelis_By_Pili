@@ -24,7 +24,9 @@ body {
 form,
 .titles,
 .add-title,
-.detail {
+.detail,
+.roulette,
+.roulette-result {
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -359,4 +361,31 @@ button.chip[aria-pressed='true'] {
   background: #ffb703;
   color: #1b1b2f;
   border-color: #ffb703;
+}
+
+.roulette-spin {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  padding: 24px 0;
+}
+
+.roulette-spin strong {
+  font-size: 24px;
+  text-align: center;
+}
+
+.roulette-result h3 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.vetoes {
+  display: flex;
+  gap: 8px;
+}
+
+.vetoes button {
+  flex: 1;
 }
