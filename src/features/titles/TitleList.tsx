@@ -1,20 +1,22 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useCouple, useMemberName } from '../couple/coupleContext'
 import { AddTitle } from './AddTitle'
-import { imdbScore, rtScore } from './ratings'
+import { formatScore, imdbScore, ratingsDate, rtScore } from './ratings'
 import { TitleDetail } from './TitleDetail'
 import { TitleCard } from './TitleCard'
 import { listTitles, removeTitle, subscribeTitles, type Title } from './titlesApi'
 
 export function TitleList() {
-  const { coupleId } = useCouple()
+  const { coupleId, members } = useCouple()
   const nameOf = useMemberName()
   // null = cargando
   const [titles, setTitles] = useState<Title[] | null>(null)
   const [offline, setOffline] = useState(false)
   const [removeFailed, setRemoveFailed] = useState(false)
   const [adding, setAdding] = useState(false)
-  const [selected, setSelected] = useState<Title | null>(null)
+  // Por id: el detalle abierto toma siempre la versión más nueva del título (Realtime recarga la lista).
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [tab, setTab] = useState<'to_watch' | 'watched'>('to_watch')
   // La ventana es la que scrollea: al abrir una pantalla se sube al principio y al volver
   // se recupera el lugar de la lista.
   const listScroll = useRef(0)
@@ -64,12 +66,35 @@ export function TitleList() {
     }
   }
 
-  if (selected) return <TitleDetail title={selected} onClose={() => backToList(() => setSelected(null))} />
+  const selected = titles?.find((t) => t.id === selectedId)
+  if (selected) return <TitleDetail title={selected} onClose={() => backToList(() => setSelectedId(null))} />
   if (adding) return <AddTitle coupleId={coupleId} titles={titles ?? []} onClose={() => backToList(() => setAdding(false))} />
+
+  // "Por ver": del más nuevo al más viejo (como llega). "Vistas": la vista más reciente primero.
+  const shown = titles
+    ?.filter((t) => t.status === tab)
+    .sort((a, b) => (tab === 'watched' ? (b.watchedAt ?? '').localeCompare(a.watchedAt ?? '') : 0))
+
+  // "Nacho 8,75 · Pili —"
+  const ourScores = (t: Title) =>
+    members
+      .map((m) => {
+        const own = t.scores.find((sc) => sc.userId === m.userId)
+        return `${nameOf(m.userId)} ${own ? formatScore(own.score) : '—'}`
+      })
+      .join(' · ')
 
   return (
     <section className="titles">
-      <h2>Por ver</h2>
+      <div className="segmented">
+        <button aria-pressed={tab === 'to_watch'} onClick={() => setTab('to_watch')}>
+          Por ver
+        </button>
+        <button aria-pressed={tab === 'watched'} onClick={() => setTab('watched')}>
+          Vistas
+        </button>
+      </div>
+      <h2>{tab === 'to_watch' ? 'Por ver' : 'Vistas'}</h2>
       {offline && (
         <>
           <p role="alert">Sin conexión. Probá de nuevo.</p>
@@ -77,16 +102,25 @@ export function TitleList() {
         </>
       )}
       {titles === null && !offline && <p>Cargando…</p>}
-      {titles?.length === 0 && <p>Nuestra lista está vacía</p>}
+      {shown?.length === 0 && <p>{tab === 'to_watch' ? 'Nuestra lista está vacía' : 'Todavía no vieron nada juntos'}</p>}
       {removeFailed && <p role="alert">No se pudo quitar. Probá de nuevo.</p>}
       <ul className="title-list">
-        {titles?.map((t) => (
+        {shown?.map((t) => (
           <li key={t.id}>
-            <button className="open" aria-label={`Ver ${t.title}`} onClick={() => openScreen(() => setSelected(t))}>
+            <button className="open" aria-label={`Ver ${t.title}`} onClick={() => openScreen(() => setSelectedId(t.id))}>
               <TitleCard title={t.title} originalTitle={t.originalTitle} year={t.year} mediaType={t.mediaType} posterPath={t.posterPath}>
                 <small>{`IMDb ${imdbScore(t.imdbRating)} · RT ${rtScore(t.rottenTomatoes)}`}</small>
-                <small>{`La agregó ${nameOf(t.addedBy)}`}</small>
-                {t.originNote && <small>{`De dónde vino: ${t.originNote}`}</small>}
+                {t.status === 'watched' && t.watchedAt ? (
+                  <>
+                    <small>{`Vista el ${ratingsDate(t.watchedAt)}`}</small>
+                    <small>{ourScores(t)}</small>
+                  </>
+                ) : (
+                  <>
+                    <small>{`La agregó ${nameOf(t.addedBy)}`}</small>
+                    {t.originNote && <small>{`De dónde vino: ${t.originNote}`}</small>}
+                  </>
+                )}
               </TitleCard>
             </button>
             <button className="remove" aria-label={`Quitar ${t.title}`} onClick={() => remove(t)}>
@@ -95,9 +129,11 @@ export function TitleList() {
           </li>
         ))}
       </ul>
-      <button className="add" aria-label="Agregar" onClick={() => openScreen(() => setAdding(true))}>
-        +
-      </button>
+      {tab === 'to_watch' && (
+        <button className="add" aria-label="Agregar" onClick={() => openScreen(() => setAdding(true))}>
+          +
+        </button>
+      )}
     </section>
   )
 }

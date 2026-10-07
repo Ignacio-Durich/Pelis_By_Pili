@@ -256,3 +256,54 @@ button.back {
 .detail button.remove {
   align-self: flex-start;
 }
+
+.segmented {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: #2a2a45;
+}
+
+.segmented button {
+  flex: 1;
+  background: none;
+  color: #9a9ab8;
+  padding: 8px;
+}
+
+.segmented button[aria-pressed='true'] {
+  background: #ffb703;
+  color: #1b1b2f;
+}
+
+button.secondary {
+  align-self: flex-start;
+  background: none;
+  border: 1px solid #44446a;
+  color: inherit;
+  font-weight: normal;
+}
+
+.our-scores {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.our-scores li {
+  display: flex;
+  flex-direction: column;
+}
+
+.my-score h3 {
+  margin: 12px 0 0;
+  font-size: 17px;
+}
+
+.my-score small {
+  color: #ff8a80;
+}

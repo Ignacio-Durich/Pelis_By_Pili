@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useMemberName } from '../couple/coupleContext'
+import { useUserId } from '../auth/sessionContext'
+import { useCouple, useMemberName } from '../couple/coupleContext'
 import { fetchTitleDetail, type Provider, type TitleDetail as Detail } from './detailApi'
-import { imdbScore, metacriticScore, ratingsDate, rtScore, tmdbScore } from './ratings'
-import { removeTitle, type Title } from './titlesApi'
+import { MyScore } from './MyScore'
+import { formatScore, imdbScore, metacriticScore, ratingsDate, rtScore, tmdbScore } from './ratings'
+import { removeTitle, setWatched, type Title } from './titlesApi'
 
 const groups = [
   ['subscription', 'Suscripción'],
@@ -13,6 +15,9 @@ const groups = [
 
 export function TitleDetail({ title, onClose }: { title: Title; onClose: () => void }) {
   const nameOf = useMemberName()
+  const { members } = useCouple()
+  const userId = useUserId()
+  const [watchFailed, setWatchFailed] = useState(false)
   const [detail, setDetail] = useState<Detail | null>(null)
   const [failed, setFailed] = useState(false)
   const [removeFailed, setRemoveFailed] = useState(false)
@@ -40,6 +45,16 @@ export function TitleDetail({ title, onClose }: { title: Title; onClose: () => v
   const kind = title.mediaType === 'movie' ? 'Película' : 'Serie'
   const showOriginal = title.originalTitle && title.originalTitle.toLowerCase() !== title.title.toLowerCase()
 
+  async function toggleWatched(watched: boolean) {
+    setWatchFailed(false)
+    try {
+      // La pantalla se actualiza sola: Realtime recarga la lista y el detalle recibe el título nuevo.
+      await setWatched(title.id, watched)
+    } catch {
+      setWatchFailed(true)
+    }
+  }
+
   async function remove() {
     if (!window.confirm(`¿Quitar «${title.title}» de la lista?`)) return
     setRemoveFailed(false)
@@ -66,6 +81,34 @@ export function TitleDetail({ title, onClose }: { title: Title; onClose: () => v
       <small>{title.year ? `${title.year} · ${kind}` : kind}</small>
       <small>{`La agregó ${nameOf(title.addedBy)}`}</small>
       {title.originNote && <small>{`De dónde vino: ${title.originNote}`}</small>}
+
+      {title.status === 'watched' && title.watchedAt ? (
+        <>
+          <small>{`Vista el ${ratingsDate(title.watchedAt)}`}</small>
+          <button className="secondary" onClick={() => toggleWatched(false)}>
+            Volver a Por ver
+          </button>
+          <h3>Nuestros puntajes</h3>
+          <ul className="our-scores">
+            {members.map((m) => {
+              const own = title.scores.find((sc) => sc.userId === m.userId)
+              return (
+                <li key={m.userId}>
+                  <span>{own ? `${nameOf(m.userId)}: ${formatScore(own.score)}` : `${nameOf(m.userId)}: todavía no puntuó`}</span>
+                  {own?.note && <small>{own.note}</small>}
+                </li>
+              )
+            })}
+          </ul>
+          <MyScore key={title.id} titleId={title.id} current={title.scores.find((sc) => sc.userId === userId) ?? null} />
+        </>
+      ) : (
+        <>
+          <button onClick={() => toggleWatched(true)}>Marcar como vista</button>
+          <p>Márquenla como vista para puntuarla.</p>
+        </>
+      )}
+      {watchFailed && <p role="alert">No se pudo guardar. Probá de nuevo.</p>}
 
       {failed && (
         <>

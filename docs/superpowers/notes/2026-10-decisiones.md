@@ -98,3 +98,10 @@ Cada línea: decisión — motivo — costo si está mal.
 - Mientras carga el detalle, o si falla, se muestran los puntajes guardados en la lista; la sinopsis y las plataformas aparecen cuando responde la función — ninguno.
 - Si OMDb no responde (red o tiempo), la función lo trata como el límite diario: devuelve los puntajes guardados con el aviso "Hoy no se pudieron actualizar los puntajes" y no cambia la fecha — ninguno.
 - Entorno local: después de `npx supabase db reset`, Kong deja de servir las plantillas de email y el código llega con la plantilla por defecto (con link). Lo arregla `npx supabase stop && npx supabase start`. No afecta los tests ni el proyecto real — ninguno.
+
+# Etapa 4
+
+- El test de puntajes en tiempo real busca el evento esperado entre los recibidos, en vez de asumir que es el primero: llegaban cambios de tests anteriores con demora — ninguno.
+- `AddTitle` solo distingue "ya está en la lista" de cualquier otro error (que se muestra como "No se pudo agregar") — ninguno.
+- El detalle abierto se elige por `id` y toma siempre la versión más nueva del título de la lista: al marcar vista o puntuar, la pantalla se actualiza sola por Realtime. Si el título se quita, el detalle se cierra — ninguno.
+- En las tarjetas de "Vistas" se muestra la fecha y los puntajes en lugar de "La agregó" y la nota de origen, que siguen en el detalle — ninguno.
