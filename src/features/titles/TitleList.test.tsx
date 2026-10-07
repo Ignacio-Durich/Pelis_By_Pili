@@ -44,6 +44,10 @@ const angelito: Title = {
   status: 'to_watch',
   watchedAt: null,
   scores: [],
+  runtime: null,
+  genres: [],
+  streaming: [],
+  detailsUpdatedAt: null,
 }
 const sinDatos: Title = { ...angelito, id: 't2', tmdbId: 5, mediaType: 'tv', title: 'Serie rara', originalTitle: 'Serie rara', year: null, posterPath: null, originNote: null, addedBy: 'u1', imdbRating: null, rottenTomatoes: null }
 

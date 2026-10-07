@@ -36,6 +36,10 @@ const parasitos: Title = {
   status: 'to_watch',
   watchedAt: null,
   scores: [],
+  runtime: null,
+  genres: [],
+  streaming: [],
+  detailsUpdatedAt: null,
 }
 const fresh: Detail = {
   overview: 'Una familia pobre se infiltra en una casa rica.',

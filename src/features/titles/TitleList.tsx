@@ -3,6 +3,7 @@ import { useCouple, useMemberName } from '../couple/coupleContext'
 import { AddTitle } from './AddTitle'
 import { formatScore, imdbScore, ratingsDate, rtScore } from './ratings'
 import { TitleDetail } from './TitleDetail'
+import { useBackfillDetails } from './useBackfillDetails'
 import { TitleCard } from './TitleCard'
 import { listTitles, removeTitle, subscribeTitles, type Title } from './titlesApi'
 
@@ -31,6 +32,8 @@ export function TitleList() {
     hide()
     requestAnimationFrame(() => window.scrollTo(0, listScroll.current))
   }
+
+  useBackfillDetails(titles)
 
   const load = useCallback(() => {
     listTitles(coupleId).then(

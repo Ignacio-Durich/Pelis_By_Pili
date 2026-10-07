@@ -20,6 +20,10 @@ export type Title = {
   status: 'to_watch' | 'watched'
   watchedAt: string | null
   scores: Score[]
+  runtime: number | null
+  genres: string[]
+  streaming: string[]
+  detailsUpdatedAt: string | null
 }
 
 export type Score = { userId: string; score: number; note: string | null; updatedAt: string }
@@ -53,6 +57,10 @@ type Row = {
   status: 'to_watch' | 'watched'
   watched_at: string | null
   title_scores: { user_id: string; score: number | string; note: string | null; updated_at: string }[]
+  runtime: number | null
+  genres: string[] | null
+  streaming: string[] | null
+  details_updated_at: string | null
 }
 
 export async function listTitles(coupleId: string): Promise<Title[]> {
@@ -87,6 +95,10 @@ export async function listTitles(coupleId: string): Promise<Title[]> {
       note: sc.note,
       updatedAt: sc.updated_at,
     })),
+    runtime: r.runtime,
+    genres: r.genres ?? [],
+    streaming: r.streaming ?? [],
+    detailsUpdatedAt: r.details_updated_at,
   }))
 }
 
