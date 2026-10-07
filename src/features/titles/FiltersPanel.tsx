@@ -1,5 +1,15 @@
 import { useState } from 'react'
-import { activeCount, NO_FILTERS, type Filters } from './filters'
+import {
+  activeCount,
+  formatMinutes,
+  IMDB_RANGE,
+  imdbText,
+  NO_FILTERS,
+  RUNTIME_RANGE,
+  runtimeText,
+  type Filters,
+} from './filters'
+import { RangeSlider } from './RangeSlider'
 
 type Props = { value: Filters; options: { genres: string[]; platforms: string[] }; onChange: (f: Filters) => void }
 
@@ -8,15 +18,8 @@ const types = [
   ['movie', 'Películas'],
   ['tv', 'Series'],
 ] as const
-const durations = [
-  [90, 'Hasta 1 h 30'],
-  [120, 'Hasta 2 h'],
-  [150, 'Hasta 2 h 30'],
-] as const
-const imdbMins = [6, 7, 8]
 
 const toggle = (list: string[], item: string) => (list.includes(item) ? list.filter((x) => x !== item) : [...list, item])
-const toNumber = (v: string) => (v === '' ? null : Number(v))
 
 export function FiltersPanel({ value, options, onChange }: Props) {
   const [open, setOpen] = useState(false)
@@ -38,26 +41,22 @@ export function FiltersPanel({ value, options, onChange }: Props) {
               </button>
             ))}
           </div>
-          <label>
-            Duración
-            <select value={value.maxRuntime ?? ''} onChange={(e) => set({ maxRuntime: toNumber(e.target.value) })}>
-              <option value="">Cualquiera</option>
-              {durations.map(([minutes, label]) => (
-                <option key={minutes} value={minutes}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Puntaje IMDb
-            <select value={value.minImdb ?? ''} onChange={(e) => set({ minImdb: toNumber(e.target.value) })}>
-              <option value="">Cualquiera</option>
-              {imdbMins.map((n) => (
-                <option key={n} value={n}>{`${n} o más`}</option>
-              ))}
-            </select>
-          </label>
+          <RangeSlider
+            label="Duración"
+            {...RUNTIME_RANGE}
+            value={value.runtime}
+            text={runtimeText(value.runtime)}
+            format={formatMinutes}
+            onChange={(runtime) => set({ runtime })}
+          />
+          <RangeSlider
+            label="IMDb"
+            {...IMDB_RANGE}
+            value={value.imdb}
+            text={imdbText(value.imdb)}
+            format={String}
+            onChange={(imdb) => set({ imdb })}
+          />
           <Chips label="Géneros" options={options.genres} chosen={value.genres} onToggle={(g) => set({ genres: toggle(value.genres, g) })} />
           <Chips
             label="Plataformas"
