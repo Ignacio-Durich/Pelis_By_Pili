@@ -467,3 +467,30 @@ button.chip[aria-pressed='true'] {
   pointer-events: auto;
   cursor: pointer;
 }
+
+.wheel {
+  display: flex;
+  justify-content: center;
+}
+
+.wheel svg {
+  width: min(300px, 80vw);
+  height: auto;
+  overflow: visible;
+}
+
+.wheel text {
+  font-size: 9px;
+  font-weight: 600;
+  fill: #1b1b2f;
+}
+
+.wheel-pointer {
+  fill: #f4f4f8;
+  stroke: #1b1b2f;
+  stroke-width: 2;
+}
+
+.spinning {
+  text-align: center;
+}
