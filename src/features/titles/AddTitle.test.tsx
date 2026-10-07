@@ -145,3 +145,12 @@ test.each([
   await act(async () => fireEvent.click(screen.getByRole('button', { name: /Mi pobre angelito/ })))
   expect(screen.getByRole('alert')).toHaveTextContent(text)
 })
+
+test('clearing the search while it is in flight does not leave Buscando… on screen', async () => {
+  api.searchTitles.mockImplementation(() => new Promise(() => {}))
+  renderAdd()
+  await typeQuery('parasite')
+  expect(screen.getByText('Buscando…')).toBeInTheDocument()
+  await typeQuery('')
+  expect(screen.queryByText('Buscando…')).not.toBeInTheDocument()
+})

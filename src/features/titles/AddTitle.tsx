@@ -66,6 +66,8 @@ export function AddTitle({ coupleId, titles, onClose }: Props) {
   }
 
   const existing = new Map(titles.map((t) => [keyOf(t), t]))
+  // Con menos de 2 letras no hay búsqueda en curso: lo que haya quedado de antes no se muestra.
+  const active = query.trim().length >= 2
 
   return (
     <section className="add-title">
@@ -85,30 +87,31 @@ export function AddTitle({ coupleId, titles, onClose }: Props) {
         <input maxLength={200} placeholder="Ej.: un reel, una recomendación" value={note} onChange={(e) => setNote(e.target.value)} />
       </label>
       <button onClick={onClose}>Volver</button>
-      {searching && <p>Buscando…</p>}
-      {searchFailed && <p role="alert">No se pudo buscar. Probá de nuevo.</p>}
+      {active && searching && <p>Buscando…</p>}
+      {active && searchFailed && <p role="alert">No se pudo buscar. Probá de nuevo.</p>}
       {addError && <p role="alert">{addMessages[addError]}</p>}
-      {!searching && results?.length === 0 && <p>No encontramos nada con ese nombre</p>}
+      {active && !searching && results?.length === 0 && <p>No encontramos nada con ese nombre</p>}
       <ul className="title-list">
-        {results?.map((r) => {
-          const key = keyOf(r)
-          const inList = existing.get(key)
-          const status = added.includes(key)
-            ? '✓ Agregada'
-            : inList
-              ? `Ya está en la lista (la agregó ${nameOf(inList.addedBy)})`
-              : null
-          return (
-            <li key={key}>
-              <button className="result" disabled={!!inList || added.includes(key) || busyKey !== null} onClick={() => add(r)}>
-                <TitleCard title={r.title} originalTitle={r.originalTitle} year={r.year} mediaType={r.mediaType} posterPath={r.posterPath}>
-                  {r.overview && <small className="overview">{r.overview}</small>}
-                  {status && <small>{status}</small>}
-                </TitleCard>
-              </button>
-            </li>
-          )
-        })}
+        {active &&
+          results?.map((r) => {
+            const key = keyOf(r)
+            const inList = existing.get(key)
+            const status = added.includes(key)
+              ? '✓ Agregada'
+              : inList
+                ? `Ya está en la lista (la agregó ${nameOf(inList.addedBy)})`
+                : null
+            return (
+              <li key={key}>
+                <button className="result" disabled={!!inList || added.includes(key) || busyKey !== null} onClick={() => add(r)}>
+                  <TitleCard title={r.title} originalTitle={r.originalTitle} year={r.year} mediaType={r.mediaType} posterPath={r.posterPath}>
+                    {r.overview && <small className="overview">{r.overview}</small>}
+                    {status && <small>{status}</small>}
+                  </TitleCard>
+                </button>
+              </li>
+            )
+          })}
       </ul>
     </section>
   )
