@@ -75,6 +75,13 @@ export function TitleList() {
     ?.filter((t) => t.status === tab)
     .sort((a, b) => (tab === 'watched' ? (b.watchedAt ?? '').localeCompare(a.watchedAt ?? '') : 0))
 
+  const emptyText =
+    tab === 'watched'
+      ? 'Todavía no vieron nada juntos'
+      : titles?.length
+        ? 'No queda nada por ver'
+        : 'Nuestra lista está vacía'
+
   // "Nacho 8,75 · Pili —"
   const ourScores = (t: Title) =>
     members
@@ -102,7 +109,7 @@ export function TitleList() {
         </>
       )}
       {titles === null && !offline && <p>Cargando…</p>}
-      {shown?.length === 0 && <p>{tab === 'to_watch' ? 'Nuestra lista está vacía' : 'Todavía no vieron nada juntos'}</p>}
+      {shown?.length === 0 && <p>{emptyText}</p>}
       {removeFailed && <p role="alert">No se pudo quitar. Probá de nuevo.</p>}
       <ul className="title-list">
         {shown?.map((t) => (

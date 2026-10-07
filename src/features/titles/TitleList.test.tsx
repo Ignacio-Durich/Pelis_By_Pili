@@ -233,3 +233,10 @@ test('the open detail follows the list when it reloads', async () => {
   await act(async () => notify())
   expect(await screen.findByText('Vista el 7/10/2026')).toBeInTheDocument()
 })
+
+test('when everything was watched, Por ver says there is nothing left instead of an empty list', async () => {
+  api.listTitles.mockResolvedValue([{ ...angelito, status: 'watched', watchedAt: '2026-10-07T20:00:00Z' }])
+  renderList()
+  expect(await screen.findByText('No queda nada por ver')).toBeInTheDocument()
+  expect(screen.queryByText('Nuestra lista está vacía')).not.toBeInTheDocument()
+})
