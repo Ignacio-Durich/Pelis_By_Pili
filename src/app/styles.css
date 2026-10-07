@@ -389,3 +389,81 @@ button.chip[aria-pressed='true'] {
 .vetoes button {
   flex: 1;
 }
+
+.range {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.range-head {
+  display: flex;
+  justify-content: space-between;
+}
+
+.range-head small {
+  color: #ffb703;
+}
+
+/* Dos deslizadores superpuestos: la pista va en el contenedor y solo los "pulgares" reciben toques. */
+.range-track {
+  position: relative;
+  height: 36px;
+}
+
+.range-track::before,
+.range-track::after {
+  content: '';
+  position: absolute;
+  top: 16px;
+  height: 4px;
+  border-radius: 2px;
+}
+
+.range-track::before {
+  left: 0;
+  right: 0;
+  background: #44446a;
+}
+
+.range-track::after {
+  left: var(--from);
+  right: calc(100% - var(--to));
+  background: #ffb703;
+}
+
+.range-track input[type='range'] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  -webkit-appearance: none;
+  appearance: none;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.range-track input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #ffb703;
+  border: 2px solid #1b1b2f;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.range-track input[type='range']::-moz-range-thumb {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #ffb703;
+  border: 2px solid #1b1b2f;
+  pointer-events: auto;
+  cursor: pointer;
+}

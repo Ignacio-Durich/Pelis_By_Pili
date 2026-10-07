@@ -14,7 +14,7 @@ function open(value: Filters = NO_FILTERS, opts = options) {
 }
 
 test('the Filtros button shows how many are active and toggles the panel', () => {
-  render(<FiltersPanel value={{ ...NO_FILTERS, type: 'tv', minImdb: 7 }} options={options} onChange={onChange} />)
+  render(<FiltersPanel value={{ ...NO_FILTERS, type: 'tv', imdb: [7, 10] }} options={options} onChange={onChange} />)
   const toggle = screen.getByRole('button', { name: 'Filtros (2)' })
   expect(screen.queryByText('Tipo')).not.toBeInTheDocument()
   fireEvent.click(toggle)
@@ -30,18 +30,19 @@ test('type buttons', () => {
   expect(onChange).toHaveBeenCalledWith({ ...NO_FILTERS, type: 'tv' })
 })
 
-test('duration and IMDb selects', () => {
-  open()
-  const duration = screen.getByLabelText('Duración')
-  expect([...duration.querySelectorAll('option')].map((o) => o.textContent)).toEqual(['Cualquiera', 'Hasta 1 h 30', 'Hasta 2 h', 'Hasta 2 h 30'])
-  fireEvent.change(duration, { target: { value: '120' } })
-  expect(onChange).toHaveBeenLastCalledWith({ ...NO_FILTERS, maxRuntime: 120 })
-  const imdb = screen.getByLabelText('Puntaje IMDb')
-  expect([...imdb.querySelectorAll('option')].map((o) => o.textContent)).toEqual(['Cualquiera', '6 o más', '7 o más', '8 o más'])
-  fireEvent.change(imdb, { target: { value: '7' } })
-  expect(onChange).toHaveBeenLastCalledWith({ ...NO_FILTERS, minImdb: 7 })
-  fireEvent.change(imdb, { target: { value: '' } })
-  expect(onChange).toHaveBeenLastCalledWith({ ...NO_FILTERS, minImdb: null })
+test('duration and IMDb are range bars with their texts', () => {
+  open({ ...NO_FILTERS, runtime: [60, 150] })
+  expect(screen.getByText('Entre 1 h y 2 h 30')).toBeInTheDocument()
+  expect(screen.getByText('Cualquier puntaje')).toBeInTheDocument()
+  expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
+  const maxRuntime = screen.getByRole('slider', { name: 'Duración máximo' })
+  expect(maxRuntime).toHaveAttribute('step', '30')
+  fireEvent.change(maxRuntime, { target: { value: '120' } })
+  expect(onChange).toHaveBeenLastCalledWith({ ...NO_FILTERS, runtime: [60, 120] })
+  const minImdb = screen.getByRole('slider', { name: 'IMDb mínimo' })
+  expect(minImdb).toHaveAttribute('step', '1')
+  fireEvent.change(minImdb, { target: { value: '7' } })
+  expect(onChange).toHaveBeenLastCalledWith({ ...NO_FILTERS, runtime: [60, 150], imdb: [7, 10] })
 })
 
 test('genre and platform chips toggle', () => {
