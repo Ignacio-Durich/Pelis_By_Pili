@@ -8,6 +8,7 @@ const api = vi.hoisted(() => ({
   addTitle: vi.fn(),
   searchTitles: vi.fn(),
   unsubscribe: vi.fn(),
+  fetchTitleDetail: vi.fn(),
 }))
 vi.mock('./titlesApi', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./titlesApi')>()),
@@ -17,6 +18,7 @@ vi.mock('./titlesApi', async (importOriginal) => ({
   addTitle: api.addTitle,
 }))
 vi.mock('./searchApi', () => ({ searchTitles: api.searchTitles }))
+vi.mock('./detailApi', () => ({ fetchTitleDetail: api.fetchTitleDetail }))
 vi.mock('../../lib/supabase', () => ({ supabase: {} }))
 
 import { withCouple } from '../../test/providers'
@@ -40,13 +42,14 @@ const angelito: Title = {
   tmdbRating: 7.4,
   ratingsUpdatedAt: '2026-10-07T13:00:00Z',
 }
-const sinDatos: Title = { ...angelito, id: 't2', tmdbId: 5, mediaType: 'tv', title: 'Serie rara', originalTitle: 'Serie rara', year: null, posterPath: null, originNote: null, addedBy: 'u1' }
+const sinDatos: Title = { ...angelito, id: 't2', tmdbId: 5, mediaType: 'tv', title: 'Serie rara', originalTitle: 'Serie rara', year: null, posterPath: null, originNote: null, addedBy: 'u1', imdbRating: null, rottenTomatoes: null }
 
 let notify: () => void
 
 beforeEach(() => {
   vi.resetAllMocks()
   api.listTitles.mockResolvedValue([])
+  api.fetchTitleDetail.mockReturnValue(new Promise(() => {}))
   api.subscribeTitles.mockImplementation((_coupleId: string, onChange: () => void) => {
     notify = onChange
     return api.unsubscribe
@@ -140,6 +143,23 @@ test('the + button opens Agregar', async () => {
   renderList()
   fireEvent.click(await screen.findByRole('button', { name: 'Agregar' }))
   expect(screen.getByRole('heading', { name: 'Agregar' })).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: 'Volver' }))
+  expect(screen.getByRole('heading', { name: 'Por ver' })).toBeInTheDocument()
+})
+
+test('each card shows the IMDb and Rotten Tomatoes scores, or — when missing', async () => {
+  api.listTitles.mockResolvedValue([angelito, sinDatos])
+  renderList()
+  expect(await screen.findByText('IMDb 7.7 · RT 67%')).toBeInTheDocument()
+  expect(screen.getByText('IMDb — · RT —')).toBeInTheDocument()
+})
+
+test('tapping a card opens its detail and Volver returns', async () => {
+  api.listTitles.mockResolvedValue([angelito])
+  renderList()
+  fireEvent.click(await screen.findByRole('button', { name: 'Ver Mi pobre angelito' }))
+  expect(screen.getByRole('heading', { name: 'Mi pobre angelito' })).toBeInTheDocument()
+  expect(screen.getByText('Cargando el detalle…')).toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: 'Volver' }))
   expect(screen.getByRole('heading', { name: 'Por ver' })).toBeInTheDocument()
 })

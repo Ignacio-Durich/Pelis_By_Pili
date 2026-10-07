@@ -56,7 +56,12 @@ export function Settings() {
         <p>{`Son dos personas en este espacio${together}`}</p>
       )}
       <button onClick={() => signOut()}>Cerrar sesión</button>
-      <p className="attribution">This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
+      <section className="attribution">
+        <img src="/tmdb-logo.svg" alt="TMDB" />
+        <p>This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
+        <p>Datos de dónde ver cada título: JustWatch.</p>
+        <p>Puntajes de IMDb, Rotten Tomatoes y Metacritic vía OMDb API (CC BY-NC 4.0). No afiliado con IMDb.</p>
+      </section>
     </>
   )
 }
