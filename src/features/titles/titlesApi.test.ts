@@ -120,19 +120,24 @@ test('removeTitle deletes by id and maps errors to network', async () => {
   expect(await kindOf(removeTitle('t1'))).toBe('network')
 })
 
-test('subscribeTitles listens to filtered inserts and unfiltered deletes, and reloads on subscribe', () => {
+test('subscribeTitles listens to filtered inserts and unfiltered deletes', () => {
   const onChange = vi.fn()
   const stop = subscribeTitles('c1', onChange)
-  const bindings = db.channel.on.mock.calls.map(([, filter]) => filter)
+  const bindings = db.channel.on.mock.calls.filter(([type]) => type === 'postgres_changes').map(([, filter]) => filter)
   expect(bindings).toContainEqual({ event: 'INSERT', schema: 'public', table: 'titles', filter: 'couple_id=eq.c1' })
   expect(bindings).toContainEqual({ event: 'DELETE', schema: 'public', table: 'titles' })
-
-  for (const [, , handler] of db.channel.on.mock.calls) handler({})
+  for (const [type, , handler] of db.channel.on.mock.calls) if (type === 'postgres_changes') handler({})
   expect(onChange).toHaveBeenCalledTimes(2)
-  const statusCallback = db.channel.subscribe.mock.lastCall?.[0]
-  statusCallback('SUBSCRIBED')
-  expect(onChange).toHaveBeenCalledTimes(3)
-
   stop()
   expect(db.removeChannel).toHaveBeenCalledWith(db.channel)
+})
+
+test('reloads when the server is listening to the database, not merely when the channel joins', () => {
+  const onChange = vi.fn()
+  subscribeTitles('c1', onChange)
+  const system = db.channel.on.mock.calls.find(([type]) => type === 'system')?.[2]
+  system({ extension: 'postgres_changes', status: 'error', message: 'falló' })
+  expect(onChange).not.toHaveBeenCalled()
+  system({ extension: 'postgres_changes', status: 'ok', message: 'Subscribed to PostgreSQL' })
+  expect(onChange).toHaveBeenCalledTimes(1)
 })

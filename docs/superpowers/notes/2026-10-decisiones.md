@@ -69,7 +69,7 @@ Cada línea: decisión — motivo — costo si está mal.
 
 ## Task 1
 - Realtime no filtra los `DELETE` (y con RLS solo manda el `id` del borrado), así que la app escucha los `INSERT` filtrados por espacio y los `DELETE` sin filtro, y ante cualquiera vuelve a pedir la lista. Verificado en local: un tercero de otro espacio recibe solo `{ id }` de los borrados ajenos, nunca el título ni el espacio — costo: cada borrado de cualquier espacio hace que las demás apps recarguen su lista (con dos personas, nada).
-- Justo después de `npx supabase db reset`, Realtime local tarda unos segundos en tomar la tabla publicada y el primer test de tiempo real puede fallar; en la corrida siguiente pasa (reproducido dos veces). No es un error del código — si molesta, esperar unos segundos tras el reset.
+- ~~Justo después de `db reset`, Realtime tarda en tomar la tabla~~ Corregido (ver Task 5, "Realtime"): la causa real era el hueco entre `SUBSCRIBED` y el momento en que el servidor empieza a escuchar la base.
 - Los `db push` de las Tasks 1 y 2 se piden juntos a Nacho, para molestarlo una sola vez — ninguno.
 
 ## Task 2
@@ -86,3 +86,5 @@ Cada línea: decisión — motivo — costo si está mal.
 - El Supabase local usa la misma plantilla de email con `{{ .Token }}` que el proyecto real (`supabase/templates/codigo.html`, configurada en `supabase/config.toml`), para poder entrar a la app en local con el código que llega al buzón local (Mailpit) — ninguno.
 - `npx vite --mode test` levanta la app contra el Supabase local (usa `.env.test.local`) — ninguno.
 - La lista se pide al montar y además cada vez que Realtime se (re)conecta; al arrancar se pide dos veces — más simple que coordinar las dos — una consulta de más al abrir.
+- **Realtime:** el canal avisa `SUBSCRIBED` al unirse, pero el servidor empieza a escuchar la base un momento después y lo avisa con un mensaje de sistema ("Subscribed to PostgreSQL"; medido: ~8 ms sin carga, más con carga). Un título agregado en ese hueco no llegaba. La app ahora recarga la lista con ese aviso y no con `SUBSCRIBED`, y el test de seguridad espera lo mismo. Antes del cambio el test fallaba de forma intermitente (con la suite completa y siempre tras reiniciar la base); después, 6 de 6 corridas seguidas en verde, incluida la primera tras reiniciar — ninguno.
+- En `supabase/config.toml` (solo el Supabase local) `sign_in_sign_ups` sube de 30 a 1000 cada 5 minutos: cada corrida de los tests de seguridad hace entrar a ~15 usuarios. Contra el proyecto real conviene correrlos de a una vez: la cuarta corrida seguida chocó con el límite de Supabase — ninguno.

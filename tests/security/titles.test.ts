@@ -85,9 +85,12 @@ function listen(user: User, name: string) {
     .channel(name)
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'titles', filter: `couple_id=eq.${coupleA}` }, (p) => inserts.push(p))
     .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'titles' }, (p) => deletes.push(p))
+  // Listo cuando el servidor ya escucha la base, igual que la app (subscribeTitles), no al unirse al canal.
   const ready = new Promise<void>((resolve, reject) => {
+    channel.on('system', {}, (p: { extension?: string; status?: string }) => {
+      if (p.extension === 'postgres_changes' && p.status === 'ok') resolve()
+    })
     channel.subscribe((status) => {
-      if (status === 'SUBSCRIBED') resolve()
       if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') reject(new Error(status))
     })
   })
