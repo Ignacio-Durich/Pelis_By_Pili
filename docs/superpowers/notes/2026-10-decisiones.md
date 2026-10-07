@@ -66,3 +66,8 @@ Cada línea: decisión — motivo — costo si está mal.
 ## Task 0
 - `npm run test:security` corre contra el Supabase local (`npx supabase start`, en Docker vía OrbStack) y `npm run test:security:remote` contra el proyecto real — así los tests no tocan la base donde ya están los datos de Nacho y Pili — si el stack local no está levantado, los tests fallan por conexión: `npx supabase start`.
 - `.env.test.local` (ignorado por git) se genera desde `npx supabase status -o env` y copia `TMDB_API_KEY` y `OMDB_API_KEY` de `.env.local` — Vite le da prioridad sobre `.env.local` en el modo `test` — ninguno.
+
+## Task 1
+- Realtime no filtra los `DELETE` (y con RLS solo manda el `id` del borrado), así que la app escucha los `INSERT` filtrados por espacio y los `DELETE` sin filtro, y ante cualquiera vuelve a pedir la lista. Verificado en local: un tercero de otro espacio recibe solo `{ id }` de los borrados ajenos, nunca el título ni el espacio — costo: cada borrado de cualquier espacio hace que las demás apps recarguen su lista (con dos personas, nada).
+- Justo después de `npx supabase db reset`, Realtime local tarda unos segundos en tomar la tabla publicada y el primer test de tiempo real puede fallar; en la corrida siguiente pasa (reproducido dos veces). No es un error del código — si molesta, esperar unos segundos tras el reset.
+- Los `db push` de las Tasks 1 y 2 se piden juntos a Nacho, para molestarlo una sola vez — ninguno.
