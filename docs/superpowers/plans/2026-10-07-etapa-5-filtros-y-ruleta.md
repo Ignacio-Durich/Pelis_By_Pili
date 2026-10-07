@@ -26,12 +26,12 @@
   - El título vetado no vuelve a salir en esa sesión, pero sigue en la lista.
   - Sin vetos disponibles, el resultado queda firme.
   - Al salir de la pestaña "Elegir", o al cambiar un filtro, la sesión empieza de nuevo.
-- Decisiones de este plan a confirmar con Nacho:
+- Decisiones confirmadas por Nacho el 2026-10-07:
   - **Se guarda dónde se puede ver cada título, como lista de nombres de plataformas.** La spec (sección 5) decía que la disponibilidad no se guardaba y se consultaba al abrir el detalle, pero para filtrar por plataforma toda la lista hace falta tenerla. Se guardan solo las de suscripción y las gratis, y se renuevan como mucho cada 7 días. El detalle sigue consultándolas en vivo.
   - **Duración:** las películas usan su duración y las series la de un episodio (TMDB no trae duración promedio, así que se toma la del último episodio emitido). El filtro es un máximo: "Cualquiera", "Hasta 1 h 30", "Hasta 2 h", "Hasta 2 h 30".
   - **Puntaje mínimo de IMDb:** "Cualquiera", "6 o más", "7 o más", "8 o más".
   - **Géneros y plataformas:** se eligen entre los que aparecen en la lista "Por ver"; un título pasa si tiene alguno de los elegidos.
-  - **Con un filtro activo, un título sin ese dato no pasa.** Por ejemplo, con "Netflix" elegido no pasa un título sin plataformas conocidas. Sin filtros, se ven todos.
+  - **Con un filtro activo, un título sin ese dato no pasa.** Con "Netflix" elegido aparecen solo los títulos que están en Netflix (pedido de Nacho): ni los de otras plataformas ni los que no tienen plataformas conocidas. Con dos plataformas elegidas, aparecen los que están en alguna de las dos. Sin filtros, se ven todos.
   - **Los filtros aplican a "Por ver" y a la ruleta**, no a "Vistas". No se guardan entre usos de la app.
   - **"Elegir" es una pestaña nueva** de la barra de abajo (Lista, Elegir, Ajustes). Por ahora muestra solo la ruleta; el menú de modos llega cuando haya un segundo modo.
   - **Al vetar, la ruleta gira sola otra vez.** No hay otro "girar de nuevo": así los vetos sí cuentan.
