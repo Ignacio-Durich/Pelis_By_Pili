@@ -427,3 +427,6 @@ enabled = true
 # Así un deploy o un serve sin --no-verify-jwt no rompe la búsqueda.
 [functions.tmdb-search]
 verify_jwt = false
+
+[functions.title-detail]
+verify_jwt = false

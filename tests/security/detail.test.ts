@@ -1,0 +1,66 @@
+import type { SupabaseClient } from '@supabase/supabase-js'
+import { afterAll, beforeAll, expect, test } from 'vitest'
+import type { TitleDetail } from '../../supabase/functions/title-detail/lib.ts'
+import { anonClient, cleanup, createCouple, createTestUser } from './helpers.ts'
+
+type User = { id: string; client: SupabaseClient }
+let A: User, B: User, C: User
+let parasite: string, dark: string
+
+async function detail(client: SupabaseClient, titleId: unknown) {
+  const { data, error } = await client.functions.invoke<TitleDetail>('title-detail', { body: { titleId } })
+  return { data, status: (error?.context as Response | undefined)?.status }
+}
+
+beforeAll(async () => {
+  ;[A, B, C] = await Promise.all([createTestUser(), createTestUser(), createTestUser()])
+  const couple = await createCouple(A, B)
+  await createCouple(C)
+  const add = async (tmdb_id: number, media_type: string, title: string) => {
+    const { data, error } = await A.client.from('titles').insert({ couple_id: couple, tmdb_id, media_type, title }).select('id').single()
+    if (error) throw error
+    return data.id as string
+  }
+  parasite = await add(496243, 'movie', 'Parásitos')
+  dark = await add(70523, 'tv', 'Dark')
+})
+afterAll(cleanup)
+
+test('a member gets the detail of a movie', async () => {
+  const { data } = await detail(B.client, parasite)
+  expect(data?.overview).not.toBe('')
+  expect(data?.ratings.imdb).toMatch(/^\d\.\d\/10$/)
+  expect(data?.ratings.rottenTomatoes).toMatch(/%$/)
+  expect(typeof data?.ratings.tmdb).toBe('number')
+  expect(data?.ratingsStale).toBe(false)
+  expect(data?.providers?.subscription[0]?.name).toBeTruthy()
+})
+
+test('the ratings are saved on the title with their date', async () => {
+  const { data } = await B.client.from('titles').select('imdb_rating, ratings_updated_at').eq('id', parasite).single()
+  expect(data?.imdb_rating).not.toBeNull()
+  expect(data?.ratings_updated_at).not.toBeNull()
+})
+
+test('a series without Rotten Tomatoes or Metacritic shows them as missing', async () => {
+  const { data } = await detail(A.client, dark)
+  expect(data?.ratings.imdb).toBeTruthy()
+  expect(data?.ratings.metacritic).toBeNull()
+})
+
+test('a second call within 7 days does not change the saved date', async () => {
+  const first = await detail(A.client, parasite)
+  const second = await detail(A.client, parasite)
+  expect(second.data?.ratings.updatedAt).toBe(first.data?.ratings.updatedAt)
+})
+
+test('outsiders get 404', async () => {
+  const { data, status } = await detail(C.client, parasite)
+  expect(status).toBe(404)
+  expect(data).toBeNull()
+})
+
+test('an invalid id gets 400 and anonymous callers get 401', async () => {
+  expect((await detail(A.client, 'abc')).status).toBe(400)
+  expect((await detail(anonClient(), parasite)).status).toBe(401)
+})
