@@ -58,3 +58,10 @@ Impacto en el plan: afecta ya a la Etapa 1, no solo a las siguientes. La novia d
 - Prueba de aceptación en los dos iPhones (Nacho y su novia), según Nacho, "funcionó todo": login con código de 6 dígitos desde la app instalada, creación del espacio, invitación por enlace aceptada en Safari, ingreso desde la app instalada, sesión conservada al cerrar y reabrir, cerrar sesión y volver a entrar.
 - Tercera persona: probado en local (Task 8) con el mismo enlace usado → "Esta invitación no es válida o ya se usó"; y por los tests de seguridad (nadie ajeno lee ni escribe nada del espacio).
 - Comportamiento esperado, no un error: quien acepta la invitación en Safari tiene que volver a pedir un código la primera vez que abre la app instalada, porque en iOS la app de la pantalla de inicio no comparte la sesión con Safari. Pasa una sola vez por persona. Posible mejora para más adelante: aceptar la invitación con un código escrito dentro de la app instalada.
+
+## Cierre de la Etapa 2 (2026-10-07)
+
+- Antes de publicar: `npm test` 116/116; `npm run test:security` 33/33 contra el Supabase local (seis corridas seguidas) y `npm run test:security:remote` 33/33 contra el proyecto real; typecheck y build sin errores.
+- Publicado en https://pelis-by-pili.netlify.app. `dist/` sin los nombres ni los valores de las claves secretas, y sin referencias al Supabase local. La función `tmdb-search` está desplegada en el proyecto real con el secreto `TMDB_API_KEY`; responde al preflight CORS desde la URL de Netlify.
+- Prueba de aceptación en los dos iPhones (Nacho y Pili), según Nacho, "funcionó todo": cada uno cargó su nombre; un título agregado por uno aparece en el otro sin recargar, con "La agregó <nombre>" y la nota; búsqueda por nombre en inglés; aviso "Ya está en la lista (la agregó …)"; la lista se pone al día al volver de segundo plano; quitar un título lo saca de los dos. Versiones de iOS: no informadas.
+- La etapa queda terminada: una persona agrega un título y a la otra le aparece sin recargar.
