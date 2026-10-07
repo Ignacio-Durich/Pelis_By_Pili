@@ -192,7 +192,15 @@ Puntos menores que dejaron las revisiones de las etapas anteriores. Se arreglan 
   - Con el límite de OMDb alcanzado, se descarta el puntaje de TMDB recién obtenido.
   - Accesibilidad: la tarjeta de la lista se anuncia solo como "Ver <título>"; los lectores de pantalla no leen los puntajes, quién la agregó ni la nota.
   - La versión de supabase-js en `title-detail` tampoco está fijada (mismo arreglo que en `tmdb-search`).
-- Se suman acá los puntos menores que dejen las revisiones de las etapas 4 a 11.
+- Entra, de la etapa 4:
+  - Un miembro puede crear un título directamente como visto, con cualquier fecha, o con puntajes externos inventados (solo en su propio espacio): el permiso de `insert` sobre `titles` cubre todas las columnas. Arreglo: permiso de `insert` solo sobre las columnas que carga la app, con su test.
+  - Si el tiempo real está caído, "Marcar como vista", "Volver a Por ver" y "Guardar" no muestran el cambio hasta que reconecta, y un doble toque manda dos pedidos (mismo origen que "Quitar no recarga la lista"; arreglar juntos con un `reload` explícito).
+  - "Guardado" sigue en pantalla después de volver a editar el puntaje o la nota.
+  - Si la pareja quita el título que uno tiene abierto, el detalle se cierra sin aviso, se pierde lo escrito y la lista no vuelve a su posición.
+  - Faltan tests de que `MyScore` conserva lo que uno está escribiendo cuando llega un cambio de la pareja, y de que el detalle se cierra si el título desaparece.
+  - Accesibilidad: el aviso de puntaje inválido no está asociado al campo (`aria-describedby`) y "Guardado" no se anuncia (`role="status"`).
+  - Más recargas por Realtime (puntajes y cambios de estado) hacen un poco más probable el desorden entre cargas de la lista ya anotado en la etapa 2.
+- Se suman acá los puntos menores que dejen las revisiones de las etapas 5 a 11.
 - Terminada cuando: cada punto tiene su test y está arreglado, o hay una decisión anotada de por qué se deja.
 - No entra: funciones nuevas.
 
