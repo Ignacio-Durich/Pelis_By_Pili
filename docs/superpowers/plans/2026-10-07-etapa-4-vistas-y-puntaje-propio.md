@@ -25,8 +25,10 @@
 - Interfaz en español rioplatense; los textos exactos están en cada tarea. Sin internet no se puede calificar (spec, sección 9).
 - Alcance estricto. **No entra:** ningún modo para elegir qué ver, filtros ni lista sin conexión.
 - Cada decisión fuera de este plan se anota en `docs/superpowers/notes/2026-10-decisiones.md`. Los puntos menores de la revisión final van a la Etapa 12 de la spec.
-- Decisiones de este plan a confirmar con Nacho (la spec no las fija):
-  - **Escala de 1 a 10, en números enteros:** se elige tocando un número. Es comparable con IMDb.
+- Decisiones confirmadas por Nacho el 2026-10-07 (la spec no las fija):
+  - **Escala del 1 al 10, con hasta 2 decimales** (por ejemplo, 8,75).
+    - Se escribe en un campo numérico; se acepta coma o punto.
+    - Se muestra con coma y sin ceros de más: "8", "8,5", "8,75".
   - **Solo se puntúa lo que ya vieron.** Antes de marcarla vista, el detalle dice cómo hacerlo.
   - **"Marcar como vista" vale para los dos:** la lista es de los dos y se ve junta.
     - La fecha es el día en que se marca, sin elegir otra.
@@ -62,7 +64,7 @@ Entradas o fallas que la spec implica y que más pueden molestar, de la más a l
     - `title_id uuid not null`, referencia a `titles` con `on delete cascade`.
     - `couple_id uuid not null`, referencia a `couples` con `on delete cascade`.
     - `user_id uuid not null`, referencia a `auth.users` con `on delete cascade`.
-    - `score smallint not null`, check entre 1 y 10.
+    - `score numeric(4,2) not null`, check entre 1 y 10.
     - `note text`, check largo ≤ 200.
     - `updated_at timestamptz not null default now()`.
     - `primary key (title_id, user_id)`.
@@ -74,10 +76,10 @@ Entradas o fallas que la spec implica y que más pueden molestar, de la más a l
     - Si el título no existe o no es del espacio de quien llama, lanza `not_found`.
     - Con `true`: `status = 'watched'`, `watched_at = now()`. Con `false`: `status = 'to_watch'`, `watched_at = null`.
     - Volver a marcar un título que ya estaba visto no cambia la fecha.
-  - **`set_my_score(p_title_id uuid, p_score smallint, p_note text) returns void`:**
+  - **`set_my_score(p_title_id uuid, p_score numeric, p_note text) returns void`:**
     - Mismo encabezado de seguridad.
     - Validaciones, en este orden:
-      1. Si el puntaje no está entre 1 y 10, lanza `invalid_score`.
+      1. Si el puntaje no está entre 1 y 10, o tiene más de 2 decimales (`round(p_score, 2) <> p_score`), lanza `invalid_score`.
       2. La nota se recorta y, si queda vacía, pasa a `null`. Si tiene más de 200 caracteres, lanza `invalid_note`.
       3. Si el título no existe o no es del espacio de quien llama, lanza `not_found`.
       4. Si el título no está visto, lanza `not_watched`.
@@ -98,10 +100,10 @@ En `tests/security/scores.test.ts`: A y B comparten un espacio, C tiene uno prop
   - Un `insert`, un `update` y un `delete` directos en `title_scores` hechos por A también fallan.
 - `scoring needs the title to be watched`: `set_my_score(T, 8, null)` con T sin ver → `not_watched`.
 - `each one scores separately and sees the other`:
-  - Con T visto, A guarda `(8, '  Buenísima ')` y B guarda `(6, '')`.
-  - Los dos leen dos filas: la de A con `note = 'Buenísima'` y la de B con `note = null`.
+  - Con T visto, A guarda `(8.75, '  Buenísima ')` y B guarda `(6, '')`.
+  - Los dos leen dos filas: la de A con `score = 8.75` y `note = 'Buenísima'`, y la de B con `note = null`.
   - A cambia a 9: sigue habiendo una sola fila de A, con 9, y la de B sigue en 6.
-- `invalid scores and notes are rejected`: 0 y 11 → `invalid_score`; una nota de 201 caracteres → `invalid_note`.
+- `invalid scores and notes are rejected`: 0.99, 10.01 y 8.755 → `invalid_score`; 1 y 10 se aceptan; una nota de 201 caracteres → `invalid_note`.
 - `scores survive undoing watched and disappear with the title`:
   - `set_watched(T, false)` deja las filas de `title_scores`.
   - Borrar T, con A y un `delete` directo, las borra.
@@ -139,7 +141,7 @@ git add supabase/migrations tests/security && git commit -m "feat: vistas y punt
   - **`Title` suma:**
     - `status: 'to_watch' | 'watched'`
     - `watchedAt: string | null`
-    - `scores: Score[]`, con `export type Score = { userId: string; score: number; note: string | null; updatedAt: string }`.
+    - `scores: Score[]`, con `export type Score = { userId: string; score: number; note: string | null; updatedAt: string }`. El `score` se convierte con `Number()`, porque `numeric` puede llegar como texto.
   - **`listTitles`:** pide `select('*, title_scores(user_id, score, note, updated_at)')`, mapea los puntajes y sigue ordenando por `created_at` de más nuevo a más viejo. El orden de "Vistas" lo resuelve la pantalla.
   - **`TitleErrorKind`** suma `'not_found' | 'not_watched' | 'invalid_score' | 'invalid_note'`.
   - **`setWatched(titleId: string, watched: boolean): Promise<void>`:** usa la RPC `set_watched`.
@@ -153,7 +155,8 @@ git add supabase/migrations tests/security && git commit -m "feat: vistas y punt
   - Pide el `select` con el embedding de `title_scores`.
   - Mapea `status`, `watched_at` y `title_scores` a `status`, `watchedAt` y `scores` (con `userId`, `score`, `note` y `updatedAt`).
 - **`setWatched('t1', true)`** llama a `rpc('set_watched', { p_title_id: 't1', p_watched: true })`.
-- **`setMyScore('t1', 8, 'buena')`** llama a `rpc('set_my_score', { p_title_id: 't1', p_score: 8, p_note: 'buena' })`.
+- **`setMyScore('t1', 8.75, 'buena')`** llama a `rpc('set_my_score', { p_title_id: 't1', p_score: 8.75, p_note: 'buena' })`.
+- **`listTitles`** convierte un `score` que llega como texto (`'8.75'`) en número.
 - **Errores:** `not_found`, `not_watched`, `invalid_score` e `invalid_note` conservan su tipo; un mensaje desconocido es `network`.
 - **`subscribeTitles`:** registra `INSERT` y `UPDATE` de `title_scores` con el filtro del espacio, y los dos llaman a `onChange`.
 
@@ -179,21 +182,27 @@ git add src && git commit -m "feat: vistas y puntajes en el cliente"
 
 **Files:**
 - Create: `src/features/titles/MyScore.tsx`
-- Modify: `src/features/titles/TitleList.tsx`, `src/features/titles/TitleDetail.tsx`, `src/app/styles.css`
-- Test: `src/features/titles/MyScore.test.tsx`; tests nuevos en `TitleList.test.tsx` y `TitleDetail.test.tsx`
+- Modify: `src/features/titles/ratings.ts` (agregar `formatScore` y `parseScore`), `src/features/titles/TitleList.tsx`, `src/features/titles/TitleDetail.tsx`, `src/app/styles.css`
+- Test: `src/features/titles/MyScore.test.tsx`; tests nuevos en `ratings.test.ts`, `TitleList.test.tsx` y `TitleDetail.test.tsx`
 
 **Interfaces:**
 - Consumes:
   - De la Task 2: `setWatched`, `setMyScore`, `Title`, `Score` y `TitleError`.
   - De etapas anteriores: `useUserId`, `useCouple` (con `members`), `useMemberName` y `ratingsDate`.
-- Produces: `MyScore(props: { titleId: string; current: Score | null }): JSX.Element`.
+- Produces:
+  - `MyScore(props: { titleId: string; current: Score | null }): JSX.Element`.
+  - En `ratings.ts`:
+    - `formatScore(n: number): string`: con coma y sin ceros de más. `8` → `'8'`, `8.5` → `'8,5'`, `8.75` → `'8,75'`.
+    - `parseScore(text: string): number | null`:
+      - Acepta coma o punto: `'8,75'` y `'8.75'` → `8.75`; `' 9 '` → `9`; `'10'` → `10`.
+      - Da `null` si no es un número del 1 al 10 con hasta 2 decimales: `'0,5'`, `'10,5'`, `'8,755'`, `'abc'` y `''`.
 
 - [ ] **Step 1: Escribir los tests que fallan** (APIs simuladas)
 
 - **`TitleList`:**
   - Arriba hay dos botones, "Por ver" y "Vistas" (`aria-pressed`). El encabezado `h2` dice el nombre de la pestaña elegida.
   - "Por ver" muestra solo los `to_watch`, como hoy. "Vistas" muestra solo los `watched`, del más reciente al más viejo según `watchedAt`.
-  - Una tarjeta de "Vistas" dice "Vista el 7/10/2026" y "Nacho 8 · Pili —": los nombres van en el orden de `members` y "—" marca a quien no puntuó.
+  - Una tarjeta de "Vistas" dice "Vista el 7/10/2026" y "Nacho 8,75 · Pili —": los nombres van en el orden de `members`, los puntajes con `formatScore`, y "—" marca a quien no puntuó.
   - "Vistas" sin títulos dice "Todavía no vieron nada juntos".
   - El botón "+" está solo en "Por ver".
 - **`TitleDetail`**, con un título `to_watch`:
@@ -202,15 +211,16 @@ git add src && git commit -m "feat: vistas y puntajes en el cliente"
 - **`TitleDetail`**, con un título `watched`:
   - Dice "Vista el 7/10/2026".
   - El botón "Volver a Por ver" llama a `setWatched(id, false)`.
-  - Encabezado "Nuestros puntajes", con una fila por miembro: "Pili: 6" y su nota si tiene, o "Pili: todavía no puntuó".
+  - Encabezado "Nuestros puntajes", con una fila por miembro: "Pili: 6,5" y su nota si tiene, o "Pili: todavía no puntuó".
   - `MyScore` recibe el puntaje propio, o `null` si no hay.
   - Si `setWatched` falla, muestra "No se pudo guardar. Probá de nuevo.".
 - **`MyScore`:**
   - Encabezado "Tu puntaje".
-  - Diez botones del 1 al 10 (`role="radio"`, `aria-checked` en el elegido), dentro de un `role="radiogroup"` con nombre "Tu puntaje".
+  - Campo "Del 1 al 10" con `inputMode="decimal"` y placeholder "Ej.: 8,75".
   - Campo "Una nota (opcional)", con `maxLength` 200.
-  - Botón "Guardar": deshabilitado sin número elegido o mientras guarda. Llama a `setMyScore(titleId, número, nota)`.
-  - Con `current` arranca con ese número y esa nota.
+  - Si lo escrito no es válido según `parseScore` (y el campo no está vacío), muestra "Poné un número del 1 al 10, con hasta 2 decimales".
+  - Botón "Guardar": deshabilitado mientras el puntaje no sea válido o mientras guarda. Llama a `setMyScore(titleId, parseScore(texto), nota)`.
+  - Con `current` arranca con su puntaje ya formateado ("8,75") y su nota.
   - Al guardar bien muestra "Guardado".
   - Errores:
     - `network` → "No se pudo guardar. Probá de nuevo.", y el número y la nota siguen en pantalla.
@@ -224,7 +234,7 @@ Expected: FAIL.
 
 - [ ] **Step 3: Implementar y verificar**
 
-Los botones del 1 al 10 entran en una fila de 390 px (32 px cada uno, separados 4 px). Después de marcar, desmarcar o guardar, la pantalla se actualiza sola por Realtime: el detalle recibe el `Title` actualizado de la lista.
+Después de marcar, desmarcar o guardar, la pantalla se actualiza sola por Realtime: el detalle recibe el `Title` actualizado de la lista.
 
 Run: `npm test && npm run typecheck && npx oxlint && npm run build`
 Expected: PASS.
@@ -265,8 +275,9 @@ Expected: `HTTP/2 200`, y el bundle publicado es el mismo que el local.
 - [ ] **Step 3: Prueba de aceptación con Nacho y Pili**
 
 1. Nacho marca como vista una película: pasa a "Vistas" en los dos iPhones, con la fecha.
-2. Nacho le pone 8 con una nota, y Pili le pone 6 desde su iPhone. Cada uno ve los dos puntajes en el detalle y en la tarjeta de "Vistas", sin recargar.
+2. Nacho le pone 8,75 con una nota, y Pili le pone 6,5 desde su iPhone. Cada uno ve los dos puntajes en el detalle y en la tarjeta de "Vistas", sin recargar.
 3. Pili cambia su puntaje a 7, y a Nacho le aparece el 7.
+5. Ajustes ya no queda tapado: el cartel "Powered by Netlify" está apagado desde el panel de Netlify.
 4. Uno la vuelve a "Por ver" y después la marca de nuevo: los puntajes siguen ahí.
 
 Anotar el resultado en las notas.
