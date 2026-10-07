@@ -277,8 +277,8 @@ Expected: `HTTP/2 200`, y el bundle publicado es el mismo que el local.
 1. Nacho marca como vista una película: pasa a "Vistas" en los dos iPhones, con la fecha.
 2. Nacho le pone 8,75 con una nota, y Pili le pone 6,5 desde su iPhone. Cada uno ve los dos puntajes en el detalle y en la tarjeta de "Vistas", sin recargar.
 3. Pili cambia su puntaje a 7, y a Nacho le aparece el 7.
-5. Ajustes ya no queda tapado: el cartel "Powered by Netlify" está apagado desde el panel de Netlify.
 4. Uno la vuelve a "Por ver" y después la marca de nuevo: los puntajes siguen ahí.
+5. Ajustes ya no queda tapado: el cartel "Powered by Netlify" está apagado desde el panel de Netlify.
 
 Anotar el resultado en las notas.
 
