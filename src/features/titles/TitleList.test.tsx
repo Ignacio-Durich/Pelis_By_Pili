@@ -163,3 +163,20 @@ test('tapping a card opens its detail and Volver returns', async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Volver' }))
   expect(screen.getByRole('heading', { name: 'Por ver' })).toBeInTheDocument()
 })
+
+test('the detail opens at the top and Volver returns to the same place in the list', async () => {
+  api.listTitles.mockResolvedValue([angelito])
+  const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
+  vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb) => {
+    cb(0)
+    return 0
+  })
+  renderList()
+  const open = await screen.findByRole('button', { name: 'Ver Mi pobre angelito' })
+  Object.defineProperty(window, 'scrollY', { value: 640, configurable: true })
+  fireEvent.click(open)
+  expect(scrollTo).toHaveBeenLastCalledWith(0, 0)
+  fireEvent.click(screen.getByRole('button', { name: 'Volver' }))
+  expect(scrollTo).toHaveBeenLastCalledWith(0, 640)
+  Object.defineProperty(window, 'scrollY', { value: 0, configurable: true })
+})
