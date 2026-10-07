@@ -2,12 +2,13 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Que Nacho o Pili busquen una película o serie por cualquiera de sus nombres (español latino, España o inglés), la agreguen con un toque (con nota de origen opcional) o la quiten, y que a la otra persona le aparezca el cambio en la lista "Por ver" sin recargar.
+**Goal:** Que Nacho o Pili (cada uno con su nombre visible) busquen una película o serie por cualquiera de sus nombres (español latino, España o inglés), la agreguen con un toque (con nota de origen opcional) o la quiten, y que a la otra persona le aparezca el cambio en la lista "Por ver" sin recargar.
 
 **Architecture:**
 - La búsqueda pasa por una Edge Function de Supabase (`tmdb-search`). La función valida la sesión y consulta TMDB en tres idiomas a la vez (`es-MX`, `es-AR` y `en-US`); el idioma cambia con qué nombres compara TMDB. Después une los resultados.
 - Los títulos viven en una tabla `titles` protegida por RLS con el mismo `is_member(couple_id)` de la etapa 1. El cliente inserta y borra directo: RLS controla el espacio y el autor, y una restricción `unique` impide duplicados.
 - La lista se actualiza con Supabase Realtime. Cualquier cambio, reconexión o vuelta de la app al frente vuelve a pedir la lista completa.
+- Cada miembro del espacio tiene un nombre visible (`couple_members.display_name`), que se carga una vez con la función SQL `set_display_name`; quien todavía no lo cargó lo ve pedido antes de entrar.
 - Los tests de seguridad corren contra un Supabase local en Docker (OrbStack), no contra el proyecto real.
 
 **Tech Stack:** lo de la etapa 1 (Vite, React, TypeScript, Vitest + Testing Library, Supabase) más Supabase Edge Functions (Deno), Supabase Realtime y el Supabase local del CLI (Docker vía OrbStack). Sin dependencias nuevas en `package.json`.
@@ -24,7 +25,7 @@
 - Cada decisión fuera de este plan se anota en `docs/superpowers/notes/2026-10-decisiones.md` con su motivo.
 - Decisiones confirmadas por Nacho el 2026-10-06:
   - La intermediaria con TMDB es una Edge Function de Supabase.
-  - "Quién la cargó" se muestra como "vos" o "tu pareja".
+  - "Quién la cargó" se muestra con el nombre de cada persona ("La agregó Pili", "La agregó Nacho"). Cada miembro carga su nombre una vez (pedido de Nacho el 2026-10-07).
   - La frase de atribución de TMDB va en Ajustes desde esta etapa. El logo y JustWatch quedan para la etapa 3.
   - **Quitar títulos de la lista** entra en esta etapa, aunque la spec no lo nombra. Cualquiera de los dos puede quitar cualquier título del espacio, con confirmación.
   - **Buscar por el nombre en inglés y por los nombres de cada región.**
@@ -37,11 +38,11 @@
 
 Entradas o fallas que la spec implica y que más pueden molestar, de la más a la menos probable:
 
-1. Buscar por otro nombre: el de España ("solo en casa"), el latino ("mi pobre angelito") o el inglés ("parasite", "wild tales"). El título aparece en la primera página de resultados y se muestra con su nombre latino y el original. Probado en la Task 2.
-2. Escribir rápido en el buscador: una respuesta vieja que llega tarde no pisa los resultados de la búsqueda actual. Probado en la Task 5.
-3. Los dos agregan el mismo título casi a la vez, o uno quita un título mientras el otro mira la lista: queda una sola fila, el segundo ve "Ya está en la lista" y la lista de los dos se pone al día. Probado en las Tasks 1 y 5.
-4. El celular vuelve de segundo plano o se cortó el Realtime: la lista se pone al día sola, al reconectar y al volver la app al frente. Probado en las Tasks 4 y 5.
-5. Resultados sin póster, sin año o sin sinopsis, algo frecuente en series y títulos viejos: se muestra un recuadro gris y se omite el dato, nunca "null" ni "undefined". Probado en la Task 5.
+1. Buscar por otro nombre: el de España ("solo en casa"), el latino ("mi pobre angelito") o el inglés ("parasite", "wild tales"). El título aparece en la primera página de resultados y se muestra con su nombre latino y el original. Probado en la Task 3.
+2. Escribir rápido en el buscador: una respuesta vieja que llega tarde no pisa los resultados de la búsqueda actual. Probado en la Task 6.
+3. Los dos agregan el mismo título casi a la vez, o uno quita un título mientras el otro mira la lista: queda una sola fila, el segundo ve "Ya está en la lista" y la lista de los dos se pone al día. Probado en las Tasks 1 y 6.
+4. El celular vuelve de segundo plano o se cortó el Realtime: la lista se pone al día sola, al reconectar y al volver la app al frente. Probado en las Tasks 5 y 6.
+5. Resultados sin póster, sin año o sin sinopsis, algo frecuente en series y títulos viejos: se muestra un recuadro gris y se omite el dato, nunca "null" ni "undefined". Probado en la Task 6.
 
 ---
 
@@ -159,7 +160,106 @@ Expected: la migración se aplica sin errores y los tests pasan también contra 
 git add supabase/migrations tests/security && git commit -m "feat: tabla de títulos con RLS y Realtime"
 ```
 
-### Task 2: Función de búsqueda en TMDB en tres idiomas
+### Task 2: Nombre de cada persona
+
+**Files:**
+- Create: `supabase/migrations/20261007000001_display_names.sql`, `src/features/auth/sessionContext.ts`, `src/features/couple/NameForm.tsx`
+- Modify:
+  - `src/features/auth/AuthGate.tsx`: envuelve a los hijos en `SessionContext`.
+  - `src/features/couple/coupleApi.ts`: `getMyCouple` devuelve los miembros; agrega `setDisplayName`.
+  - `src/features/couple/coupleContext.ts`: agrega `members` y `useMemberName`.
+  - `src/features/couple/CoupleGate.tsx`: pide el nombre si falta.
+  - `src/features/couple/messages.ts`: texto de `invalid_name`.
+  - `src/features/settings/Settings.tsx`: muestra los nombres.
+- Test: `tests/security/names.test.ts`, `src/features/couple/NameForm.test.tsx`; tests nuevos en `coupleApi.test.ts`, `CoupleGate.test.tsx`, `AuthGate.test.tsx` y `Settings.test.tsx`.
+
+**Interfaces:**
+- Produces (SQL):
+  - Columna `couple_members.display_name text null`, con check `display_name = btrim(display_name) and char_length(display_name) between 1 and 30`.
+  - Función `set_display_name(p_name text) returns void`, `security definer` con `set search_path = ''`, ejecutable solo por `authenticated`. Recorta `p_name` y actualiza solo la fila de quien llama.
+    - Si el nombre recortado queda vacío o pasa de 30 caracteres, lanza `invalid_name`.
+    - Si quien llama no tiene espacio, lanza `not_a_member`.
+  - Sigue sin haber políticas de `update` directo sobre `couple_members`.
+- Produces (cliente):
+  - `sessionContext.ts`:
+    - `export const SessionContext = createContext<Session | null>(null)`.
+    - `export function useUserId(): string`. Lanza un error si se usa fuera de `AuthGate`.
+    - `AuthGate` entrega la sesión a sus hijos con `SessionContext`.
+  - En `coupleApi.ts`:
+    - `CoupleErrorKind` suma `'invalid_name'`.
+    - `getMyCouple(): Promise<{ coupleId: string; memberCount: number; members: { userId: string; displayName: string | null }[] } | null>`. Lee `couple_id, user_id, display_name`.
+    - `setDisplayName(name: string): Promise<void>`. Usa la RPC `set_display_name` con `{ p_name: name }`.
+  - En `coupleContext.ts`:
+    - `Couple` suma `members`.
+    - `export function useMemberName(): (userId: string | null) => string`. Devuelve el `displayName` de ese miembro, o `'alguien'` si no lo encuentra (por ejemplo, una cuenta borrada).
+  - `NameForm(props: { onDone: () => void }): JSX.Element`.
+
+- [ ] **Step 1: Escribir los tests de seguridad que fallan**
+
+En `tests/security/names.test.ts`: A y B comparten un espacio, C tiene un espacio propio, y `afterAll(cleanup)`.
+- `a member sets their own name and the partner reads it`: A llama a `set_display_name('  Nacho ')`; B lee `display_name = 'Nacho'` en la fila de A.
+- `the name only changes the caller's row`: después de que A y B cargan sus nombres, el `display_name` de B sigue siendo el suyo.
+- `invalid names are rejected`: `''`, `'   '` y 31 caracteres → `invalid_name`.
+- `non-members cannot set a name`: un usuario sin espacio recibe `not_a_member`.
+- `outsiders cannot read names`: C no ve las filas del espacio de A.
+- `no direct updates`: A hace `update` directo de `display_name` → error.
+- `anonymous clients cannot call set_display_name`: el cliente anónimo recibe un error.
+
+- [ ] **Step 2: Verificar que fallan**
+
+Run: `npm run test:security -- tests/security/names.test.ts`
+Expected: FAIL (la columna y la función no existen).
+
+- [ ] **Step 3: Escribir la migración, aplicarla en local y verificar**
+
+Run: `npx supabase db reset && npm run test:security`
+Expected: PASS en todos los tests de seguridad.
+
+- [ ] **Step 4: Escribir los tests del cliente que fallan** (APIs simuladas)
+
+- `coupleApi`:
+  - `getMyCouple` devuelve `members` con `userId` y `displayName`.
+  - `setDisplayName` llama a la RPC `set_display_name` con `{ p_name }`.
+  - El error `invalid_name` se conserva como tal.
+- `AuthGate`: `with a session the children can read the user id`. Un hijo que muestra `useUserId()` ve `'u1'`.
+- `NameForm`:
+  - Muestra el encabezado "¿Cómo te llamás?", el texto "Así te va a ver tu pareja en la lista.", el campo "Tu nombre" (`maxLength` 30) y el botón "Guardar".
+  - "Guardar" está deshabilitado mientras el campo esté vacío o solo tenga espacios.
+  - Al guardar llama a `setDisplayName` con lo escrito y después a `onDone`.
+  - Si falla con `invalid_name` muestra "Escribí un nombre de hasta 30 letras"; con `network`, "Sin conexión. Probá de nuevo.".
+- `CoupleGate`:
+  - Si la fila del usuario actual tiene `displayName` null, muestra `NameForm` y no los hijos.
+  - Al terminar `NameForm`, vuelve a leer el espacio y muestra los hijos.
+  - Si el nombre que falta es el de la pareja, muestra los hijos igual.
+- `Settings`:
+  - Con dos miembros dice "Son dos personas en este espacio: Nacho y Pili", con el nombre propio primero.
+  - Si a alguno le falta el nombre, se lo omite: "Son dos personas en este espacio".
+- `useMemberName`: devuelve el nombre del miembro; con un id desconocido o `null`, `'alguien'`.
+
+- [ ] **Step 5: Verificar que fallan**
+
+Run: `npm test`
+Expected: FAIL.
+
+- [ ] **Step 6: Implementar y verificar**
+
+`CoupleGate` pide el nombre después de crear el espacio o unirse, antes de mostrar el inicio. Si a Nacho o a Pili les falta el nombre (las cuentas de la etapa 1), se lo pide la próxima vez que abren la app.
+
+Run: `npm test && npm run typecheck && npx oxlint`
+Expected: PASS.
+
+- [ ] **Step 7: Aplicar en el proyecto real (Nacho, en su terminal) y verificar**
+
+Run: `npx supabase db push`; después, `npm run test:security:remote`
+Expected: la migración se aplica sin errores y los tests pasan también contra el proyecto real.
+
+- [ ] **Step 8: Commit**
+
+```bash
+git add supabase/migrations tests/security src && git commit -m "feat: nombre visible de cada persona del espacio"
+```
+
+### Task 3: Función de búsqueda en TMDB en tres idiomas
 
 **Files:**
 - Create: `supabase/functions/tmdb-search/lib.ts`, `supabase/functions/tmdb-search/index.ts`
@@ -247,22 +347,18 @@ Expected: el despliegue termina sin errores y los tests pasan contra el proyecto
 git add supabase/functions vite.config.ts tsconfig.node.json tests/security && git commit -m "feat: función de búsqueda en TMDB en tres idiomas"
 ```
 
-### Task 3: API de títulos, búsqueda y usuario actual en el cliente
+### Task 4: API de títulos y búsqueda en el cliente
 
 **Files:**
-- Create: `src/features/auth/sessionContext.ts`, `src/features/titles/searchApi.ts`, `src/features/titles/titlesApi.ts`
-- Modify: `src/features/auth/AuthGate.tsx` (envuelve a los hijos en `SessionContext`)
-- Test: `src/features/titles/searchApi.test.ts`, `src/features/titles/titlesApi.test.ts`, `src/features/auth/AuthGate.test.tsx` (un test nuevo)
+- Create: `src/features/titles/searchApi.ts`, `src/features/titles/titlesApi.ts`
+- Test: `src/features/titles/searchApi.test.ts`, `src/features/titles/titlesApi.test.ts`
 
 **Interfaces:**
 - Consumes:
   - `supabase`, de `src/lib/supabase.ts`.
-  - `SearchResult`, de la Task 2, con `import type` desde `supabase/functions/tmdb-search/lib.ts`.
+  - `SearchResult`, de la Task 3, con `import type` desde `supabase/functions/tmdb-search/lib.ts`.
   - La tabla `titles`, de la Task 1.
 - Produces:
-  - `sessionContext.ts`:
-    - `export const SessionContext = createContext<Session | null>(null)`.
-    - `export function useUserId(): string`. Lanza un error si se usa fuera de `AuthGate`.
   - `searchApi.ts`: `export async function searchTitles(query: string): Promise<SearchResult[]>`. Llama a `supabase.functions.invoke('tmdb-search', { body: { query } })` y lanza `Error` ante cualquier fallo.
   - `titlesApi.ts`:
     - `export type Title = { id: string; tmdbId: number; mediaType: 'movie' | 'tv'; title: string; originalTitle: string | null; year: number | null; posterPath: string | null; originNote: string | null; addedBy: string | null; createdAt: string }`.
@@ -282,7 +378,6 @@ git add supabase/functions vite.config.ts tsconfig.node.json tests/security && g
       - Un canal con dos escuchas de `postgres_changes` sobre `public.titles`: `INSERT` con filtro `couple_id=eq.<coupleId>`, y `DELETE` sin filtro.
       - Llama a `onChange` en cada evento y cada vez que el estado del canal pasa a `SUBSCRIBED`, incluidas las reconexiones.
       - Devuelve la función que quita el canal.
-  - `AuthGate` entrega la sesión a sus hijos con `SessionContext`.
 
 - [ ] **Step 1: Escribir los tests que fallan** (cliente de Supabase simulado)
 
@@ -304,14 +399,13 @@ git add supabase/functions vite.config.ts tsconfig.node.json tests/security && g
     - Registra un `INSERT` filtrado y un `DELETE` sin filtro.
     - Llama a `onChange` ante cada evento y ante `SUBSCRIBED`.
     - La función que devuelve llama a `removeChannel`.
-- `AuthGate`: `with a session the children can read the user id`. Un hijo que muestra `useUserId()` ve `'u1'`.
 
 - [ ] **Step 2: Verificar que fallan**
 
-Run: `npm test -- src/features/titles src/features/auth`
+Run: `npm test -- src/features/titles`
 Expected: FAIL.
 
-- [ ] **Step 3: Implementar los tres módulos y el provider en `AuthGate`**
+- [ ] **Step 3: Implementar los dos módulos**
 
 - [ ] **Step 4: Verificar que pasan**
 
@@ -324,7 +418,7 @@ Expected: PASS.
 git add src && git commit -m "feat: API de títulos y búsqueda en el cliente"
 ```
 
-### Task 4: Pantallas de lista y agregar
+### Task 5: Pantallas de lista y agregar
 
 **Files:**
 - Create:
@@ -341,8 +435,8 @@ git add src && git commit -m "feat: API de títulos y búsqueda en el cliente"
 
 **Interfaces:**
 - Consumes:
-  - De la etapa 1: `useCouple`.
-  - De la Task 3: `useUserId`, `searchTitles`, `listTitles`, `addTitle`, `removeTitle`, `subscribeTitles`, `TitleError`, `Title` y `SearchResult`.
+  - De la Task 2: `useCouple` (con `members`) y `useMemberName`.
+  - De la Task 4: `searchTitles`, `listTitles`, `addTitle`, `removeTitle`, `subscribeTitles`, `TitleError`, `Title` y `SearchResult`.
 - Produces:
   - `TitleList(): JSX.Element`.
   - `AddTitle(props: { coupleId: string; titles: Title[]; onClose: () => void }): JSX.Element`.
@@ -356,7 +450,7 @@ git add src && git commit -m "feat: API de títulos y búsqueda en el cliente"
 - `TitleList`:
   - **Carga:** mientras carga muestra "Cargando…". Sin títulos muestra el encabezado "Por ver" y "Nuestra lista está vacía".
   - **Tarjetas:** cada título se muestra con `TitleCard`.
-    - Si `addedBy` es el usuario actual, dice "La agregaste vos"; si no, "La agregó tu pareja".
+    - Dice "La agregó <nombre>", con el nombre que devuelve `useMemberName(addedBy)` ("La agregó Pili").
     - Con `originNote` muestra "De dónde vino: <nota>".
     - Con `originalTitle` distinto muestra "Original: <nombre>".
     - Un título sin año ni póster no muestra "null" ni "undefined".
@@ -381,7 +475,7 @@ git add src && git commit -m "feat: API de títulos y búsqueda en el cliente"
     - Tocar un resultado llama a `addTitle(coupleId, resultado, nota)` una sola vez, aunque se toque dos veces seguidas.
     - Después, ese resultado muestra "✓ Agregada" y el campo de la nota se vacía.
   - **Ya está en la lista:** un resultado que ya está en `titles` (mismo `tmdbId` y `mediaType`):
-    - Muestra "Ya está en la lista (la agregaste vos)" o "Ya está en la lista (la agregó tu pareja)".
+    - Muestra "Ya está en la lista (la agregó <nombre>)".
     - Queda deshabilitado y no llama a `addTitle`.
   - **Errores al agregar:** si `addTitle` falla con `duplicate`, muestra "Ya está en la lista"; con `network`, "No se pudo agregar. Probá de nuevo.".
 - `Home`:
@@ -418,7 +512,7 @@ Run: `npm run dev`, contra el proyecto real. Hay que entrar con dos sesiones del
 
 Expected:
 - **Búsqueda:** "Relatos salvajes" aparece entre los primeros resultados. "Mi pobre angelito" aparece con "Original: Home Alone".
-- **Al agregar:** la otra ventana muestra el título sin recargar, con "La agregó tu pareja" y "De dónde vino: prueba".
+- **Al agregar:** la otra ventana muestra el título sin recargar, con "La agregó <nombre de la otra sesión>" y "De dónde vino: prueba".
 - **Al quitar:** desaparece en las dos ventanas sin recargar.
 
 Después, Nacho quita la cuenta de prueba desde el panel.
@@ -429,7 +523,7 @@ Después, Nacho quita la cuenta de prueba desde el panel.
 git add src && git commit -m "feat: lista Por ver en tiempo real, agregar y quitar"
 ```
 
-### Task 5: Publicación y aceptación en los dos iPhones
+### Task 6: Publicación y aceptación en los dos iPhones
 
 **Files:**
 - Modify: `docs/superpowers/notes/2026-10-verificacion-fuentes.md` (sección "Cierre de la Etapa 2")
@@ -449,9 +543,10 @@ Expected: `curl -sI https://pelis-by-pili.netlify.app | head -n 1` devuelve `HTT
 - [ ] **Step 3: Prueba de aceptación con Nacho y Pili en sus iPhones**
 
 Con las dos apps instaladas y abiertas:
-1. Nacho busca una película por su nombre en inglés y la agrega con una nota. En el iPhone de Pili aparece sin recargar, con "La agregó tu pareja" y la nota.
+0. Al abrir la app, cada uno ve una sola vez "¿Cómo te llamás?" y carga su nombre ("Nacho", "Pili"). En Ajustes dice "Son dos personas en este espacio: Nacho y Pili".
+1. Nacho busca una película por su nombre en inglés y la agrega con una nota. En el iPhone de Pili aparece sin recargar, con "La agregó Nacho" y la nota.
 2. Pili agrega una serie, y a Nacho le aparece sin recargar.
-3. Pili busca la película que agregó Nacho y ve "Ya está en la lista (la agregó tu pareja)".
+3. Pili busca la película que agregó Nacho y ve "Ya está en la lista (la agregó Nacho)".
 4. Nacho manda la app a segundo plano y Pili agrega otra. Cuando Nacho vuelve a la app, el título ya está.
 5. Pili quita uno de los títulos y desaparece también en el iPhone de Nacho.
 
