@@ -137,6 +137,9 @@ test('a result already in the list says who added it and cannot be added', async
     metacritic: null,
     tmdbRating: null,
     ratingsUpdatedAt: null,
+    status: 'to_watch',
+    watchedAt: null,
+    scores: [],
   }
   renderAdd([existing])
   await typeQuery('mi pobre')

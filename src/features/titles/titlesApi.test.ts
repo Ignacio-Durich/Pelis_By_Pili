@@ -10,14 +10,14 @@ const db = vi.hoisted(() => {
     delete: vi.fn(),
   }
   const channel = { on: vi.fn(), subscribe: vi.fn() }
-  return { query, channel, from: vi.fn(), channelFn: vi.fn(), removeChannel: vi.fn() }
+  return { query, channel, from: vi.fn(), channelFn: vi.fn(), removeChannel: vi.fn(), rpc: vi.fn() }
 })
 vi.mock('../../lib/supabase', () => ({
-  supabase: { from: db.from, channel: db.channelFn, removeChannel: db.removeChannel },
+  supabase: { from: db.from, channel: db.channelFn, removeChannel: db.removeChannel, rpc: db.rpc },
 }))
 
 import type { SearchResult } from '../../../supabase/functions/tmdb-search/lib.ts'
-import { addTitle, listTitles, removeTitle, subscribeTitles, TitleError } from './titlesApi'
+import { addTitle, listTitles, removeTitle, setMyScore, setWatched, subscribeTitles, TitleError } from './titlesApi'
 
 const row = {
   id: 't1',
@@ -35,6 +35,12 @@ const row = {
   metacritic: null,
   tmdb_rating: 7.4,
   ratings_updated_at: '2026-10-07T13:00:00Z',
+  status: 'watched',
+  watched_at: '2026-10-07T20:00:00Z',
+  title_scores: [
+    { user_id: 'u1', score: '8.75', note: 'Buenísima', updated_at: '2026-10-07T21:00:00Z' },
+    { user_id: 'u2', score: 6, note: null, updated_at: '2026-10-07T21:05:00Z' },
+  ],
 }
 const result: SearchResult = {
   tmdbId: 771,
@@ -83,8 +89,15 @@ test('listTitles maps the rows, filters by couple and orders newest first', asyn
       metacritic: null,
       tmdbRating: 7.4,
       ratingsUpdatedAt: '2026-10-07T13:00:00Z',
+      status: 'watched',
+      watchedAt: '2026-10-07T20:00:00Z',
+      scores: [
+        { userId: 'u1', score: 8.75, note: 'Buenísima', updatedAt: '2026-10-07T21:00:00Z' },
+        { userId: 'u2', score: 6, note: null, updatedAt: '2026-10-07T21:05:00Z' },
+      ],
     },
   ])
+  expect(db.query.select).toHaveBeenCalledWith('*, title_scores(user_id, score, note, updated_at)')
   expect(db.from).toHaveBeenCalledWith('titles')
   expect(db.query.eq).toHaveBeenCalledWith('couple_id', 'c1')
   expect(db.query.order).toHaveBeenCalledWith('created_at', { ascending: false })
@@ -141,7 +154,7 @@ test('subscribeTitles listens to filtered inserts and unfiltered deletes', () =>
   expect(bindings).toContainEqual({ event: 'DELETE', schema: 'public', table: 'titles' })
   expect(bindings).toContainEqual({ event: 'UPDATE', schema: 'public', table: 'titles', filter: 'couple_id=eq.c1' })
   for (const [type, , handler] of db.channel.on.mock.calls) if (type === 'postgres_changes') handler({})
-  expect(onChange).toHaveBeenCalledTimes(3)
+  expect(onChange).toHaveBeenCalledTimes(5)
   stop()
   expect(db.removeChannel).toHaveBeenCalledWith(db.channel)
 })
@@ -154,4 +167,35 @@ test('reloads when the server is listening to the database, not merely when the 
   expect(onChange).not.toHaveBeenCalled()
   system({ extension: 'postgres_changes', status: 'ok', message: 'Subscribed to PostgreSQL' })
   expect(onChange).toHaveBeenCalledTimes(1)
+})
+
+test('setWatched and setMyScore call their functions', async () => {
+  db.rpc.mockResolvedValue({ data: null, error: null })
+  await setWatched('t1', true)
+  expect(db.rpc).toHaveBeenLastCalledWith('set_watched', { p_title_id: 't1', p_watched: true })
+  await setMyScore('t1', 8.75, 'buena')
+  expect(db.rpc).toHaveBeenLastCalledWith('set_my_score', { p_title_id: 't1', p_score: 8.75, p_note: 'buena' })
+})
+
+test.each(['not_found', 'not_watched', 'invalid_score', 'invalid_note'])('the error %s keeps its kind', async (code) => {
+  db.rpc.mockResolvedValue({ data: null, error: { message: code } })
+  expect(await kindOf(setMyScore('t1', 5, ''))).toBe(code)
+  expect(await kindOf(setWatched('t1', true))).toBe(code)
+})
+
+test('an unknown error from the functions is network', async () => {
+  db.rpc.mockResolvedValue({ data: null, error: { message: 'Failed to fetch' } })
+  expect(await kindOf(setWatched('t1', false))).toBe('network')
+})
+
+test('subscribeTitles also listens to score changes of the couple', () => {
+  const onChange = vi.fn()
+  subscribeTitles('c1', onChange)
+  const scoreBindings = db.channel.on.mock.calls.filter(([type, filter]) => type === 'postgres_changes' && filter.table === 'title_scores')
+  expect(scoreBindings.map(([, filter]) => filter)).toEqual([
+    { event: 'INSERT', schema: 'public', table: 'title_scores', filter: 'couple_id=eq.c1' },
+    { event: 'UPDATE', schema: 'public', table: 'title_scores', filter: 'couple_id=eq.c1' },
+  ])
+  for (const [, , handler] of scoreBindings) handler({})
+  expect(onChange).toHaveBeenCalledTimes(2)
 })

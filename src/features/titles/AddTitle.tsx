@@ -3,11 +3,11 @@ import { useMemberName } from '../couple/coupleContext'
 import { fetchTitleDetail } from './detailApi'
 import { searchTitles, type SearchResult } from './searchApi'
 import { TitleCard } from './TitleCard'
-import { addTitle, TitleError, type Title, type TitleErrorKind } from './titlesApi'
+import { addTitle, TitleError, type Title } from './titlesApi'
 
 type Props = { coupleId: string; titles: Title[]; onClose: () => void }
 
-const addMessages: Record<TitleErrorKind, string> = {
+const addMessages: Record<'duplicate' | 'network', string> = {
   duplicate: 'Ya está en la lista',
   network: 'No se pudo agregar. Probá de nuevo.',
 }
@@ -24,7 +24,7 @@ export function AddTitle({ coupleId, titles, onClose }: Props) {
   const [searchFailed, setSearchFailed] = useState(false)
   const [busyKey, setBusyKey] = useState<string | null>(null)
   const [added, setAdded] = useState<string[]>([])
-  const [addError, setAddError] = useState<TitleErrorKind | null>(null)
+  const [addError, setAddError] = useState<'duplicate' | 'network' | null>(null)
   // La última consulta: una respuesta que llega tarde para una consulta vieja se descarta.
   const latest = useRef('')
 
@@ -62,7 +62,7 @@ export function AddTitle({ coupleId, titles, onClose }: Props) {
       setAdded((list) => [...list, keyOf(result)])
       setNote('')
     } catch (e) {
-      setAddError(e instanceof TitleError ? e.kind : 'network')
+      setAddError(e instanceof TitleError && e.kind === 'duplicate' ? 'duplicate' : 'network')
     } finally {
       setBusyKey(null)
     }
