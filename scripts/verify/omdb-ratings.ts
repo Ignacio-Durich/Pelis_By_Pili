@@ -1,6 +1,6 @@
 // Uso: npx tsx --env-file=.env.local scripts/verify/omdb-ratings.ts
 import { requireEnv } from '../lib/env.ts'
-import { summarizeOmdb } from './lib.ts'
+import { summarizeOmdb } from '../../supabase/functions/_shared/omdb.ts'
 
 const { OMDB_API_KEY } = requireEnv(['OMDB_API_KEY'])
 
