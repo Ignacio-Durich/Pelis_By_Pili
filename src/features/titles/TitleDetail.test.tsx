@@ -30,6 +30,9 @@ const parasitos: Title = {
   metacritic: null,
   tmdbRating: 8.5,
   ratingsUpdatedAt: '2026-09-30T15:00:00Z',
+  status: 'to_watch',
+  watchedAt: null,
+  scores: [],
 }
 const fresh: Detail = {
   overview: 'Una familia pobre se infiltra en una casa rica.',

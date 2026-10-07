@@ -17,9 +17,14 @@ export type Title = {
   metacritic: string | null
   tmdbRating: number | null
   ratingsUpdatedAt: string | null
+  status: 'to_watch' | 'watched'
+  watchedAt: string | null
+  scores: Score[]
 }
 
-export type TitleErrorKind = 'duplicate' | 'network'
+export type Score = { userId: string; score: number; note: string | null; updatedAt: string }
+
+export type TitleErrorKind = 'duplicate' | 'network' | 'not_found' | 'not_watched' | 'invalid_score' | 'invalid_note'
 
 export class TitleError extends Error {
   kind: TitleErrorKind
@@ -45,12 +50,15 @@ type Row = {
   metacritic: string | null
   tmdb_rating: number | string | null
   ratings_updated_at: string | null
+  status: 'to_watch' | 'watched'
+  watched_at: string | null
+  title_scores: { user_id: string; score: number | string; note: string | null; updated_at: string }[]
 }
 
 export async function listTitles(coupleId: string): Promise<Title[]> {
   const { data, error } = await supabase
     .from('titles')
-    .select('*')
+    .select('*, title_scores(user_id, score, note, updated_at)')
     .eq('couple_id', coupleId)
     .order('created_at', { ascending: false })
   if (error) throw new TitleError('network')
@@ -71,6 +79,14 @@ export async function listTitles(coupleId: string): Promise<Title[]> {
     // numeric de Postgres puede llegar como texto.
     tmdbRating: r.tmdb_rating === null ? null : Number(r.tmdb_rating),
     ratingsUpdatedAt: r.ratings_updated_at,
+    status: r.status,
+    watchedAt: r.watched_at,
+    scores: r.title_scores.map((sc) => ({
+      userId: sc.user_id,
+      score: Number(sc.score),
+      note: sc.note,
+      updatedAt: sc.updated_at,
+    })),
   }))
 }
 
@@ -94,6 +110,19 @@ export async function addTitle(coupleId: string, result: SearchResult, originNot
   return data.id
 }
 
+// Las funciones SQL lanzan excepciones cuyo mensaje es exactamente el código.
+const functionErrors: string[] = ['not_found', 'not_watched', 'invalid_score', 'invalid_note']
+
+async function call(name: string, args: Record<string, unknown>): Promise<void> {
+  const { error } = await supabase.rpc(name, args)
+  if (error) throw new TitleError(functionErrors.includes(error.message) ? (error.message as TitleErrorKind) : 'network')
+}
+
+export const setWatched = (titleId: string, watched: boolean) => call('set_watched', { p_title_id: titleId, p_watched: watched })
+
+export const setMyScore = (titleId: string, score: number, note: string) =>
+  call('set_my_score', { p_title_id: titleId, p_score: score, p_note: note })
+
 export async function removeTitle(id: string): Promise<void> {
   const { error } = await supabase.from('titles').delete().eq('id', id)
   if (error) throw new TitleError('network')
@@ -110,6 +139,8 @@ export function subscribeTitles(coupleId: string, onChange: () => void): () => v
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'titles', filter: `couple_id=eq.${coupleId}` }, () => onChange())
     .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'titles' }, () => onChange())
     .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'titles', filter: `couple_id=eq.${coupleId}` }, () => onChange())
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'title_scores', filter: `couple_id=eq.${coupleId}` }, () => onChange())
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'title_scores', filter: `couple_id=eq.${coupleId}` }, () => onChange())
     .on('system', {}, (payload: { extension?: string; status?: string }) => {
       if (payload.extension === 'postgres_changes' && payload.status === 'ok') onChange()
     })
