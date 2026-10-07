@@ -35,3 +35,13 @@ test('the Ajustes tab shows Settings', async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Lista' }))
   expect(await screen.findByRole('heading', { name: 'Por ver' })).toBeInTheDocument()
 })
+
+test('the bottom bar has Lista, Elegir and Ajustes, and filters are shared', async () => {
+  renderHome(2)
+  for (const name of ['Lista', 'Elegir', 'Ajustes']) expect(screen.getByRole('button', { name })).toBeInTheDocument()
+  fireEvent.click(await screen.findByRole('button', { name: 'Filtros' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Series' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Elegir' }))
+  expect(await screen.findByRole('heading', { name: 'Ruleta' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Filtros (1)' })).toBeInTheDocument()
+})
