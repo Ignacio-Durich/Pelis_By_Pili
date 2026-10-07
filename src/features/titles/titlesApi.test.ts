@@ -37,6 +37,10 @@ const row = {
   ratings_updated_at: '2026-10-07T13:00:00Z',
   status: 'watched',
   watched_at: '2026-10-07T20:00:00Z',
+  runtime: 103,
+  genres: ['Comedia', 'Familia'],
+  streaming: null,
+  details_updated_at: '2026-10-07T22:00:00Z',
   title_scores: [
     { user_id: 'u1', score: '8.75', note: 'Buenísima', updated_at: '2026-10-07T21:00:00Z' },
     { user_id: 'u2', score: 6, note: null, updated_at: '2026-10-07T21:05:00Z' },
@@ -95,6 +99,10 @@ test('listTitles maps the rows, filters by couple and orders newest first', asyn
         { userId: 'u1', score: 8.75, note: 'Buenísima', updatedAt: '2026-10-07T21:00:00Z' },
         { userId: 'u2', score: 6, note: null, updatedAt: '2026-10-07T21:05:00Z' },
       ],
+      runtime: 103,
+      genres: ['Comedia', 'Familia'],
+      streaming: [],
+      detailsUpdatedAt: '2026-10-07T22:00:00Z',
     },
   ])
   expect(db.query.select).toHaveBeenCalledWith('*, title_scores(user_id, score, note, updated_at)')
