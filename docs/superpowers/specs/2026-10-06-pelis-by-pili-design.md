@@ -168,6 +168,26 @@ Cada etapa se construye, se prueba y se cierra antes de empezar la siguiente. Cl
 - Terminada cuando: se agrega un título en modo avión y aparece en el otro celular al reconectar.
 - No entra: nada fuera de la carga y la calificación sin conexión.
 
+### Etapa 12 — Refinamiento
+Puntos menores que dejaron las revisiones de las etapas anteriores. Se arreglan al final, después de todas las demás etapas (pedido de Nacho, 2026-10-07). Cada uno lleva su test.
+- Entra, de la etapa 1:
+  - "Cerrar sesión" sin internet no hace nada; debería cerrar la sesión en el celular igual (`signOut({ scope: 'local' })`).
+  - Si falla "Copiar enlace", no se avisa nada (la promesa rechazada no se maneja).
+  - El test de seguridad de usuarios anónimos no comprueba específicamente el permiso denegado (código `42501`).
+  - Faltan tests contra la base real de un borrado directo en `couple_members` e `invites`, y de dos personas uniéndose al mismo espacio a la vez (hoy solo se probó en una base local de prueba).
+  - Notas: registrar el SMTP de Gmail y las plantillas con `{{ .Token }}`, los límites del plan gratis de Netlify, y confirmar en el panel la regla de pausa de Supabase.
+- Entra, de la etapa 2:
+  - "Quitar" no recarga la lista por sí mismo: si el tiempo real está caído, el título sigue visible hasta que reconecta.
+  - Dos cargas de la lista al mismo tiempo pueden terminar en desorden y hacer reaparecer un título borrado.
+  - El nombre de la pareja no se actualiza mientras la app está abierta (el espacio se lee una sola vez).
+  - Cualquier cuenta registrada, aunque no tenga espacio, puede usar la búsqueda de TMDB.
+  - La consulta a TMDB no tiene tiempo límite.
+  - La versión de supabase-js que usa la función de búsqueda no está fijada.
+  - Los nombres guardan tabulaciones al principio o al final si se pegan así.
+- Se suman acá los puntos menores que dejen las revisiones de las etapas 3 a 11.
+- Terminada cuando: cada punto tiene su test y está arreglado, o hay una decisión anotada de por qué se deja.
+- No entra: funciones nuevas.
+
 Decisiones de orden: las etapas 0 a 4 son lo imprescindible para usar la app de verdad; los modos de un solo celular (ruleta y preguntas) van antes que los de a dos; el Atajo de iOS va después del swipe y match por decisión de Nacho, aunque técnicamente solo depende del buscador de la etapa 2.
 
 ## 12. Puntos a verificar al construir
