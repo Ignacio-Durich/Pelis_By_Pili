@@ -73,3 +73,11 @@ Impacto en el plan: afecta ya a la Etapa 1, no solo a las siguientes. La novia d
 - Rotten Tomatoes en series, con las claves reales: Breaking Bad sí (96%); Dark y The Office no. Metacritic no aparece en ninguna de las tres. La app muestra "—" en esos casos.
 - Prueba de aceptación en los dos iPhones (Nacho y Pili), según Nacho, "funcionó todo": puntajes en la tarjeta sin abrirla, detalle de una película y una serie con sinopsis, los cuatro puntajes con fecha y dónde verla en Argentina con "Fuente: JustWatch", y las tres atribuciones en Ajustes. Qué serie abrieron y si tenía Rotten Tomatoes: no informado.
 - La etapa queda terminada: una película y una serie muestran sus puntajes y las atribuciones están visibles.
+
+## Cierre de la Etapa 4 (2026-10-07)
+
+- Antes de publicar: `npm test` 174/174; `npm run test:security` 54/54 contra el Supabase local y `npm run test:security:remote` 54/54 contra el proyecto real (una sola corrida); typecheck y build sin errores.
+- Publicado en https://pelis-by-pili.netlify.app; `dist/` sin claves secretas ni la URL local.
+- El cartel "Powered by Netlify" quedó apagado desde el panel (Project configuration → General → Powered by Netlify badge): Netlify ya no inyecta su script en la página.
+- Prueba de aceptación en los dos iPhones (Nacho y Pili), según Nacho, "funcionó todo": pestañas "Por ver" y "Vistas", marcar vista y deshacer sin perder puntajes, puntajes con decimales de cada uno visibles para el otro sin recargar, aviso ante un puntaje inválido, y Ajustes sin el cartel.
+- La etapa queda terminada: cada uno califica por separado y ve el puntaje del otro.
