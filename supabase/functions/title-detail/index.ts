@@ -1,7 +1,19 @@
 // Edge Function (Deno): detalle de un título de la lista (sinopsis, puntajes y plataformas en AR).
 // Los puntajes se guardan en el título y se renuevan como mucho una vez por semana.
 import { createClient } from 'npm:@supabase/supabase-js@2'
-import { mergeRatings, needsRefresh, parseTitleId, pickImdbId, pickOverview, tmdbScoreOf, toProviders, type TitleDetail } from './lib.ts'
+import {
+  mergeRatings,
+  needsRefresh,
+  parseTitleId,
+  pickGenres,
+  pickImdbId,
+  pickOverview,
+  pickRuntime,
+  streamingNames,
+  tmdbScoreOf,
+  toProviders,
+  type TitleDetail,
+} from './lib.ts'
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -70,24 +82,30 @@ Deno.serve(async (req) => {
     }))
   }
   const { ratings, stale, save } = mergeRatings(stored, omdb, tmdbScoreOf(details), now)
-  if (save) {
-    await service
-      .from('titles')
-      .update({
+  const providers = toProviders(details['watch/providers']?.results?.AR)
+  // Datos para los filtros: se guardan en cada apertura (TMDB ya se consultó).
+  await service
+    .from('titles')
+    .update({
+      runtime: pickRuntime(details),
+      genres: pickGenres(details),
+      streaming: streamingNames(providers),
+      details_updated_at: now.toISOString(),
+      ...(save && {
         imdb_rating: ratings.imdb,
         rotten_tomatoes: ratings.rottenTomatoes,
         metacritic: ratings.metacritic,
         tmdb_rating: ratings.tmdb,
         ratings_updated_at: ratings.updatedAt,
-      })
-      .eq('id', titleId)
-  }
+      }),
+    })
+    .eq('id', titleId)
 
   const body: TitleDetail = {
     overview: pickOverview(details),
     ratings,
     ratingsStale: stale,
-    providers: toProviders(details['watch/providers']?.results?.AR),
+    providers,
   }
   return json(200, body)
 })

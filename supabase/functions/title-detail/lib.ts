@@ -90,3 +90,25 @@ export function pickOverview(details: { overview?: string; translations?: { tran
   }
   return ''
 }
+
+type RuntimeFields = { runtime?: number | null; episode_run_time?: number[]; last_episode_to_air?: { runtime?: number | null } | null }
+
+// Películas: su duración. Series: la de un episodio (TMDB suele traer episode_run_time vacío,
+// así que se usa la del último episodio emitido).
+export function pickRuntime(details: RuntimeFields): number | null {
+  if (details.runtime && details.runtime > 0) return details.runtime
+  const episode = details.episode_run_time?.find((m) => m > 0)
+  if (episode) return episode
+  const last = details.last_episode_to_air?.runtime
+  return last && last > 0 ? last : null
+}
+
+export function pickGenres(details: { genres?: { name: string }[] }): string[] {
+  return [...new Set((details.genres ?? []).map((g) => g.name))]
+}
+
+// Dónde se puede ver sin pagar aparte: suscripción y gratis.
+export function streamingNames(providers: Providers | null): string[] {
+  if (!providers) return []
+  return [...new Set([...providers.subscription, ...providers.free].map((p) => p.name))]
+}

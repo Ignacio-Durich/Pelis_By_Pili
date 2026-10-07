@@ -71,3 +71,17 @@ test('a title without an es-AR synopsis gets one from another language', async (
   const { data } = await detail(A.client, aew)
   expect(data?.overview).not.toBe('')
 })
+
+test('the detail saves runtime, genres and streaming on the title', async () => {
+  await detail(B.client, parasite)
+  const { data } = await B.client.from('titles').select('runtime, genres, streaming, details_updated_at').eq('id', parasite).single()
+  expect(data?.runtime).toBe(132)
+  expect(data?.genres).toContain('Drama')
+  expect(data?.streaming.length).toBeGreaterThan(0)
+  expect(data?.details_updated_at).not.toBeNull()
+})
+
+test('members cannot write the filter data', async () => {
+  const { error } = await A.client.from('titles').update({ runtime: 1 }).eq('id', parasite)
+  expect(error).not.toBeNull()
+})
