@@ -184,7 +184,15 @@ Puntos menores que dejaron las revisiones de las etapas anteriores. Se arreglan 
   - La consulta a TMDB no tiene tiempo límite.
   - La versión de supabase-js que usa la función de búsqueda no está fijada.
   - Los nombres guardan tabulaciones al principio o al final si se pegan así.
-- Se suman acá los puntos menores que dejen las revisiones de las etapas 3 a 11.
+- Entra, de la etapa 3:
+  - Si OMDb responde un error que no es el límite diario (por ejemplo, una falla puntual), se borran los puntajes guardados y quedan en "—" hasta una semana. Con puntajes guardados, debería tratarse como el límite: mostrar los guardados con el aviso.
+  - Si falla el guardado de los puntajes, no queda registro y cada apertura vuelve a consultar OMDb.
+  - Agregar un título y abrirlo enseguida consulta OMDb dos veces.
+  - "Reintentar" en el detalle no muestra "Cargando el detalle…" mientras reintenta.
+  - Con el límite de OMDb alcanzado, se descarta el puntaje de TMDB recién obtenido.
+  - Accesibilidad: la tarjeta de la lista se anuncia solo como "Ver <título>"; los lectores de pantalla no leen los puntajes, quién la agregó ni la nota.
+  - La versión de supabase-js en `title-detail` tampoco está fijada (mismo arreglo que en `tmdb-search`).
+- Se suman acá los puntos menores que dejen las revisiones de las etapas 4 a 11.
 - Terminada cuando: cada punto tiene su test y está arreglado, o hay una decisión anotada de por qué se deja.
 - No entra: funciones nuevas.
 
