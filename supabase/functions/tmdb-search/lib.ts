@@ -36,7 +36,11 @@ export function parseQuery(body: unknown): string | null {
   return trimmed.length >= 2 && trimmed.length <= 100 ? trimmed : null
 }
 
-export function mergeSearches(byLanguage: Record<Language, unknown[]>): SearchResult[] {
+// Minúsculas y sin acentos, para comparar "Parásitos" con "parasitos".
+const normalize = (text: string) => text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim()
+
+export function mergeSearches(byLanguage: Record<Language, unknown[]>, query = ''): SearchResult[] {
+  const wanted = normalize(query)
   const found = new Map<string, { best: number; byLanguage: Partial<Record<Language, TmdbItem>> }>()
   for (const language of SEARCH_LANGUAGES) {
     const items = (byLanguage[language] as TmdbItem[]).filter((i) => i.media_type === 'movie' || i.media_type === 'tv')
@@ -56,7 +60,10 @@ export function mergeSearches(byLanguage: Record<Language, unknown[]>): SearchRe
     .map(({ best, byLanguage: entry }) => {
       const any = (entry['es-MX'] ?? entry['es-AR'] ?? entry['en-US'])!
       const date = any.release_date ?? any.first_air_date
+      const names = Object.values(entry).flatMap((i) => [i.title, i.name, i.original_title, i.original_name])
       return {
+        // Si lo escrito coincide exacto con algún nombre del título, va primero.
+        exact: wanted !== '' && names.some((n) => n !== undefined && normalize(n) === wanted),
         best,
         popularity: any.popularity ?? 0,
         result: {
@@ -70,7 +77,7 @@ export function mergeSearches(byLanguage: Record<Language, unknown[]>): SearchRe
         },
       }
     })
-    .sort((a, b) => a.best - b.best || b.popularity - a.popularity)
+    .sort((a, b) => Number(b.exact) - Number(a.exact) || a.best - b.best || b.popularity - a.popularity)
     .slice(0, 20)
     .map((r) => r.result)
 }

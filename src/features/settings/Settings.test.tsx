@@ -61,3 +61,8 @@ test('a missing name is left out', () => {
   render(withCouple(<Settings />, [nacho, { userId: 'u2', displayName: null }]))
   expect(screen.getByText('Son dos personas en este espacio')).toBeInTheDocument()
 })
+
+test('shows the TMDB attribution', () => {
+  renderSettings(2)
+  expect(screen.getByText('This product uses the TMDB API but is not endorsed or certified by TMDB.')).toBeInTheDocument()
+})

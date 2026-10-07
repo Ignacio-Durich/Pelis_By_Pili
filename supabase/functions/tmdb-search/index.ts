@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
         return [language, (await res.json()).results ?? []] as const
       }),
     )
-    return json(200, { results: mergeSearches(Object.fromEntries(pages) as Parameters<typeof mergeSearches>[0]) })
+    return json(200, { results: mergeSearches(Object.fromEntries(pages) as Parameters<typeof mergeSearches>[0], query) })
   } catch {
     return json(502, { error: 'upstream' })
   }
