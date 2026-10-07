@@ -2,6 +2,11 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { expect, test, vi } from 'vitest'
 
 vi.mock('../lib/supabase', () => ({ supabase: {} }))
+vi.mock('../features/titles/titlesApi', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../features/titles/titlesApi')>()),
+  listTitles: vi.fn().mockResolvedValue([]),
+  subscribeTitles: vi.fn().mockReturnValue(() => {}),
+}))
 
 import { nacho, pili, withCouple } from '../test/providers'
 import { Home } from './Home'
@@ -10,13 +15,11 @@ function renderHome(memberCount: number) {
   render(withCouple(<Home />, memberCount === 1 ? [nacho] : [nacho, pili]))
 }
 
-test('the Lista tab shows the empty list and nothing else', () => {
+test('the Lista tab shows the title list', async () => {
   renderHome(2)
   expect(screen.getByRole('heading', { name: 'Pelis By Pili' })).toBeInTheDocument()
-  expect(screen.getByText('Nuestra lista está vacía')).toBeInTheDocument()
+  expect(await screen.findByRole('heading', { name: 'Por ver' })).toBeInTheDocument()
   expect(screen.queryByText('Esperando a tu pareja')).not.toBeInTheDocument()
-  expect(screen.queryByRole('searchbox')).not.toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: '+' })).not.toBeInTheDocument()
 })
 
 test('with one member shows Esperando a tu pareja', () => {
@@ -24,11 +27,11 @@ test('with one member shows Esperando a tu pareja', () => {
   expect(screen.getByText('Esperando a tu pareja')).toBeInTheDocument()
 })
 
-test('the Ajustes tab shows Settings', () => {
+test('the Ajustes tab shows Settings', async () => {
   renderHome(2)
   fireEvent.click(screen.getByRole('button', { name: 'Ajustes' }))
   expect(screen.getByRole('button', { name: 'Cerrar sesión' })).toBeInTheDocument()
-  expect(screen.queryByText('Nuestra lista está vacía')).not.toBeInTheDocument()
+  expect(screen.queryByRole('heading', { name: 'Por ver' })).not.toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: 'Lista' }))
-  expect(screen.getByText('Nuestra lista está vacía')).toBeInTheDocument()
+  expect(await screen.findByRole('heading', { name: 'Por ver' })).toBeInTheDocument()
 })

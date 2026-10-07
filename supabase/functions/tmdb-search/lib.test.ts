@@ -77,3 +77,14 @@ test('parseQuery trims and validates', () => {
   }
   expect(parseQuery({ query: 'x'.repeat(100) })).toBe('x'.repeat(100))
 })
+
+test('an exact name match in any language goes first, ignoring case and accents', () => {
+  const sequel = { media_type: 'movie', id: 772, title: 'Mi pobre angelito 2', original_title: 'Home Alone 2', popularity: 99 }
+  const original = { media_type: 'movie', id: 771, title: 'Mi pobre angelito', original_title: 'Home Alone', popularity: 50 }
+  const parasite = { media_type: 'movie', id: 496243, title: 'Parásitos', original_title: '기생충', popularity: 10 }
+  const ranked = (query: string) => mergeSearches({ 'es-MX': [sequel, original, parasite], 'es-AR': [], 'en-US': [] }, query).map((r) => r.tmdbId)
+  expect(ranked('Mi pobre angelito')[0]).toBe(771)
+  expect(ranked('home alone')[0]).toBe(771)
+  expect(ranked('PARASITOS')[0]).toBe(496243)
+  expect(ranked('mi pobre')[0]).toBe(772)
+})

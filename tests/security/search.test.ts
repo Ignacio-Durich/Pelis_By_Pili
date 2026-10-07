@@ -39,3 +39,8 @@ test('a one-letter query is rejected', async () => {
 test('anonymous callers get 401', async () => {
   expect((await search(anonClient(), 'parasite')).status).toBe(401)
 })
+
+test('an exact name goes first', async () => {
+  const { results } = await search(client, 'mi pobre angelito')
+  expect(results[0]).toMatchObject({ tmdbId: 771, mediaType: 'movie' })
+})

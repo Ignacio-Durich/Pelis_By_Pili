@@ -56,6 +56,7 @@ export function Settings() {
         <p>{`Son dos personas en este espacio${together}`}</p>
       )}
       <button onClick={() => signOut()}>Cerrar sesión</button>
+      <p className="attribution">This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
     </>
   )
 }

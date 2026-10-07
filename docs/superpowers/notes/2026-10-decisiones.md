@@ -80,3 +80,9 @@ Cada línea: decisión — motivo — costo si está mal.
 ## Task 3
 - Si un título solo aparece buscando en inglés, se muestra y se guarda con el nombre en inglés ("Parasite" y no "Parásitos") — evitar una consulta extra a TMDB por cada resultado — si molesta, pedir el detalle en `es-MX` al agregar.
 - La función responde 502 si falla cualquiera de las tres consultas a TMDB, en vez de devolver resultados parciales — más simple, y TMDB rara vez falla en un idioma solo — una búsqueda que podría haber mostrado algo muestra "No se pudo buscar".
+
+## Task 5
+- Si lo escrito coincide exacto con algún nombre del título (latino, España, inglés u original; sin importar mayúsculas ni acentos), ese resultado va primero. Agregado al ver en la prueba local que "mi pobre angelito" dejaba la original sexta, debajo de las secuelas — si molesta en algún caso, sacar ese criterio del orden.
+- El Supabase local usa la misma plantilla de email con `{{ .Token }}` que el proyecto real (`supabase/templates/codigo.html`, configurada en `supabase/config.toml`), para poder entrar a la app en local con el código que llega al buzón local (Mailpit) — ninguno.
+- `npx vite --mode test` levanta la app contra el Supabase local (usa `.env.test.local`) — ninguno.
+- La lista se pide al montar y además cada vez que Realtime se (re)conecta; al arrancar se pide dos veces — más simple que coordinar las dos — una consulta de más al abrir.

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useCouple } from '../features/couple/coupleContext'
 import { Settings } from '../features/settings/Settings'
+import { TitleList } from '../features/titles/TitleList'
 
 export function Home() {
   const { memberCount } = useCouple()
@@ -12,8 +13,8 @@ export function Home() {
         {tab === 'lista' ? (
           <>
             <h1>Pelis By Pili</h1>
-            <p>Nuestra lista está vacía</p>
             {memberCount === 1 && <p>Esperando a tu pareja</p>}
+            <TitleList />
           </>
         ) : (
           <Settings />

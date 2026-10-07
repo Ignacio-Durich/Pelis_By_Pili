@@ -19,10 +19,16 @@ vi.mock('../features/couple/coupleApi', async (importOriginal) => ({
   }),
 }))
 
+vi.mock('../features/titles/titlesApi', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../features/titles/titlesApi')>()),
+  listTitles: vi.fn().mockResolvedValue([]),
+  subscribeTitles: vi.fn().mockReturnValue(() => {}),
+}))
+
 import { App } from './App'
 
 test('with a session and a couple shows the home', async () => {
   render(<App />)
   expect(await screen.findByRole('heading', { name: 'Pelis By Pili' })).toBeInTheDocument()
-  expect(screen.getByText('Nuestra lista está vacía')).toBeInTheDocument()
+  expect(await screen.findByRole('heading', { name: 'Por ver' })).toBeInTheDocument()
 })
