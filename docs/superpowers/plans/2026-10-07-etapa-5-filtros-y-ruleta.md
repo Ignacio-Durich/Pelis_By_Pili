@@ -308,3 +308,74 @@ git add docs && git commit -m "docs: cierre de la Etapa 5"
 ```
 
 **Cierre de la Etapa 5:** la ruleta solo sugiere títulos que cumplen los filtros. **No entra** (no adelantar): modos de a dos, preguntas rápidas y lista sin conexión.
+
+---
+
+## Cambios pedidos por Nacho después de probar (2026-10-07)
+
+Se hacen antes de la prueba de aceptación (Task 5, paso 3), que se repite al final con estos cambios.
+
+### Task 6: Duración y puntaje IMDb como barras de rango
+
+**Files:**
+- Create: `src/features/titles/RangeSlider.tsx`
+- Modify: `src/features/titles/filters.ts`, `src/features/titles/FiltersPanel.tsx`, `src/app/styles.css`
+- Test: `src/features/titles/RangeSlider.test.tsx`; tests actualizados en `filters.test.ts` y `FiltersPanel.test.tsx`
+
+**Interfaces:**
+- `Filters` cambia `maxRuntime` y `minImdb` por:
+  - `runtime: [number, number]`, en minutos, de 0 a 240, de a 30. `[0, 240]` es "cualquiera".
+  - `imdb: [number, number]`, de 1 a 10, de a 1. `[1, 10]` es "cualquiera".
+- `NO_FILTERS` tiene `runtime: [0, 240]` e `imdb: [1, 10]`.
+- **`matchesFilters`:**
+  - Si un rango no es el completo, un título sin ese dato no pasa.
+  - El 0 de duración y el 1 de IMDb no ponen piso. El 240 de duración no pone techo ("4 h o más"). El 10 de IMDb sí, pero nada pasa de 10.
+  - Si no, el valor tiene que estar entre los dos extremos, incluidos.
+- **`activeCount`:** cada rango que no es el completo cuenta 1.
+- **`RangeSlider(props: { label: string; min: number; max: number; step: number; value: [number, number]; format: (v: number) => string; onChange: (v: [number, number]) => void })`:**
+  - Dos `input type="range"` superpuestos, con nombres "<label> mínimo" y "<label> máximo".
+  - Un extremo no puede pasar al otro: se frena en el valor del otro.
+  - Muestra el texto del rango elegido.
+- **Textos:**
+  - Duración: "Cualquier duración", "Hasta 2 h", "Desde 1 h 30" o "Entre 1 h y 2 h 30". Las horas se escriben "1 h", "1 h 30" y "30 min".
+  - IMDb: "Cualquier puntaje", "6 o más", "Hasta 8" o "Entre 6 y 8".
+
+- [ ] **Step 1: Tests que fallan.**
+  - **`filters.test.ts`:** los rangos (dentro, fuera, extremos incluidos, sin dato con rango activo, 240 sin techo) y `activeCount`.
+  - **`RangeSlider.test.tsx`:** mover cada extremo llama a `onChange`; un extremo no cruza al otro; muestra el texto.
+  - **`FiltersPanel.test.tsx`:** las barras "Duración" e "IMDb", con sus textos, reemplazan a los `select`.
+- [ ] **Step 2: Verificar que fallan.**
+- [ ] **Step 3: Implementar y verificar.** Run: `npm test && npm run typecheck && npx oxlint`.
+- [ ] **Step 4: Commit.**
+
+### Task 7: Ruleta animada
+
+**Files:**
+- Create: `src/features/choose/Wheel.tsx`, `src/features/choose/wheel.ts`
+- Modify: `src/features/choose/Roulette.tsx`, `src/app/styles.css`
+- Test: `src/features/choose/wheel.test.ts`, `src/features/choose/Wheel.test.tsx`; tests actualizados en `Roulette.test.tsx`
+
+**Interfaces:**
+- **`wheel.ts`:**
+  - `export function targetRotation(current: number, index: number, count: number, turns = 5): number`. Devuelve la rotación final en grados, siempre mayor que `current` y con al menos `turns` vueltas completas, tal que el centro del gajo `index` quede bajo la flecha de arriba.
+  - `export function shortLabel(title: string, max = 14): string`. Recorta con "…".
+- **`Wheel(props: { items: { id: string; label: string }[]; targetId: string | null; spinKey: number; onEnd: () => void })`:**
+  - Dibuja un SVG con un gajo por ítem, en colores alternados del tema, y una flecha arriba.
+  - Con hasta 12 ítems, cada gajo muestra `shortLabel`; con más, solo colores.
+  - Cada vez que cambia `spinKey`, gira hasta `targetRotation` con una transición CSS de 4 s, frenando al final. Al terminar (`transitionend`, o un tiempo de resguardo de 4,5 s) llama a `onEnd` una sola vez.
+  - Con `prefers-reduced-motion`, no anima y llama a `onEnd` enseguida.
+- **`Roulette`:**
+  - Muestra la rueda con los candidatos desde el principio.
+  - "Girar" y cada veto hacen girar la rueda hacia el elegido por `pick`.
+  - Mientras gira se muestra "Girando…" debajo de la rueda.
+  - "Les tocó" aparece cuando la rueda para.
+
+- [ ] **Step 1: Tests que fallan.**
+  - **`wheel.test.ts`:** `targetRotation` para varios `index`/`count`: el gajo queda bajo la flecha, la rotación crece y da al menos 5 vueltas. Además, `shortLabel`.
+  - **`Wheel.test.tsx`:** un gajo por ítem; nombres solo con 12 o menos; al cambiar `spinKey` aplica la rotación; `transitionend` llama a `onEnd` una vez; con movimiento reducido, `onEnd` enseguida.
+  - **`Roulette.test.tsx`:** la rueda está desde el principio; el resultado aparece después de que la rueda termina.
+- [ ] **Step 2: Verificar que fallan.**
+- [ ] **Step 3: Implementar y verificar.** Run: `npm test && npm run typecheck && npx oxlint && npm run build`, y una revisión visual en local de que gira y para en el título que aparece en "Les tocó".
+- [ ] **Step 4: Commit.**
+
+Después de las Tasks 6 y 7 se repiten los pasos 2 y 3 de la Task 5 (publicar y probar en los celulares).
