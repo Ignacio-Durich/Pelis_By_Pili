@@ -81,14 +81,17 @@ export async function removeTitle(id: string): Promise<void> {
 // Ante cualquier cambio, y al (re)conectar, se vuelve a pedir la lista entera: con dos personas
 // es poca data, y así no se pierde nada de lo que pasó mientras el celular estaba en segundo plano.
 // Realtime no filtra los DELETE, por eso esa escucha va sin filtro (con RLS solo trae el id).
+// La recarga va cuando el servidor avisa que ya escucha la base ("Subscribed to PostgreSQL"), que
+// llega un poco después de SUBSCRIBED: un cambio en ese hueco se perdería si se recargara antes.
 export function subscribeTitles(coupleId: string, onChange: () => void): () => void {
   const channel = supabase
     .channel(`titles:${coupleId}:${crypto.randomUUID()}`)
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'titles', filter: `couple_id=eq.${coupleId}` }, () => onChange())
     .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'titles' }, () => onChange())
-    .subscribe((status) => {
-      if (status === 'SUBSCRIBED') onChange()
+    .on('system', {}, (payload: { extension?: string; status?: string }) => {
+      if (payload.extension === 'postgres_changes' && payload.status === 'ok') onChange()
     })
+    .subscribe()
   return () => {
     supabase.removeChannel(channel)
   }
