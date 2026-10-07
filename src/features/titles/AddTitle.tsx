@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useMemberName } from '../couple/coupleContext'
+import { fetchTitleDetail } from './detailApi'
 import { searchTitles, type SearchResult } from './searchApi'
 import { TitleCard } from './TitleCard'
 import { addTitle, TitleError, type Title, type TitleErrorKind } from './titlesApi'
@@ -55,7 +56,9 @@ export function AddTitle({ coupleId, titles, onClose }: Props) {
     setBusyKey(keyOf(result))
     setAddError(null)
     try {
-      await addTitle(coupleId, result, note)
+      const id = await addTitle(coupleId, result, note)
+      // En segundo plano: la función guarda los puntajes y Realtime actualiza la tarjeta.
+      fetchTitleDetail(id).catch(() => {})
       setAdded((list) => [...list, keyOf(result)])
       setNote('')
     } catch (e) {

@@ -1,12 +1,13 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 
-const api = vi.hoisted(() => ({ addTitle: vi.fn(), searchTitles: vi.fn() }))
+const api = vi.hoisted(() => ({ addTitle: vi.fn(), searchTitles: vi.fn(), fetchTitleDetail: vi.fn() }))
 vi.mock('./titlesApi', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./titlesApi')>()),
   addTitle: api.addTitle,
 }))
 vi.mock('./searchApi', () => ({ searchTitles: api.searchTitles }))
+vi.mock('./detailApi', () => ({ fetchTitleDetail: api.fetchTitleDetail }))
 vi.mock('../../lib/supabase', () => ({ supabase: {} }))
 
 import { withCouple } from '../../test/providers'
@@ -31,6 +32,7 @@ const onClose = vi.fn()
 beforeEach(() => {
   vi.resetAllMocks()
   vi.useFakeTimers()
+  api.fetchTitleDetail.mockResolvedValue({})
 })
 afterEach(() => vi.useRealTimers())
 
@@ -107,7 +109,7 @@ test('a result without poster, year or overview shows no null or undefined', asy
 
 test('tapping a result adds it once with the note, then marks it and clears the note', async () => {
   let finish: () => void = () => {}
-  api.addTitle.mockReturnValue(new Promise<void>((r) => (finish = r)))
+  api.addTitle.mockReturnValue(new Promise<string>((r) => (finish = () => r('t9'))))
   api.searchTitles.mockResolvedValue([angelito])
   renderAdd()
   fireEvent.change(screen.getByLabelText('¿De dónde vino? (opcional)'), { target: { value: 'un reel' } })
@@ -124,7 +126,18 @@ test('tapping a result adds it once with the note, then marks it and clears the 
 
 test('a result already in the list says who added it and cannot be added', async () => {
   api.searchTitles.mockResolvedValue([angelito])
-  const existing: Title = { ...angelito, id: 't1', originNote: null, addedBy: 'u2', createdAt: '2026-10-07T12:00:00Z' }
+  const existing: Title = {
+    ...angelito,
+    id: 't1',
+    originNote: null,
+    addedBy: 'u2',
+    createdAt: '2026-10-07T12:00:00Z',
+    imdbRating: null,
+    rottenTomatoes: null,
+    metacritic: null,
+    tmdbRating: null,
+    ratingsUpdatedAt: null,
+  }
   renderAdd([existing])
   await typeQuery('mi pobre')
   expect(screen.getByText('Ya está en la lista (la agregó Pili)')).toBeInTheDocument()
@@ -153,4 +166,24 @@ test('clearing the search while it is in flight does not leave Buscando… on sc
   expect(screen.getByText('Buscando…')).toBeInTheDocument()
   await typeQuery('')
   expect(screen.queryByText('Buscando…')).not.toBeInTheDocument()
+})
+
+test('adding a title asks for its detail in the background', async () => {
+  api.addTitle.mockResolvedValue('t9')
+  api.searchTitles.mockResolvedValue([angelito])
+  renderAdd()
+  await typeQuery('mi pobre')
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: /Mi pobre angelito/ })))
+  expect(api.fetchTitleDetail).toHaveBeenCalledWith('t9')
+})
+
+test('a failing background detail does not show an error', async () => {
+  api.addTitle.mockResolvedValue('t9')
+  api.fetchTitleDetail.mockRejectedValue(new Error('502'))
+  api.searchTitles.mockResolvedValue([angelito])
+  renderAdd()
+  await typeQuery('mi pobre')
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: /Mi pobre angelito/ })))
+  expect(screen.getByText('✓ Agregada')).toBeInTheDocument()
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument()
 })
