@@ -76,3 +76,7 @@ Cada línea: decisión — motivo — costo si está mal.
 - Helper de tests `src/test/providers.tsx` (`withCouple`, `nacho`, `pili`): envuelve con sesión y espacio, porque ahora varios componentes necesitan el usuario actual y los miembros — ninguno.
 - En Ajustes, si a alguno de los dos le falta el nombre, la frase queda sin nombres ("Son dos personas en este espacio") en vez de mostrar un hueco — ninguno.
 - `getMyCouple` devuelve el tipo `Couple` de `coupleContext.ts` en vez de repetirlo — ninguno.
+
+## Task 3
+- Si un título solo aparece buscando en inglés, se muestra y se guarda con el nombre en inglés ("Parasite" y no "Parásitos") — evitar una consulta extra a TMDB por cada resultado — si molesta, pedir el detalle en `es-MX` al agregar.
+- La función responde 502 si falla cualquiera de las tres consultas a TMDB, en vez de devolver resultados parciales — más simple, y TMDB rara vez falla en un idioma solo — una búsqueda que podría haber mostrado algo muestra "No se pudo buscar".

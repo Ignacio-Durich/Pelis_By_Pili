@@ -19,5 +19,5 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["vite.config.ts", "vitest.security.config.ts", "pwa-assets.config.ts", "scripts", "tests"]
+  "include": ["vite.config.ts", "vitest.security.config.ts", "pwa-assets.config.ts", "scripts", "tests", "supabase/functions/tmdb-search/lib.ts", "supabase/functions/tmdb-search/lib.test.ts"]
 }
