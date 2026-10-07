@@ -7,6 +7,8 @@ import { TitleDetail } from '../titles/TitleDetail'
 import type { Title } from '../titles/titlesApi'
 import { useTitles } from '../titles/useTitles'
 import { pick } from './pick'
+import { Wheel } from './Wheel'
+import { targetRotation } from './wheelMath'
 
 type Props = { filters: Filters; onFiltersChange: (f: Filters) => void; random?: () => number }
 
@@ -42,8 +44,9 @@ export function Roulette({ filters, onFiltersChange, random = Math.random }: Pro
   )
 }
 
-const SPIN_MS = 1200
-const TICK_MS = 80
+// Si la rueda no avisa que terminó (por ejemplo, la pestaña quedó en segundo plano), el
+// resultado aparece igual.
+const SPIN_FALLBACK_MS = 4500
 
 function Session({ matching, random, onOpenDetail }: { matching: Title[]; random: () => number; onOpenDetail: (id: string) => void }) {
   const { members } = useCouple()
@@ -52,30 +55,43 @@ function Session({ matching, random, onOpenDetail }: { matching: Title[]; random
   const [usedBy, setUsedBy] = useState<string[]>([])
   const [resultId, setResultId] = useState<string | null>(null)
   const [noneLeft, setNoneLeft] = useState(false)
-  // Nombre que se muestra mientras gira; null = no está girando.
-  const [spinning, setSpinning] = useState<string | null>(null)
-  const timers = useRef<number[]>([])
+  const [rotation, setRotation] = useState(0)
+  const [spinning, setSpinning] = useState(false)
+  // Los títulos de la rueda en el último giro: así el gajo elegido queda bajo la flecha.
+  const [spinItems, setSpinItems] = useState<Title[] | null>(null)
+  const pending = useRef<string | null>(null)
+  const fallback = useRef<number | undefined>(undefined)
 
-  useEffect(() => () => timers.current.forEach((t) => clearTimeout(t)), [])
+  useEffect(() => () => clearTimeout(fallback.current), [])
 
   const candidates = matching.filter((t) => !vetoed.includes(t.id))
   const result = candidates.find((t) => t.id === resultId)
   // La pareja quitó o marcó vista el título que había salido.
   const lost = resultId !== null && !result
 
+  function finish() {
+    if (pending.current === null) return
+    clearTimeout(fallback.current)
+    setSpinning(false)
+    setResultId(pending.current)
+    pending.current = null
+  }
+
   function spin(list: Title[]) {
-    const land = () => setResultId(pick(list, random)?.id ?? null)
-    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return land()
-    setSpinning(list[0].title)
-    const tick = window.setInterval(() => setSpinning(list[Math.floor(Math.random() * list.length)].title), TICK_MS)
-    timers.current = [
-      tick,
-      window.setTimeout(() => {
-        clearInterval(tick)
-        setSpinning(null)
-        land()
-      }, SPIN_MS),
-    ]
+    const chosen = pick(list, random)
+    if (!chosen) return
+    const index = list.indexOf(chosen)
+    setSpinItems(list)
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      setRotation((r) => targetRotation(r, index, list.length, 0))
+      setResultId(chosen.id)
+      return
+    }
+    pending.current = chosen.id
+    setResultId(null)
+    setSpinning(true)
+    setRotation((r) => targetRotation(r, index, list.length))
+    fallback.current = window.setTimeout(finish, SPIN_FALLBACK_MS)
   }
 
   function veto(userId: string) {
@@ -91,12 +107,19 @@ function Session({ matching, random, onOpenDetail }: { matching: Title[]; random
     spin(remaining)
   }
 
-  if (spinning !== null) {
+  const wheelItems = (spinning || result) && spinItems ? spinItems : candidates
+  const wheel = wheelItems.length > 0 && !noneLeft && (
+    <Wheel items={wheelItems.map((t) => ({ id: t.id, label: t.title }))} rotation={rotation} animate={spinning} onEnd={finish} />
+  )
+
+  if (spinning) {
     return (
-      <div className="roulette-spin" aria-live="polite">
-        <p>Girando…</p>
-        <strong>{spinning}</strong>
-      </div>
+      <>
+        {wheel}
+        <p className="spinning" aria-live="polite">
+          Girando…
+        </p>
+      </>
     )
   }
 
@@ -106,6 +129,7 @@ function Session({ matching, random, onOpenDetail }: { matching: Title[]; random
     const allUsed = members.every((m) => usedBy.includes(m.userId))
     return (
       <div className="roulette-result">
+        {wheel}
         <h3>Les tocó</h3>
         <div data-testid="roulette-result">
           <TitleCard title={result.title} originalTitle={result.originalTitle} year={result.year} mediaType={result.mediaType} posterPath={result.posterPath} />
@@ -129,6 +153,7 @@ function Session({ matching, random, onOpenDetail }: { matching: Title[]; random
 
   return (
     <>
+      {wheel}
       {lost && <p>Ese título ya no está en Por ver. Giren de nuevo.</p>}
       {candidates.length === 0 ? (
         <p>Ningún título cumple estos filtros</p>

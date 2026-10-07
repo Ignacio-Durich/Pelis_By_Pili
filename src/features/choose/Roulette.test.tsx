@@ -146,15 +146,31 @@ test('Ver detalle opens the detail and Volver comes back to the same result', as
   expect(resultName()).toBe('Primera')
 })
 
-test('without reduced motion it spins for a moment before landing', async () => {
+test('the wheel is there from the start with the candidates', async () => {
+  renderRoulette({ ...NO_FILTERS, platforms: ['Netflix'] })
+  expect(await screen.findByRole('img', { name: 'Ruleta con 2 títulos' })).toBeInTheDocument()
+})
+
+test('without reduced motion the wheel spins and the result appears when it stops', async () => {
+  reducedMotion(false)
+  renderRoulette()
+  await screen.findByText('Hay 3 títulos que cumplen los filtros')
+  spin()
+  expect(screen.getByText('Girando…')).toBeInTheDocument()
+  expect(screen.queryByRole('heading', { name: 'Les tocó' })).not.toBeInTheDocument()
+  const rotor = screen.getByTestId('wheel-rotor')
+  expect(rotor.style.transform).not.toBe('rotate(0deg)')
+  fireEvent.transitionEnd(rotor)
+  expect(screen.getByRole('heading', { name: 'Les tocó' })).toBeInTheDocument()
+  expect(resultName()).toBe('Primera')
+})
+
+test('if the wheel never reports the end, the result still appears', async () => {
   reducedMotion(false)
   renderRoulette()
   await screen.findByText('Hay 3 títulos que cumplen los filtros')
   vi.useFakeTimers()
   spin()
-  expect(screen.queryByRole('heading', { name: 'Les tocó' })).not.toBeInTheDocument()
-  expect(screen.getByText('Girando…')).toBeInTheDocument()
-  await act(async () => vi.advanceTimersByTime(1200))
+  await act(async () => vi.advanceTimersByTime(4500))
   expect(screen.getByRole('heading', { name: 'Les tocó' })).toBeInTheDocument()
-  expect(resultName()).toBe('Primera')
 })
