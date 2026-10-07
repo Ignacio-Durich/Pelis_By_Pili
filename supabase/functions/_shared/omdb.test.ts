@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { summarizeOmdb } from './lib.ts'
+import { isOmdbLimit, summarizeOmdb } from './omdb.ts'
 
 const imdb = { Source: 'Internet Movie Database', Value: '8.5/10' }
 const rt = { Source: 'Rotten Tomatoes', Value: '99%' }
@@ -23,4 +23,14 @@ test('returns null for a missing source', () => {
 
 test('handles a missing Ratings field', () => {
   expect(summarizeOmdb({})).toEqual({ imdb: null, rottenTomatoes: null, metacritic: null })
+})
+
+test('N/A counts as missing', () => {
+  expect(summarizeOmdb({ Ratings: [{ Source: 'Metacritic', Value: 'N/A' }] }).metacritic).toBeNull()
+})
+
+test('isOmdbLimit recognizes only the daily limit', () => {
+  expect(isOmdbLimit({ Response: 'False', Error: 'Request limit reached!' })).toBe(true)
+  expect(isOmdbLimit({ Response: 'False', Error: 'Error getting data.' })).toBe(false)
+  expect(isOmdbLimit({ Response: 'True' })).toBe(false)
 })
