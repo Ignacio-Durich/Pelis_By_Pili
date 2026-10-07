@@ -60,3 +60,9 @@ Cada línea: decisión — motivo — costo si está mal.
 - Al abrir la app sin conexión con la sesión vencida, supabase-js emite `INITIAL_SESSION` con `null` y eso mostraba el login en vez de "Sin conexión". `onAuthChange` ahora ignora ese evento y el arranque lo decide solo `getSession` — es el punto 5 del Review Focus del plan — ninguno.
 - Si el servidor responde `already_in_couple` en la pantalla de entrada (la persona aceptó en otra ventana, o se perdió la respuesta), la app vuelve a leer el espacio y muestra el inicio, en vez de dejarla trabada con "Ya sos parte de un espacio". Cambia lo que pedía el plan (mostrar el mensaje), pero la persona sigue sin poder pasarse a otro espacio — ninguno.
 - Nuevo test de seguridad: alguien que es miembro de otro espacio solo ve el suyo. Antes, ningún test habría detectado una política del tipo "cualquier miembro lee todo".
+
+# Etapa 2
+
+## Task 0
+- `npm run test:security` corre contra el Supabase local (`npx supabase start`, en Docker vía OrbStack) y `npm run test:security:remote` contra el proyecto real — así los tests no tocan la base donde ya están los datos de Nacho y Pili — si el stack local no está levantado, los tests fallan por conexión: `npx supabase start`.
+- `.env.test.local` (ignorado por git) se genera desde `npx supabase status -o env` y copia `TMDB_API_KEY` y `OMDB_API_KEY` de `.env.local` — Vite le da prioridad sobre `.env.local` en el modo `test` — ninguno.
