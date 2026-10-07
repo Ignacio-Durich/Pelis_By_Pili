@@ -22,6 +22,8 @@ vi.mock('./detailApi', () => ({ fetchTitleDetail: api.fetchTitleDetail }))
 vi.mock('../../lib/supabase', () => ({ supabase: {} }))
 
 import { withCouple } from '../../test/providers'
+import { makeTitle } from '../../test/titles'
+import { NO_FILTERS, type Filters } from './filters'
 import { TitleList } from './TitleList'
 import { TitleError, type Title } from './titlesApi'
 
@@ -64,8 +66,8 @@ beforeEach(() => {
 })
 afterEach(() => vi.restoreAllMocks())
 
-function renderList() {
-  return render(withCouple(<TitleList />))
+function renderList(filters: Filters = NO_FILTERS, onFiltersChange = vi.fn()) {
+  return render(withCouple(<TitleList filters={filters} onFiltersChange={onFiltersChange} />))
 }
 
 test('shows Cargando… and then the empty list', async () => {
@@ -243,4 +245,33 @@ test('when everything was watched, Por ver says there is nothing left instead of
   renderList()
   expect(await screen.findByText('No queda nada por ver')).toBeInTheDocument()
   expect(screen.queryByText('Nuestra lista está vacía')).not.toBeInTheDocument()
+})
+
+test('Por ver shows the filters and only the titles that match', async () => {
+  api.listTitles.mockResolvedValue([
+    makeTitle({ id: 'n', tmdbId: 10, title: 'En Netflix', streaming: ['Netflix'] }),
+    makeTitle({ id: 'p', tmdbId: 11, title: 'En Prime', streaming: ['Prime Video'] }),
+  ])
+  renderList({ ...NO_FILTERS, platforms: ['Netflix'] })
+  expect(await screen.findByText('En Netflix')).toBeInTheDocument()
+  expect(screen.queryByText('En Prime')).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Filtros (1)' })).toBeInTheDocument()
+})
+
+test('when nothing matches it says so and offers to clear the filters', async () => {
+  const onFiltersChange = vi.fn()
+  api.listTitles.mockResolvedValue([makeTitle({ streaming: ['Prime Video'] })])
+  renderList({ ...NO_FILTERS, platforms: ['Netflix'] }, onFiltersChange)
+  expect(await screen.findByText('Ningún título cumple estos filtros')).toBeInTheDocument()
+  fireEvent.click(screen.getAllByRole('button', { name: 'Limpiar filtros' })[0])
+  expect(onFiltersChange).toHaveBeenCalledWith(NO_FILTERS)
+})
+
+test('Vistas ignores the filters and has no panel', async () => {
+  api.listTitles.mockResolvedValue([makeTitle({ title: 'Vista sin plataforma', status: 'watched', watchedAt: '2026-10-07T20:00:00Z' })])
+  renderList({ ...NO_FILTERS, platforms: ['Netflix'] })
+  await screen.findByRole('button', { name: 'Vistas' })
+  fireEvent.click(screen.getByRole('button', { name: 'Vistas' }))
+  expect(await screen.findByText('Vista sin plataforma')).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: /^Filtros/ })).not.toBeInTheDocument()
 })

@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useCouple, useMemberName } from '../couple/coupleContext'
 import { AddTitle } from './AddTitle'
+import { filterOptions, matchesFilters, NO_FILTERS, type Filters } from './filters'
+import { FiltersPanel } from './FiltersPanel'
 import { formatScore, imdbScore, ratingsDate, rtScore } from './ratings'
 import { TitleDetail } from './TitleDetail'
 import { useBackfillDetails } from './useBackfillDetails'
 import { TitleCard } from './TitleCard'
 import { listTitles, removeTitle, subscribeTitles, type Title } from './titlesApi'
 
-export function TitleList() {
+export function TitleList({ filters, onFiltersChange }: { filters: Filters; onFiltersChange: (f: Filters) => void }) {
   const { coupleId, members } = useCouple()
   const nameOf = useMemberName()
   // null = cargando
@@ -74,8 +76,10 @@ export function TitleList() {
   if (adding) return <AddTitle coupleId={coupleId} titles={titles ?? []} onClose={() => backToList(() => setAdding(false))} />
 
   // "Por ver": del más nuevo al más viejo (como llega). "Vistas": la vista más reciente primero.
-  const shown = titles
-    ?.filter((t) => t.status === tab)
+  const inTab = titles?.filter((t) => t.status === tab)
+  // Los filtros valen para "Por ver" (y la ruleta); "Vistas" se ve entera.
+  const shown = inTab
+    ?.filter((t) => tab === 'watched' || matchesFilters(t, filters))
     .sort((a, b) => (tab === 'watched' ? (b.watchedAt ?? '').localeCompare(a.watchedAt ?? '') : 0))
 
   const emptyText =
@@ -112,7 +116,20 @@ export function TitleList() {
         </>
       )}
       {titles === null && !offline && <p>Cargando…</p>}
-      {shown?.length === 0 && <p>{emptyText}</p>}
+      {tab === 'to_watch' && (
+        <FiltersPanel value={filters} options={filterOptions(inTab ?? [])} onChange={onFiltersChange} />
+      )}
+      {shown?.length === 0 &&
+        (inTab?.length ? (
+          <>
+            <p>Ningún título cumple estos filtros</p>
+            <button className="secondary" onClick={() => onFiltersChange(NO_FILTERS)}>
+              Limpiar filtros
+            </button>
+          </>
+        ) : (
+          <p>{emptyText}</p>
+        ))}
       {removeFailed && <p role="alert">No se pudo quitar. Probá de nuevo.</p>}
       <ul className="title-list">
         {shown?.map((t) => (
