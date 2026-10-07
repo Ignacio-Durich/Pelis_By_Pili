@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useCouple, useMemberName } from '../couple/coupleContext'
 import { AddTitle } from './AddTitle'
 import { filterOptions, matchesFilters, NO_FILTERS, type Filters } from './filters'
@@ -6,15 +6,14 @@ import { FiltersPanel } from './FiltersPanel'
 import { formatScore, imdbScore, ratingsDate, rtScore } from './ratings'
 import { TitleDetail } from './TitleDetail'
 import { useBackfillDetails } from './useBackfillDetails'
+import { useTitles } from './useTitles'
 import { TitleCard } from './TitleCard'
-import { listTitles, removeTitle, subscribeTitles, type Title } from './titlesApi'
+import { removeTitle, type Title } from './titlesApi'
 
 export function TitleList({ filters, onFiltersChange }: { filters: Filters; onFiltersChange: (f: Filters) => void }) {
   const { coupleId, members } = useCouple()
   const nameOf = useMemberName()
-  // null = cargando
-  const [titles, setTitles] = useState<Title[] | null>(null)
-  const [offline, setOffline] = useState(false)
+  const { titles, offline, load } = useTitles(coupleId)
   const [removeFailed, setRemoveFailed] = useState(false)
   const [adding, setAdding] = useState(false)
   // Por id: el detalle abierto toma siempre la versión más nueva del título (Realtime recarga la lista).
@@ -36,30 +35,6 @@ export function TitleList({ filters, onFiltersChange }: { filters: Filters; onFi
   }
 
   useBackfillDetails(titles)
-
-  const load = useCallback(() => {
-    listTitles(coupleId).then(
-      (list) => {
-        setTitles(list)
-        setOffline(false)
-      },
-      () => setOffline(true),
-    )
-  }, [coupleId])
-
-  useEffect(() => {
-    load()
-    const unsubscribe = subscribeTitles(coupleId, load)
-    // Al volver la app al frente: el Realtime puede haberse cortado en segundo plano.
-    const onVisible = () => {
-      if (document.visibilityState === 'visible') load()
-    }
-    document.addEventListener('visibilitychange', onVisible)
-    return () => {
-      unsubscribe()
-      document.removeEventListener('visibilitychange', onVisible)
-    }
-  }, [coupleId, load])
 
   async function remove(title: Title) {
     if (!window.confirm(`¿Quitar «${title.title}» de la lista?`)) return
