@@ -8,6 +8,7 @@ import type { Title } from '../titles/titlesApi'
 import { useTitles } from '../titles/useTitles'
 import { BumbleCard } from './BumbleCard'
 import { GameTop as Top } from './GameTop'
+import { NO_PARTNER, playerName } from './players'
 import { bumbleUndo, bumbleVote, finishBumble, startBumble, type BumbleSession } from './bumbleApi'
 import { bumbleState, buildDeck, lastUndoable, seededIndex, type BumbleState, type Vote } from './bumbleLogic'
 import { TieBreak } from './TieBreak'
@@ -21,8 +22,6 @@ type Props = { filters: Filters; onFiltersChange: (f: Filters) => void; onBack: 
 type LocalGame = { id: string; deck: string[]; votes: Vote[]; players: [string, string]; active: 0 | 1; round: number }
 
 const LOCAL_KEY = 'pelis-bumble-local'
-// El otro jugador cuando el espacio todavía tiene un solo miembro.
-const NO_PARTNER = 'pareja'
 
 function readLocal(): LocalGame | null {
   try {
@@ -236,7 +235,7 @@ function OnePhone({ game, titles, onChange, onBack }: GameProps & { game: LocalG
   const byId = useTitleMap(titles)
   const deck = game.deck.filter((id) => byId.has(id))
   const state = bumbleState(deck, game.votes, game.players)
-  const name = (i: 0 | 1) => (game.players[i] === NO_PARTNER ? 'tu pareja' : nameOf(game.players[i]))
+  const name = (i: 0 | 1) => playerName(game.players[i], nameOf)
   const end = () => onChange(null)
 
   if (state.kind !== 'round') {

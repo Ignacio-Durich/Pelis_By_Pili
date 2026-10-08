@@ -1,5 +1,6 @@
 import { matchesFilters, type Filters } from '../titles/filters'
 import type { Title } from '../titles/titlesApi'
+import { shuffled } from './pick'
 
 export const DECK_SIZE = 30
 export const MAX_ROUNDS = 3
@@ -14,11 +15,7 @@ export type BumbleState =
 
 export function buildDeck(titles: Title[], filters: Filters, random: () => number = Math.random): string[] {
   const ids = titles.filter((t) => t.status === 'to_watch' && matchesFilters(t, filters)).map((t) => t.id)
-  for (let i = ids.length - 1; i > 0; i--) {
-    const j = Math.floor(random() * (i + 1))
-    ;[ids[i], ids[j]] = [ids[j], ids[i]]
-  }
-  return ids.slice(0, DECK_SIZE)
+  return shuffled(ids, random).slice(0, DECK_SIZE)
 }
 
 // Los dos celulares (o el único) llegan al mismo estado con los mismos votos: vuelta 1 = el mazo;

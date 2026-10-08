@@ -1,3 +1,5 @@
+import { shuffled } from './pick'
+
 export const TOURNAMENT_PICKS = 4
 export const BRACKET = 8
 
@@ -13,15 +15,6 @@ export type TournamentState =
   | { kind: 'duel'; round: Round; index: number; total: number; pair: [string, string] }
   | { kind: 'winner'; titleId: string }
   | { kind: 'none' }
-
-function shuffled<T>(list: T[], random: () => number): T[] {
-  const out = [...list]
-  for (let i = out.length - 1; i > 0; i--) {
-    const j = Math.floor(random() * (i + 1))
-    ;[out[i], out[j]] = [out[j], out[i]]
-  }
-  return out
-}
 
 // 8 lugares; el 2i y el 2i+1 son el duelo i de cuartos: una de cada uno. Lo que falta se completa
 // con `fill` y, si no alcanza, queda vacío (esa candidata pasa sola de ronda).
