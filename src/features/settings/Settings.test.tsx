@@ -132,3 +132,12 @@ test('the guide also names the iOS actions in English', async () => {
   for (const name of ['Show in Share Sheet', 'Ask for Input', 'Get Contents of URL', 'Show Notification', 'Shortcut Input', 'Provided Input', 'Contents of URL'])
     expect(screen.getAllByText(new RegExp(name)).length).toBeGreaterThan(0)
 })
+
+test('under the guide, what to change in a shortcut someone else built', async () => {
+  renderSettings(2)
+  await screen.findByRole('button', { name: 'Crear mi clave' })
+  expect(screen.getByText('¿Te pasaron el Atajo ya armado?')).toBeInTheDocument()
+  expect(screen.getByText(/Solo cambiá la clave/)).toBeInTheDocument()
+  expect(screen.getByText(/reemplazá el valor de/)).toBeInTheDocument()
+  expect(screen.getByText(/No cambies nada más/)).toBeInTheDocument()
+})
