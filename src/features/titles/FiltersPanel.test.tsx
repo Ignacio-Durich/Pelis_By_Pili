@@ -9,12 +9,12 @@ const options = { genres: ['Comedia', 'Drama'], platforms: ['Netflix', 'Prime Vi
 beforeEach(() => vi.resetAllMocks())
 
 function open(value: Filters = NO_FILTERS, opts = options) {
-  render(<FiltersPanel value={value} options={opts} onChange={onChange} />)
+  render(<FiltersPanel value={value} options={opts} count={{ matching: 0, total: 0 }} onChange={onChange} />)
   fireEvent.click(screen.getByRole('button', { name: /^Filtros/ }))
 }
 
 test('the Filtros button shows how many are active and toggles the panel', () => {
-  render(<FiltersPanel value={{ ...NO_FILTERS, type: 'tv', imdb: [7, 10] }} options={options} onChange={onChange} />)
+  render(<FiltersPanel value={{ ...NO_FILTERS, type: 'tv', imdb: [7, 10] }} options={options} count={{ matching: 0, total: 0 }} onChange={onChange} />)
   const toggle = screen.getByRole('button', { name: 'Filtros (2)' })
   expect(screen.queryByText('Tipo')).not.toBeInTheDocument()
   fireEvent.click(toggle)
@@ -63,4 +63,15 @@ test('Limpiar filtros resets everything', () => {
   open({ ...NO_FILTERS, type: 'movie' })
   fireEvent.click(screen.getByRole('button', { name: 'Limpiar filtros' }))
   expect(onChange).toHaveBeenLastCalledWith(NO_FILTERS)
+})
+
+test('with active filters it says how many titles match, even with the panel closed', () => {
+  const { rerender } = render(
+    <FiltersPanel value={{ ...NO_FILTERS, type: 'tv' }} options={options} count={{ matching: 3, total: 12 }} onChange={onChange} />,
+  )
+  expect(screen.getByText('3 de 12 títulos cumplen los filtros')).toBeInTheDocument()
+  rerender(<FiltersPanel value={{ ...NO_FILTERS, type: 'tv' }} options={options} count={{ matching: 1, total: 12 }} onChange={onChange} />)
+  expect(screen.getByText('1 de 12 títulos cumple los filtros')).toBeInTheDocument()
+  rerender(<FiltersPanel value={NO_FILTERS} options={options} count={{ matching: 12, total: 12 }} onChange={onChange} />)
+  expect(screen.queryByText(/cumplen? los filtros/)).not.toBeInTheDocument()
 })

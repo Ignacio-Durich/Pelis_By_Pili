@@ -25,7 +25,12 @@ export function Roulette({ filters, onFiltersChange, random = Math.random }: Pro
       {/* Oculta y no desmontada mientras se ve el detalle: así no se pierden el resultado ni los vetos. */}
       <section className="roulette" hidden={!!detail}>
         <h2>Ruleta</h2>
-        <FiltersPanel value={filters} options={filterOptions(toWatch)} onChange={onFiltersChange} />
+        <FiltersPanel
+          value={filters}
+          options={filterOptions(toWatch)}
+          count={{ matching: matching.length, total: toWatch.length }}
+          onChange={onFiltersChange}
+        />
         {offline && (
           <>
             <p role="alert">Sin conexión. Probá de nuevo.</p>

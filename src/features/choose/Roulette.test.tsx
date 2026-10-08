@@ -192,3 +192,8 @@ test('vetoing spins the same wheel again, animated', async () => {
   fireEvent.transitionEnd(rotor)
   expect(resultName()).toBe('Segunda')
 })
+
+test('the roulette filters say how many titles match', async () => {
+  renderRoulette({ ...NO_FILTERS, platforms: ['Netflix'] })
+  expect(await screen.findByText('2 de 3 títulos cumplen los filtros')).toBeInTheDocument()
+})
