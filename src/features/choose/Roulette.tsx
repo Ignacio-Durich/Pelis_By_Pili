@@ -16,6 +16,19 @@ export function Roulette({ filters, onFiltersChange, random = Math.random }: Pro
   const { coupleId } = useCouple()
   const { titles, offline, load } = useTitles(coupleId)
   const [detailId, setDetailId] = useState<string | null>(null)
+  // Igual que en la lista: el detalle abre arriba y "Volver" deja la ruleta donde estaba.
+  const scroll = useRef(0)
+
+  function openDetail(id: string) {
+    scroll.current = window.scrollY
+    setDetailId(id)
+    window.scrollTo(0, 0)
+  }
+
+  function closeDetail() {
+    setDetailId(null)
+    requestAnimationFrame(() => window.scrollTo(0, scroll.current))
+  }
   const toWatch = titles?.filter((t) => t.status === 'to_watch') ?? []
   const matching = toWatch.filter((t) => matchesFilters(t, filters))
   const detail = titles?.find((t) => t.id === detailId)
@@ -41,10 +54,10 @@ export function Roulette({ filters, onFiltersChange, random = Math.random }: Pro
           <p>Cargando…</p>
         ) : (
           // Una sesión por combinación de filtros: cambiar un filtro renueva el resultado y los vetos.
-          <Session key={JSON.stringify(filters)} matching={matching} random={random} onOpenDetail={setDetailId} />
+          <Session key={JSON.stringify(filters)} matching={matching} random={random} onOpenDetail={openDetail} />
         )}
       </section>
-      {detail && <TitleDetail title={detail} onClose={() => setDetailId(null)} />}
+      {detail && <TitleDetail title={detail} onClose={closeDetail} />}
     </>
   )
 }

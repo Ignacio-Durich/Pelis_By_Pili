@@ -197,3 +197,21 @@ test('the roulette filters say how many titles match', async () => {
   renderRoulette({ ...NO_FILTERS, platforms: ['Netflix'] })
   expect(await screen.findByText('2 de 3 títulos cumplen los filtros')).toBeInTheDocument()
 })
+
+test('Ver detalle opens at the top and Volver returns to the same place', async () => {
+  const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
+  vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb) => {
+    cb(0)
+    return 0
+  })
+  renderRoulette()
+  await screen.findByText('Hay 3 títulos que cumplen los filtros')
+  spin()
+  Object.defineProperty(window, 'scrollY', { value: 420, configurable: true })
+  fireEvent.click(screen.getByRole('button', { name: 'Ver detalle' }))
+  expect(scrollTo).toHaveBeenLastCalledWith(0, 0)
+  fireEvent.click(screen.getByRole('button', { name: 'Volver' }))
+  expect(scrollTo).toHaveBeenLastCalledWith(0, 420)
+  Object.defineProperty(window, 'scrollY', { value: 0, configurable: true })
+  vi.restoreAllMocks()
+})

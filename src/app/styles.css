@@ -1,3 +1,9 @@
+/* `hidden` tiene que ganarle a cualquier display de una clase (por ejemplo, la ruleta oculta
+   mientras se ve el detalle de su resultado). */
+[hidden] {
+  display: none !important;
+}
+
 :root {
   color-scheme: dark;
   font-family: system-ui, -apple-system, sans-serif;
