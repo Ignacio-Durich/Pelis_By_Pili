@@ -222,7 +222,12 @@ Puntos menores que dejaron las revisiones de las etapas anteriores. Se arreglan 
   - Accesibilidad de la carta: el `aria-label` "Ver sinopsis" tapa el título (VoiceOver no dice qué carta es) y la barra espaciadora además hace scroll.
   - La ganadora se muestra en chico (TitleCard); se podría mostrar con la carta grande y "Ver detalle".
   - La carta desaparece de golpe al votar; se podría animar la salida hacia el costado.
-- Se suman acá los puntos menores que dejen las revisiones de las etapas 8 a 11.
+- Entra, de la etapa 8:
+  - Limpieza de links compartidos: un punto o paréntesis pegado al final queda dentro del link; si llegan link y texto con el mismo link, el texto muestra el link crudo; faltan rastreadores de TikTok (`_t`, `_r`, `is_from_webapp`, `sender_device`) y YouTube (`pp`, `feature`).
+  - El tope de 100 ítems de la bandeja cuenta y después inserta: con pedidos en paralelo se puede pasar.
+  - Si falla la red al leer la fecha de la clave, Ajustes muestra "Crear mi clave"; tocarlo reemplaza la clave que ya andaba.
+  - "Descartar" depende de Realtime para que el ítem desaparezca; sin conexión de Realtime queda en pantalla hasta volver a la app.
+- Se suman acá los puntos menores que dejen las revisiones de las etapas 9 a 11.
 - Entra, pedido de Nacho (2026-10-08): que todos los modos se puedan jugar con un solo celular, porque a veces usan uno solo de los dos. Bumble ya lo trae desde la etapa 7; la revelación simultánea y el torneo (etapas 9 y 10) conviene diseñarlos con esa opción desde el principio.
 - Entra, pedido de Nacho (2026-10-08): un botón para mandar comentarios sobre la app o reportar errores.
 - Terminada cuando: cada punto tiene su test y está arreglado, o hay una decisión anotada de por qué se deja.

@@ -64,7 +64,10 @@ export function ShareShortcut() {
         <ol>
           <li>Abrí la app Atajos y tocá "+".</li>
           <li>Arriba, tocá el nombre y poné "Pelis By Pili".</li>
-          <li>Tocá ⓘ (o "Detalles"), activá "Mostrar en la hoja para compartir" y en "Tipos" dejá solo "URL" y "Texto".</li>
+          <li>
+            Tocá ⓘ (abajo, o "Detalles") y activá "Mostrar en la hoja para compartir". Arriba del Atajo aparece "Recibir … de Hoja para
+            compartir": tocá lo que recibe y dejá solo "URL" y "Texto".
+          </li>
           <li>Agregá la acción "Pedir entrada": tipo Texto, pregunta "¿Qué peli o serie es? (opcional)".</li>
           <li>
             Agregá "Obtener contenido de URL" con esta dirección:
@@ -76,9 +79,12 @@ export function ShareShortcut() {
             Tocá "Mostrar más": Método POST; en Encabezados agregá <code>x-share-key</code> con tu clave; en Cuerpo de la solicitud elegí
             JSON y agregá <code>shared</code> = "Entrada del atajo" y <code>name</code> = "Entrada proporcionada".
           </li>
-          <li>Agregá "Mostrar notificación" con "Guardado en Pelis By Pili".</li>
+          <li>Agregá "Mostrar notificación" con "Contenido de URL" (así ves si se guardó o qué falló).</li>
           <li>Probalo: en Instagram tocá Compartir → Pelis By Pili.</li>
-          <li>Para el otro iPhone: compartí el Atajo por iCloud, y en el otro celular cambiá la clave por la suya.</li>
+          <li>
+            Para el otro iPhone: podés pasarle el Atajo por iCloud, pero antes de compartirlo, borrá tu clave del encabezado (el link de
+            iCloud lo puede abrir cualquiera que lo tenga). En el otro celular se pone su propia clave.
+          </li>
         </ol>
       </details>
     </section>
