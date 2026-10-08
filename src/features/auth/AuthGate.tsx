@@ -1,6 +1,7 @@
 import type { Session } from '@supabase/supabase-js'
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import { AuthError, getSession, onAuthChange, requestCode, verifyCode, type AuthErrorKind } from './authApi'
+import { readCache, saveCache } from '../../lib/offline'
 import { SessionContext } from './sessionContext'
 
 const messages: Record<AuthErrorKind, string> = {
@@ -14,13 +15,37 @@ function kindOf(error: unknown): AuthErrorKind {
   return error instanceof AuthError ? error.kind : 'network'
 }
 
+// La última cuenta que entró en este celular: sin red se entra con ella (la sesión de verdad llega
+// sola al volver la conexión). Al cerrar sesión se borra.
+const SESSION_KEY = 'session'
+const DEVICE = 'device'
+
+function remember(session: Session | null) {
+  saveCache(SESSION_KEY, DEVICE, session ? { userId: session.user.id } : null)
+}
+
+function lastAccount(): Session | null {
+  const saved = readCache<{ userId: string } | null>(SESSION_KEY, DEVICE)
+  return saved ? ({ user: { id: saved.userId } } as Session) : null
+}
+
 export function AuthGate({ children }: { children: ReactNode }) {
   // undefined = todavía no sabemos si hay sesión
   const [session, setSession] = useState<Session | null | undefined>(undefined)
   const [offline, setOffline] = useState(false)
 
   function fetchSession() {
-    getSession().then(setSession, () => setOffline(true))
+    getSession().then(
+      (s) => {
+        remember(s)
+        setSession(s)
+      },
+      () => {
+        const saved = lastAccount()
+        if (saved) setSession(saved)
+        else setOffline(true)
+      },
+    )
   }
 
   function retry() {
@@ -32,6 +57,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
   useEffect(() => {
     fetchSession()
     return onAuthChange((s) => {
+      remember(s)
       setOffline(false)
       setSession(s)
     })

@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
+import { readCache, saveCache } from '../../lib/offline'
 import { useUserId } from '../auth/sessionContext'
-import { getMyCouple } from './coupleApi'
+import { CoupleError, getMyCouple } from './coupleApi'
 import { CoupleContext, type Couple } from './coupleContext'
 import { coupleMessages } from './messages'
 import { NameForm } from './NameForm'
@@ -13,7 +14,18 @@ export function CoupleGate({ children }: { children: ReactNode }) {
   const [offline, setOffline] = useState(false)
 
   function fetchCouple() {
-    getMyCouple().then(setCouple, () => setOffline(true))
+    // La pareja queda guardada con la cuenta como dueña: sin red se usa esa.
+    getMyCouple().then(
+      (c) => {
+        saveCache('couple', userId, c)
+        setCouple(c)
+      },
+      (e) => {
+        const saved = e instanceof CoupleError && e.kind === 'network' ? readCache<Couple | null>('couple', userId) : null
+        if (saved) setCouple(saved)
+        else setOffline(true)
+      },
+    )
   }
 
   function reload() {
@@ -22,7 +34,7 @@ export function CoupleGate({ children }: { children: ReactNode }) {
     fetchCouple()
   }
 
-  useEffect(fetchCouple, [])
+  useEffect(fetchCouple, [userId])
 
   if (offline) {
     return (

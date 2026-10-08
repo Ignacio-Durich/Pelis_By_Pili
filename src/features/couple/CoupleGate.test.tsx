@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 
 const api = vi.hoisted(() => ({ getMyCouple: vi.fn(), acceptInvite: vi.fn(), createCouple: vi.fn(), setDisplayName: vi.fn() }))
@@ -10,6 +10,7 @@ vi.mock('../../lib/supabase', () => ({ supabase: {} }))
 
 import type { Session } from '@supabase/supabase-js'
 import { SessionContext } from '../auth/sessionContext'
+import { saveCache } from '../../lib/offline'
 import { CoupleError } from './coupleApi'
 import { CoupleGate } from './CoupleGate'
 import { useCouple } from './coupleContext'
@@ -33,6 +34,7 @@ const nacho = { userId: 'u1', displayName: 'Nacho' }
 const pili = { userId: 'u2', displayName: 'Pili' }
 
 beforeEach(() => {
+  localStorage.clear()
   vi.resetAllMocks()
   window.history.replaceState(null, '', '/')
 })
@@ -98,4 +100,20 @@ test("a partner without a name does not block me", async () => {
   api.getMyCouple.mockResolvedValue({ coupleId: 'c1', memberCount: 2, members: [nacho, { userId: 'u2', displayName: null }] })
   renderGate()
   expect(await screen.findByText('espacio c1 con 2')).toBeInTheDocument()
+})
+
+test('offline it uses the couple saved for this account, not another one', async () => {
+  api.getMyCouple.mockResolvedValueOnce({ coupleId: 'c1', memberCount: 2, members: [nacho, pili] })
+  renderGate()
+  expect(await screen.findByText('espacio c1 con 2')).toBeInTheDocument()
+  cleanup()
+  api.getMyCouple.mockRejectedValueOnce(new CoupleError('network'))
+  renderGate()
+  expect(await screen.findByText('espacio c1 con 2')).toBeInTheDocument()
+  cleanup()
+  localStorage.clear()
+  saveCache('couple', 'u2', { coupleId: 'c9', memberCount: 2, members: [nacho, pili] })
+  api.getMyCouple.mockRejectedValueOnce(new CoupleError('network'))
+  renderGate()
+  expect(await screen.findByText('Sin conexión. Probá de nuevo.')).toBeInTheDocument()
 })

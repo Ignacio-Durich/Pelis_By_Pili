@@ -9,6 +9,16 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon-180x180.png', 'icon.svg'],
+      // Los pósters ya vistos quedan en el celular para verse sin internet (etapa 11).
+      workbox: {
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) => url.origin === 'https://image.tmdb.org',
+            handler: 'CacheFirst',
+            options: { cacheName: 'tmdb-posters', expiration: { maxEntries: 300 }, cacheableResponse: { statuses: [0, 200] } },
+          },
+        ],
+      },
       manifest: {
         name: 'Pelis By Pili',
         short_name: 'Pelis',
