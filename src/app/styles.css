@@ -171,6 +171,12 @@ button.remove {
   padding: 8px;
 }
 
+/* Espacio al final de la lista para que el "+" (fijo) no tape el último "Quitar": el botón ocupa
+   de 84 a 140 px desde abajo y la pantalla ya deja 72. */
+.titles {
+  padding-bottom: 76px;
+}
+
 button.add {
   position: fixed;
   right: calc(16px + env(safe-area-inset-right));
