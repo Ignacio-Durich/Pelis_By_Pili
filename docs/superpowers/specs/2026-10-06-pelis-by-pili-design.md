@@ -83,7 +83,7 @@ Primer uso: la primera persona crea el espacio e invita a la otra con un link. S
 
 El mazo de candidatas sale de la lista "Por ver", no de un catálogo general.
 
-1. Swipe y match: cada uno desliza sobre un mazo de 20 a 30 títulos; hay match cuando los dos eligen el mismo. Si hay varios matches, final de a pares.
+1. Bumble (swipe y match; nombre elegido por Nacho): cada uno desliza sobre un mazo de hasta 20 títulos, con dos celulares o pasándose uno; hay match cuando los dos eligen el mismo. Si hay varios matches, segunda vuelta solo con ellos (decisión de Nacho en la etapa 7, en lugar de la final de a pares).
 2. Ruleta con filtros: filtra por película o serie, duración, género, plataforma y puntaje mínimo de IMDb; se gira; con veto.
 3. Torneo de a pares: se eligen 8 candidatas y se enfrentan de a pares hasta que queda una.
 4. Preguntas rápidas del momento: tiempo disponible, ánimo (uno o varios) y plataforma (una o varias); devuelve las 5 mejores de la lista según esas respuestas y los puntajes.
@@ -145,9 +145,9 @@ Cada etapa se construye, se prueba y se cierra antes de empezar la siguiente. Cl
 - Terminada cuando: devuelve 5 opciones coherentes con las respuestas.
 - No entra: sesiones en tiempo real.
 
-### Etapa 7 — Swipe y match
-- Entra: sesión compartida en tiempo real, mazo de 20 a 30 títulos, detección de match y final de a pares.
-- Terminada cuando: dos celulares distintos detectan el match al mismo tiempo.
+### Etapa 7 — Bumble (swipe y match)
+- Entra: sesión compartida en tiempo real, o un solo celular que se pasan; mazo de hasta 20 títulos con cartas que muestran los datos y la sinopsis; detección de match y segunda vuelta con los matches (hasta 3 vueltas; si siguen empatados, ruleta).
+- Terminada cuando: dos celulares distintos detectan el match al mismo tiempo, y también se puede jugar con uno solo.
 - No entra: Atajo de iOS, revelación simultánea ni torneo.
 
 ### Etapa 8 — Atajo de iOS para "Compartir"
@@ -217,8 +217,9 @@ Puntos menores que dejaron las revisiones de las etapas anteriores. Se arreglan 
   - Con "Por ver" vacía, las preguntas rápidas dicen "Ningún título entra en ese tiempo y plataforma" aunque no se haya elegido nada; debería decir que no hay títulos en "Por ver".
   - Accesibilidad: las preguntas ("¿Cuánto tiempo tienen?", etc.) no agrupan sus chips (`fieldset` o `role="group"`); lo mismo en el panel de filtros.
 - Se suman acá los puntos menores que dejen las revisiones de las etapas 7 a 11.
+- Entra, pedido de Nacho (2026-10-08): que todos los modos se puedan jugar con un solo celular, porque a veces usan uno solo de los dos. Bumble ya lo trae desde la etapa 7; la revelación simultánea y el torneo (etapas 9 y 10) conviene diseñarlos con esa opción desde el principio.
 - Terminada cuando: cada punto tiene su test y está arreglado, o hay una decisión anotada de por qué se deja.
-- No entra: funciones nuevas.
+- No entra: funciones nuevas, salvo la de jugar con un solo celular.
 
 Decisiones de orden: las etapas 0 a 4 son lo imprescindible para usar la app de verdad; los modos de un solo celular (ruleta y preguntas) van antes que los de a dos; el Atajo de iOS va después del swipe y match por decisión de Nacho, aunque técnicamente solo depende del buscador de la etapa 2.
 
