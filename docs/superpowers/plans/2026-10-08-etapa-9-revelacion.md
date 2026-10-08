@@ -8,7 +8,7 @@
 - **El secreto lo cuida la base**, no la app: la elección de cada uno solo la puede leer su dueño hasta que la partida se revela (RLS). La revelación la hace la base sola cuando llega la segunda elección, y avisa por Realtime con un cambio en la partida, que sí ven los dos; recién ahí cada celular pide las elecciones. Las elecciones no van a Realtime.
 - **Lógica pura** en `revealLogic.ts`: coincidencias, las de cada uno y si hay ganadora o ruleta. La ruleta de desempate es la de Bumble, que se saca a un componente propio.
 - **Un celular:** como Bumble, todo en el celular (`localStorage`), con "Pasale el celu" sin mostrar lo elegido.
-- **Pantalla** "Revelación" como modo del menú de "Elegir".
+- **Pantalla** "Top 3 secreto" como modo del menú de "Elegir" (en el código, `Reveal`).
 
 **Tech Stack:** lo de las etapas anteriores. Sin dependencias nuevas.
 
@@ -22,11 +22,11 @@
 - Pantallas de juego que entran en iPhone 13 (390×844) y 15 (393×852) (spec, sección 12): la lista para elegir scrollea, pero el botón para confirmar queda siempre a la vista.
 - Alcance estricto. **No entra:** torneo.
 - Cada decisión fuera del plan va a `docs/superpowers/notes/2026-10-decisiones.md`; los menores de la revisión final, a la Etapa 12.
-- **Decisiones** (1 y 2 confirmadas por Nacho el 2026-10-08; el resto, a confirmar):
+- **Decisiones confirmadas por Nacho el 2026-10-08:**
   1. **3 sin orden** por persona (o todos los de "Por ver" que cumplen los filtros, si son menos de 3).
   2. **Sin coincidencias:** se ven las elecciones de los dos y "Que decida la ruleta" gira entre todas (hasta 6). Con la misma ganadora en los dos celulares.
   3. **Con coincidencias:** una sola es la ganadora; si coinciden 2 o 3, la ruleta gira solo entre las coincidencias.
-  4. **El modo se llama "Revelación"**, con "Cada uno elige 3 en secreto y se muestran a la vez", segundo en el menú (después de Bumble).
+  4. **El modo se llama "Top 3 secreto"** (elegido por Nacho), con "Cada uno elige 3 en secreto y se muestran a la vez", segundo en el menú (después de Bumble).
   5. **Se elige de "Por ver" con los filtros** de la lista (como Bumble y la ruleta), tocando para marcar y desmarcar; "Listo" se habilita con 3.
   6. **Mientras el otro no eligió, se puede cambiar la elección** ("Cambiar mi elección"); el otro ve "Pili ya eligió", sin saber qué.
   7. **La revelación es automática** cuando eligen los dos, con una cuenta "3, 2, 1" en los dos celulares (con movimiento reducido, sin cuenta).
@@ -102,7 +102,7 @@
 - [ ] **Step 2: Run** → FAIL. **Step 3: Implement.** **Step 4: Run** `npm test && npm run typecheck` → PASS.
 - [ ] **Step 5: Commit** `feat: API de la revelación`
 
-### Task 4: Pantalla "Revelación"
+### Task 4: Pantalla "Top 3 secreto"
 
 **Files:**
 - Create: `src/features/choose/Reveal.tsx`, `src/features/choose/Reveal.test.tsx`
@@ -112,12 +112,12 @@
 - Produces: `Reveal({ filters, onFiltersChange, onBack, random? })`.
 
 Pantallas:
-- **Inicio:** `<h2>Revelación</h2>`, "Cada uno elige 3 en secreto y se muestran a la vez.", filtros con contador, "¿Cuántos celulares van a usar?" con "📱 Uno" / "📱📱 Dos" (mismas reglas que Bumble: con menos de 1 título, deshabilitados; "Dos" pide a la pareja).
+- **Inicio:** `<h2>Top 3 secreto</h2>`, "Cada uno elige 3 en secreto y se muestran a la vez.", filtros con contador, "¿Cuántos celulares van a usar?" con "📱 Uno" / "📱📱 Dos" (mismas reglas que Bumble: con menos de 1 título, deshabilitados; "Dos" pide a la pareja).
 - **Elegir:** "Elegí tus 3" (o "Turno de Nacho: elegí tus 3"), la lista de "Por ver" que cumple los filtros como tarjetas chicas que se marcan y desmarcan (`aria-pressed`), y abajo, fija sobre las pestañas, "Listo (2 de 3)" habilitado al llegar a `min(3, cantidad)`. Si ya hay 3 marcadas, tocar otra no hace nada.
 - **Dos celulares, ya elegí:** "Listo. Esperando a Pili…" (o "Pili ya eligió" si está en `ready`), y "Cambiar mi elección" (vuelve a Elegir con lo propio marcado).
 - **Un celular:** después del primero, "Pasale el celu a Pili" y "Listo, soy Pili" (sin mostrar lo elegido); después del segundo, "Revelar".
 - **Revelación:** "3", "2", "1" (un segundo cada uno; sin cuenta con movimiento reducido) y después: "Coinciden" con sus tarjetas, "Eligió Nacho" y "Eligió Pili" con el resto; `winner` → "¡Ganó <título>!" y "Listo"; `roulette` → "Que decida la ruleta" (TieBreak, semilla `${id}:reveal`) y después la ganadora y "Listo". "Terminar" arriba (como Bumble).
-- [ ] **Step 1: Write the failing tests:** inicio y reglas de los botones; elegir marca hasta 3 y "Listo (3 de 3)" llama a `submitReveal` con esos ids; con dos celulares, esperando con "Cambiar mi elección" y "Pili ya eligió"; al llegar la revelación por `notify`, después de la cuenta (con temporizadores falsos) se ven "Coinciden" y las de cada uno, y con una coincidencia "¡Ganó…!" y "Listo" llama a `finishReveal`; sin coincidencias, "Que decida la ruleta" gira a la ganadora de `seededIndex`; con un celular, el pase sin mostrar lo elegido, "Revelar" y que sobrevive a un `unmount` (localStorage); `ChooseMenu` con "Revelación" segundo.
+- [ ] **Step 1: Write the failing tests:** inicio y reglas de los botones; elegir marca hasta 3 y "Listo (3 de 3)" llama a `submitReveal` con esos ids; con dos celulares, esperando con "Cambiar mi elección" y "Pili ya eligió"; al llegar la revelación por `notify`, después de la cuenta (con temporizadores falsos) se ven "Coinciden" y las de cada uno, y con una coincidencia "¡Ganó…!" y "Listo" llama a `finishReveal`; sin coincidencias, "Que decida la ruleta" gira a la ganadora de `seededIndex`; con un celular, el pase sin mostrar lo elegido, "Revelar" y que sobrevive a un `unmount` (localStorage); `ChooseMenu` con "Top 3 secreto" segundo.
 - [ ] **Step 2: Run** → FAIL. **Step 3: Implement** (y la sección 8 de la spec).
 - [ ] **Step 4: Run** `npm test && npm run typecheck && npm run lint && npm run build` → PASS.
 - [ ] **Step 5: Revisión visual** en local a 390×844 y 393×852 (el botón "Listo" siempre a la vista): con un celular entero, y con dos usando la Pili local por script.
