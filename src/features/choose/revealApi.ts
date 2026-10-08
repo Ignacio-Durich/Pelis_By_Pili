@@ -1,4 +1,5 @@
 import { supabase } from '../../lib/supabase'
+import { subscribeCouple } from '../../lib/realtime'
 
 // Partida de Top 3 secreto con dos celulares. Antes de revelar, `picks` trae solo la elección
 // propia: la del otro la esconde la base (RLS). (Con un solo celular no pasa por la base.)
@@ -54,16 +55,5 @@ export const finishReveal = (sessionId: string, resultTitleId: string | null) =>
 // Solo la partida: cuando alguien elige cambia `ready`, y al revelar, `revealed_at`. Las
 // elecciones nunca viajan por Realtime; se piden recargando.
 export function subscribeReveal(coupleId: string, onChange: () => void): () => void {
-  const filter = `couple_id=eq.${coupleId}`
-  const channel = supabase
-    .channel(`reveal:${coupleId}:${crypto.randomUUID()}`)
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'reveal_sessions', filter }, () => onChange())
-    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'reveal_sessions', filter }, () => onChange())
-    .on('system', {}, (payload: { extension?: string; status?: string }) => {
-      if (payload.extension === 'postgres_changes' && payload.status === 'ok') onChange()
-    })
-    .subscribe()
-  return () => {
-    supabase.removeChannel(channel)
-  }
+  return subscribeCouple('reveal', coupleId, [['INSERT', 'reveal_sessions'], ['UPDATE', 'reveal_sessions']], onChange)
 }
