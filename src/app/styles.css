@@ -4,11 +4,23 @@
   display: none !important;
 }
 
+/* Colores del tema: los pone `applyTheme` (src/lib/theme.ts); estos son los de "Azul noche". */
 :root {
+  --bg: #1b1b2f;
+  --surface: #2a2a45;
+  --border: #44446a;
+  --accent: #ffb703;
+  --on-accent: #1b1b2f;
+  --text: #f4f4f8;
+  --muted: #b8b8d0;
+  --tabs: #14142a;
+  --danger: #ff8a80;
+  --surface-2: color-mix(in srgb, var(--surface) 50%, var(--bg));
+  --faint: color-mix(in srgb, var(--muted) 85%, var(--bg));
   color-scheme: dark;
   font-family: system-ui, -apple-system, sans-serif;
-  background: #1b1b2f;
-  color: #f4f4f8;
+  background: var(--bg);
+  color: var(--text);
   -webkit-text-size-adjust: 100%;
 }
 
@@ -60,14 +72,14 @@ button {
   font-size: 17px; /* 16px o más evita el zoom automático de Safari al enfocar */
   padding: 12px;
   border-radius: 10px;
-  border: 1px solid #44446a;
-  background: #2a2a45;
+  border: 1px solid var(--border);
+  background: var(--surface);
   color: inherit;
 }
 
 button {
-  background: #ffb703;
-  color: #1b1b2f;
+  background: var(--accent);
+  color: var(--on-accent);
   border: none;
   font-weight: 600;
 }
@@ -77,7 +89,7 @@ button:disabled {
 }
 
 [role='alert'] {
-  color: #ff8a80;
+  color: var(--danger);
 }
 
 .tabs {
@@ -85,18 +97,18 @@ button:disabled {
   inset: auto 0 0 0;
   display: flex;
   padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
-  background: #14142a;
-  border-top: 1px solid #2a2a45;
+  background: var(--tabs);
+  border-top: 1px solid var(--surface);
 }
 
 .tabs button {
   flex: 1;
   background: none;
-  color: #9a9ab8;
+  color: var(--faint);
 }
 
 .tabs button[aria-pressed='true'] {
-  color: #ffb703;
+  color: var(--accent);
 }
 
 h2 {
@@ -134,7 +146,7 @@ h2 {
   height: 69px;
   border-radius: 6px;
   object-fit: cover;
-  background: #2a2a45;
+  background: var(--surface);
 }
 
 .card-text {
@@ -145,7 +157,7 @@ h2 {
 }
 
 .card-text small {
-  color: #b8b8d0;
+  color: var(--muted);
 }
 
 .overview {
@@ -166,7 +178,7 @@ button.result {
 button.remove {
   flex: none;
   background: none;
-  color: #9a9ab8;
+  color: var(--faint);
   font-size: 14px;
   padding: 8px;
 }
@@ -191,7 +203,7 @@ button.add {
 
 .attribution {
   font-size: 12px;
-  color: #9a9ab8;
+  color: var(--faint);
 }
 
 .attribution img {
@@ -210,12 +222,12 @@ button.open {
 button.back {
   align-self: flex-start;
   background: none;
-  color: #ffb703;
+  color: var(--accent);
   padding: 0;
 }
 
 .detail small {
-  color: #b8b8d0;
+  color: var(--muted);
 }
 
 .detail h3 {
@@ -228,7 +240,7 @@ button.back {
   height: 231px;
   border-radius: 10px;
   object-fit: cover;
-  background: #2a2a45;
+  background: var(--surface);
 }
 
 .scores {
@@ -243,7 +255,7 @@ button.back {
 .providers h4 {
   margin: 4px 0;
   font-size: 15px;
-  color: #b8b8d0;
+  color: var(--muted);
 }
 
 .providers ul {
@@ -266,11 +278,11 @@ button.back {
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: #2a2a45;
+  background: var(--surface);
 }
 
 .detail a {
-  color: #ffb703;
+  color: var(--accent);
 }
 
 .detail button.remove {
@@ -282,25 +294,25 @@ button.back {
   gap: 4px;
   padding: 4px;
   border-radius: 12px;
-  background: #2a2a45;
+  background: var(--surface);
 }
 
 .segmented button {
   flex: 1;
   background: none;
-  color: #9a9ab8;
+  color: var(--faint);
   padding: 8px;
 }
 
 .segmented button[aria-pressed='true'] {
-  background: #ffb703;
-  color: #1b1b2f;
+  background: var(--accent);
+  color: var(--on-accent);
 }
 
 button.secondary {
   align-self: flex-start;
   background: none;
-  border: 1px solid #44446a;
+  border: 1px solid var(--border);
   color: inherit;
   font-weight: normal;
 }
@@ -325,7 +337,7 @@ button.secondary {
 }
 
 .my-score small {
-  color: #ff8a80;
+  color: var(--danger);
 }
 
 .filters {
@@ -340,7 +352,7 @@ button.secondary {
   gap: 10px;
   padding: 12px;
   border-radius: 12px;
-  background: #22223b;
+  background: var(--surface-2);
 }
 
 .filters-panel select {
@@ -348,8 +360,8 @@ button.secondary {
   font-size: 17px;
   padding: 10px;
   border-radius: 10px;
-  border: 1px solid #44446a;
-  background: #2a2a45;
+  border: 1px solid var(--border);
+  background: var(--surface);
   color: inherit;
 }
 
@@ -370,15 +382,15 @@ button.chip {
   border-radius: 999px;
   font-size: 15px;
   font-weight: normal;
-  background: #2a2a45;
+  background: var(--surface);
   color: inherit;
-  border: 1px solid #44446a;
+  border: 1px solid var(--border);
 }
 
 button.chip[aria-pressed='true'] {
-  background: #ffb703;
-  color: #1b1b2f;
-  border-color: #ffb703;
+  background: var(--accent);
+  color: var(--on-accent);
+  border-color: var(--accent);
 }
 
 .roulette-spin {
@@ -420,7 +432,7 @@ button.chip[aria-pressed='true'] {
 }
 
 .range-head small {
-  color: #ffb703;
+  color: var(--accent);
 }
 
 /* Dos deslizadores superpuestos: la pista va en el contenedor y solo los "pulgares" reciben toques. */
@@ -441,13 +453,13 @@ button.chip[aria-pressed='true'] {
 .range-track::before {
   left: 0;
   right: 0;
-  background: #44446a;
+  background: var(--border);
 }
 
 .range-track::after {
   left: var(--from);
   right: calc(100% - var(--to));
-  background: #ffb703;
+  background: var(--accent);
 }
 
 .range-track input[type='range'] {
@@ -470,8 +482,8 @@ button.chip[aria-pressed='true'] {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: #ffb703;
-  border: 2px solid #1b1b2f;
+  background: var(--accent);
+  border: 2px solid var(--bg);
   pointer-events: auto;
   cursor: pointer;
 }
@@ -480,8 +492,8 @@ button.chip[aria-pressed='true'] {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: #ffb703;
-  border: 2px solid #1b1b2f;
+  background: var(--accent);
+  border: 2px solid var(--bg);
   pointer-events: auto;
   cursor: pointer;
 }
@@ -504,8 +516,8 @@ button.chip[aria-pressed='true'] {
 }
 
 .wheel-pointer {
-  fill: #f4f4f8;
-  stroke: #1b1b2f;
+  fill: var(--text);
+  stroke: var(--bg);
   stroke-width: 2;
 }
 
@@ -514,7 +526,7 @@ button.chip[aria-pressed='true'] {
 }
 
 .filters-count {
-  color: #ffb703;
+  color: var(--accent);
 }
 
 .choose-menu button {
@@ -546,7 +558,7 @@ button.chip[aria-pressed='true'] {
   flex-wrap: wrap;
   gap: 2px 12px;
   font-size: 14px;
-  color: #b8b8d0;
+  color: var(--muted);
 }
 
 .bumble-stage {
@@ -564,7 +576,7 @@ button.chip[aria-pressed='true'] {
   margin: 0 auto;
   border-radius: 16px;
   overflow: hidden;
-  background: #2a2a45;
+  background: var(--surface);
   touch-action: pan-y;
   user-select: none;
   cursor: grab;
@@ -639,8 +651,8 @@ button.chip[aria-pressed='true'] {
   margin: 0;
   padding: 6px 14px;
   border-radius: 999px;
-  background: #ffb703;
-  color: #1b1b2f;
+  background: var(--accent);
+  color: var(--on-accent);
   font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
@@ -665,7 +677,7 @@ button.chip[aria-pressed='true'] {
   margin: 4px 0;
   padding: 6px 8px;
   border-radius: 6px;
-  background: #2a2a45;
+  background: var(--surface);
   font-size: 13px;
   word-break: break-all;
 }
@@ -696,20 +708,20 @@ button.chip[aria-pressed='true'] {
 }
 
 .share-shortcut summary {
-  color: #ffb703;
+  color: var(--accent);
   font-weight: 600;
 }
 
 /* Bandeja de compartidos, arriba de Por ver / Vistas */
 .shared-inbox {
-  border: 1px solid #44446a;
+  border: 1px solid var(--border);
   border-radius: 10px;
   padding: 10px 12px;
 }
 
 .shared-inbox summary {
   font-weight: 600;
-  color: #ffb703;
+  color: var(--accent);
 }
 
 .shared-inbox ul {
@@ -726,7 +738,7 @@ button.chip[aria-pressed='true'] {
   flex-direction: column;
   gap: 4px;
   padding-top: 10px;
-  border-top: 1px solid #2a2a45;
+  border-top: 1px solid var(--surface);
 }
 
 .shared-inbox li span {
@@ -734,7 +746,7 @@ button.chip[aria-pressed='true'] {
 }
 
 .shared-inbox small {
-  color: #b8b8d0;
+  color: var(--muted);
 }
 
 .shared-actions {
@@ -745,7 +757,7 @@ button.chip[aria-pressed='true'] {
 
 .shared-actions a {
   margin-right: auto;
-  color: #ffb703;
+  color: var(--accent);
 }
 
 .shared-actions button {
@@ -755,7 +767,7 @@ button.chip[aria-pressed='true'] {
 
 /* Top 3 secreto */
 .reveal-options button.result[aria-pressed='true'] {
-  outline: 2px solid #ffb703;
+  outline: 2px solid var(--accent);
   outline-offset: -2px;
 }
 
@@ -764,19 +776,19 @@ button.chip[aria-pressed='true'] {
   position: sticky;
   bottom: calc(68px + env(safe-area-inset-bottom));
   z-index: 3;
-  box-shadow: 0 -8px 16px #1b1b2f;
+  box-shadow: 0 -8px 16px var(--bg);
 }
 
 /* Deshabilitado, opaco: si no, la lista se ve a través. */
 .reveal-done:disabled {
   opacity: 1;
-  background: #5c4c1c;
-  color: #b9b29a;
+  background: color-mix(in srgb, var(--accent) 35%, var(--bg));
+  color: var(--muted);
 }
 
 .reveal-ready {
   margin: 0;
-  color: #ffb703;
+  color: var(--accent);
   font-weight: 600;
 }
 
@@ -785,7 +797,7 @@ button.chip[aria-pressed='true'] {
   text-align: center;
   font-size: 96px;
   font-weight: 800;
-  color: #ffb703;
+  color: var(--accent);
 }
 
 /* Torneo: el duelo entra en una pantalla de iPhone 13/15. 250 px son la fila de arriba, la ronda,
@@ -797,7 +809,7 @@ button.chip[aria-pressed='true'] {
 .duel-round {
   margin: 0;
   font-size: 14px;
-  color: #b8b8d0;
+  color: var(--muted);
 }
 
 .duel {
@@ -815,8 +827,8 @@ button.chip[aria-pressed='true'] {
   text-align: left;
   font-weight: normal;
   color: inherit;
-  background: #2a2a45;
-  border: 1px solid #44446a;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 12px;
 }
 
@@ -830,7 +842,7 @@ button.chip[aria-pressed='true'] {
   height: 100%;
   width: 42%;
   object-fit: cover;
-  background: #1b1b2f;
+  background: var(--bg);
 }
 
 .duel-info {
@@ -840,18 +852,18 @@ button.chip[aria-pressed='true'] {
   padding: 12px 12px 12px 0;
   overflow: hidden;
   font-size: 14px;
-  color: #d8d8ea;
+  color: color-mix(in srgb, var(--text) 85%, var(--surface));
 }
 
 .duel-info strong {
   font-size: 18px;
-  color: #f4f4f8;
+  color: var(--text);
 }
 
 .duel-vs {
   text-align: center;
   font-weight: 800;
-  color: #ffb703;
+  color: var(--accent);
 }
 
 /* Sin internet: aviso arriba de la lista y cambios que no se pudieron guardar */
@@ -859,8 +871,8 @@ button.chip[aria-pressed='true'] {
   margin: 0;
   padding: 8px 12px;
   border-radius: 10px;
-  background: #2a2a45;
-  color: #ffb703;
+  background: var(--surface);
+  color: var(--accent);
   font-size: 14px;
 }
 
@@ -872,4 +884,57 @@ button.chip[aria-pressed='true'] {
 
 .dropped p {
   margin: 0;
+}
+
+/* Ajustes → Tema: cada opción es una mini pantalla con los colores del tema y su nombre. */
+.themes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+button.theme-option {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  font-size: 13px;
+  font-weight: normal;
+  text-align: center;
+  color: var(--text);
+  background: var(--surface);
+  border: 2px solid transparent;
+}
+
+button.theme-option[aria-pressed='true'] {
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+.theme-swatch {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 40px;
+  padding: 6px;
+  border: 1px solid;
+  border-radius: 8px;
+}
+
+.theme-swatch span:first-child {
+  width: 55%;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.theme-swatch span:last-child {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
 }

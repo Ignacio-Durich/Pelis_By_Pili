@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { beforeEach, expect, test, vi } from 'vitest'
 
 const api = vi.hoisted(() => ({ createInvite: vi.fn(), signOut: vi.fn(), writeText: vi.fn(), createShareKey: vi.fn(), shareKeyCreatedAt: vi.fn() }))
@@ -15,6 +15,7 @@ vi.mock('../shared/sharedApi', async (importOriginal) => ({
 vi.mock('../../lib/supabase', () => ({ supabase: {} }))
 
 import { nacho, pili, withCouple } from '../../test/providers'
+import { savedTheme } from '../../lib/theme'
 import { SHARE_URL } from '../shared/sharedApi'
 import { Settings } from './Settings'
 
@@ -140,4 +141,19 @@ test('under the guide, what to change in a shortcut someone else built', async (
   expect(screen.getByText(/Solo cambiá la clave/)).toBeInTheDocument()
   expect(screen.getByText(/reemplazá el valor de/)).toBeInTheDocument()
   expect(screen.getByText(/No cambies nada más/)).toBeInTheDocument()
+})
+
+test('Tema shows the 15 themes and choosing one paints the app and is remembered', async () => {
+  localStorage.clear()
+  renderSettings(2)
+  expect(screen.getByRole('heading', { name: 'Tema' })).toBeInTheDocument()
+  const themes = within(screen.getByRole('group', { name: 'Tema' })).getAllByRole('button')
+  expect(themes).toHaveLength(15)
+  expect(screen.getByRole('button', { name: 'Azul noche' })).toHaveAttribute('aria-pressed', 'true')
+  fireEvent.click(screen.getByRole('button', { name: 'Menta' }))
+  expect(screen.getByRole('button', { name: 'Menta' })).toHaveAttribute('aria-pressed', 'true')
+  expect(screen.getByRole('button', { name: 'Azul noche' })).toHaveAttribute('aria-pressed', 'false')
+  expect(document.documentElement.style.getPropertyValue('--bg')).toBe('#f1faf6')
+  expect(savedTheme()).toBe('menta')
+  await screen.findByRole('button', { name: 'Crear mi clave' })
 })
