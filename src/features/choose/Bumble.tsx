@@ -71,13 +71,16 @@ export function Bumble({ filters, onFiltersChange, onBack, random = Math.random 
   }
 
   let body
+  let inGame = false
   if (titles === null || session === undefined) {
     body = !offline && !bumbleOffline && <p>Cargando…</p>
   } else if (session && partner) {
     // Si la pareja empezó una partida de dos celulares, se entra directo.
-    body = <TwoPhones key={session.id} session={session} me={me} partner={partner} titles={titles} reload={load} />
+    inGame = true
+    body = <TwoPhones key={session.id} session={session} me={me} partner={partner} titles={titles} reload={load} onBack={onBack} />
   } else if (local) {
-    body = <OnePhone game={local} titles={titles} onChange={setLocal} />
+    inGame = true
+    body = <OnePhone game={local} titles={titles} onChange={setLocal} onBack={onBack} />
   } else {
     body = (
       <>
@@ -101,10 +104,15 @@ export function Bumble({ filters, onFiltersChange, onBack, random = Math.random 
 
   return (
     <section className="bumble-mode">
-      <button className="back" onClick={onBack}>
-        Volver a los modos
-      </button>
-      <h2>Bumble</h2>
+      {/* En la partida, el encabezado es una sola fila (Top) para que la carta entre en la pantalla. */}
+      {!inGame && (
+        <>
+          <button className="back" onClick={onBack}>
+            Volver a los modos
+          </button>
+          <h2>Bumble</h2>
+        </>
+      )}
       {(offline || bumbleOffline) && (
         <>
           <p role="alert">Sin conexión. Probá de nuevo.</p>
@@ -127,7 +135,9 @@ function useTitleMap(titles: Title[]) {
   return new Map(titles.map((t) => [t.id, t]))
 }
 
-function TwoPhones({ session, me, partner, titles, reload }: { session: BumbleSession; me: string; partner: string; titles: Title[]; reload: () => void }) {
+type GameProps = { titles: Title[]; onBack: () => void }
+
+function TwoPhones({ session, me, partner, titles, reload, onBack }: GameProps & { session: BumbleSession; me: string; partner: string; reload: () => void }) {
   const nameOf = useMemberName()
   const byId = useTitleMap(titles)
   // Votos propios que todavía no volvieron de la base: la carta avanza sin esperar.
@@ -182,6 +192,7 @@ function TwoPhones({ session, me, partner, titles, reload }: { session: BumbleSe
   if (state.kind !== 'round') {
     return (
       <>
+        <Top onBack={onBack} />
         <Outcome state={state} byId={byId} seed={session.id} onDone={finish} />
         {error && <p role="alert">{error}</p>}
       </>
@@ -192,30 +203,35 @@ function TwoPhones({ session, me, partner, titles, reload }: { session: BumbleSe
   const card = state.next[0] ? byId.get(state.next[0]) : undefined
   const toastTitle = toast && matchKeys.split(',').includes(toast) ? byId.get(toast.split(':')[1])?.title : null
   const canUndo = waiting.length === 0 && lastUndoable(deck, votes, players, me) !== null
+  const undoing = undoingFrom === session.votes
 
   return (
     <>
-      <RoundHeader round={state.round} />
-      <p>{`Vos: ${state.done[0]} de ${n} · ${nameOf(partner)}: ${state.done[1]} de ${n}`}</p>
-      <p role="status" className="bumble-match">
-        {toastTitle ? `¡Match! ${toastTitle}` : ''}
+      <Top onBack={onBack} onEnd={() => finish(null)} />
+      <p className="bumble-status">
+        {state.round > 1 && <span>{`Vuelta ${state.round}`}</span>}
+        <span>{`Vos: ${state.done[0]} de ${n} · ${nameOf(partner)}: ${state.done[1]} de ${n}`}</span>
+        <span>{`Matches: ${state.matches.length}`}</span>
       </p>
-      {card ? <BumbleCard title={card} onVote={vote} /> : <p>{`Esperando a ${nameOf(partner)} (${state.done[1]} de ${n})`}</p>}
+      <div className="bumble-stage">
+        <p role="status" className="bumble-match">
+          {toastTitle ? `¡Match! ${toastTitle}` : ''}
+        </p>
+        {card ? (
+          <BumbleCard title={card} onVote={vote} undo={canUndo ? { onClick: undo, disabled: undoing } : undefined} />
+        ) : (
+          <>
+            <p>{`Esperando a ${nameOf(partner)} (${state.done[1]} de ${n})`}</p>
+            {canUndo && <UndoButton disabled={undoing} onClick={undo} />}
+          </>
+        )}
+      </div>
       {error && <p role="alert">{error}</p>}
-      <p>{`Matches: ${state.matches.length}`}</p>
-      {canUndo && (
-        <button className="secondary" disabled={undoingFrom === session.votes} onClick={undo}>
-          ↩️ Deshacer
-        </button>
-      )}
-      <button className="secondary" onClick={() => finish(null)}>
-        Terminar
-      </button>
     </>
   )
 }
 
-function OnePhone({ game, titles, onChange }: { game: LocalGame; titles: Title[]; onChange: (g: LocalGame | null) => void }) {
+function OnePhone({ game, titles, onChange, onBack }: GameProps & { game: LocalGame; onChange: (g: LocalGame | null) => void }) {
   const nameOf = useMemberName()
   const byId = useTitleMap(titles)
   const deck = game.deck.filter((id) => byId.has(id))
@@ -223,11 +239,19 @@ function OnePhone({ game, titles, onChange }: { game: LocalGame; titles: Title[]
   const name = (i: 0 | 1) => (game.players[i] === NO_PARTNER ? 'tu pareja' : nameOf(game.players[i]))
   const end = () => onChange(null)
 
-  if (state.kind !== 'round') return <Outcome state={state} byId={byId} seed={game.id} onDone={end} />
+  if (state.kind !== 'round') {
+    return (
+      <>
+        <Top onBack={onBack} />
+        <Outcome state={state} byId={byId} seed={game.id} onDone={end} />
+      </>
+    )
+  }
 
   if (state.round > game.round) {
     return (
       <>
+        <Top onBack={onBack} onEnd={end} />
         <p>{`¡${state.cards.length} matches! Vuelven a deslizar solo esos`}</p>
         <button onClick={() => onChange({ ...game, round: state.round, active: 0 })}>Seguir</button>
       </>
@@ -237,18 +261,15 @@ function OnePhone({ game, titles, onChange }: { game: LocalGame; titles: Title[]
   const player = game.players[game.active]
   const next = state.next[game.active]
   const last = lastUndoable(deck, game.votes, game.players, player)
-  const undoButton = last && (
-    <button className="secondary" onClick={() => onChange({ ...game, votes: game.votes.filter((x) => x !== last) })}>
-      ↩️ Deshacer
-    </button>
-  )
+  const undo = last ? () => onChange({ ...game, votes: game.votes.filter((x) => x !== last) }) : null
 
   if (game.active === 0 && !next) {
     return (
       <>
+        <Top onBack={onBack} onEnd={end} />
         <p>{`Pasale el celu a ${name(1)}`}</p>
         <button onClick={() => onChange({ ...game, active: 1 })}>{`Listo, soy ${name(1)}`}</button>
-        {undoButton}
+        {undo && <UndoButton disabled={false} onClick={undo} />}
       </>
     )
   }
@@ -258,24 +279,36 @@ function OnePhone({ game, titles, onChange }: { game: LocalGame; titles: Title[]
 
   return (
     <>
-      <RoundHeader round={state.round} />
-      <p>{`Turno de ${name(game.active)} · ${state.done[game.active]} de ${state.cards.length}`}</p>
-      {card && <BumbleCard title={card} onVote={vote} />}
-      {undoButton}
-      <button className="secondary" onClick={end}>
-        Terminar
-      </button>
+      <Top onBack={onBack} onEnd={end} />
+      <p className="bumble-status">
+        {state.round > 1 && <span>{`Vuelta ${state.round}`}</span>}
+        <span>{`Turno de ${name(game.active)} · ${state.done[game.active]} de ${state.cards.length}`}</span>
+      </p>
+      <div className="bumble-stage">{card && <BumbleCard title={card} onVote={vote} undo={undo ? { onClick: undo, disabled: false } : undefined} />}</div>
     </>
   )
 }
 
-function RoundHeader({ round }: { round: number }) {
-  if (round === 1) return null
+function Top({ onBack, onEnd }: { onBack: () => void; onEnd?: () => void }) {
   return (
-    <>
-      <h3>{`Vuelta ${round}`}</h3>
-      <p>Vuelven a deslizar los matches</p>
-    </>
+    <div className="bumble-top">
+      <button className="back" onClick={onBack}>
+        Volver a los modos
+      </button>
+      {onEnd && (
+        <button className="back" onClick={onEnd}>
+          Terminar
+        </button>
+      )}
+    </div>
+  )
+}
+
+function UndoButton({ disabled, onClick }: { disabled: boolean; onClick: () => void }) {
+  return (
+    <button className="secondary" aria-label="Deshacer" disabled={disabled} onClick={onClick}>
+      ↩️ Deshacer
+    </button>
   )
 }
 

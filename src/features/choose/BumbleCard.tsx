@@ -7,10 +7,11 @@ import type { Title } from '../titles/titlesApi'
 const VOTE_PX = 100
 const TAP_PX = 10
 
-type Props = { title: Title; onVote: (liked: boolean) => void }
+// `undo`: el botón de deshacer entre el No y el Sí, como el "rewind" de Bumble.
+type Props = { title: Title; onVote: (liked: boolean) => void; undo?: { onClick: () => void; disabled: boolean } }
 
 // Carta tipo Tinder/Bumble: se arrastra para votar y se toca para ver la sinopsis.
-export function BumbleCard({ title, onVote }: Props) {
+export function BumbleCard({ title, onVote, undo }: Props) {
   const start = useRef<number | null>(null)
   const [dx, setDx] = useState(0)
   // Guardados por id: una carta nueva arranca de frente y sin sinopsis.
@@ -53,7 +54,7 @@ export function BumbleCard({ title, onVote }: Props) {
   return (
     <div className="bumble">
       <div
-        className="bumble-card"
+        className={flipped ? 'bumble-card flipped' : 'bumble-card'}
         data-testid="bumble-card"
         role="button"
         tabIndex={0}
@@ -90,6 +91,11 @@ export function BumbleCard({ title, onVote }: Props) {
         <button className="secondary" onClick={() => onVote(false)}>
           👎 No
         </button>
+        {undo && (
+          <button className="secondary undo" aria-label="Deshacer" disabled={undo.disabled} onClick={undo.onClick}>
+            ↩️
+          </button>
+        )}
         <button onClick={() => onVote(true)}>👍 Sí</button>
       </div>
     </div>

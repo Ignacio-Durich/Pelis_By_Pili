@@ -135,3 +135,7 @@ Cada línea: decisión — motivo — costo si está mal.
 
 - "¿Dónde lo ven?" pasa de una plataforma a varias (pedido de Nacho después de probarla en los iPhones): un título entra si está en alguna de las elegidas; "Cualquiera" borra la elección y queda marcada cuando no hay ninguna — la plataforma de la spec era una sola.
 - Las preguntas rápidas sugieren 5 títulos en vez de 3 (pedido de Nacho después de probarla); el aviso de relleno y el texto del menú dicen 5 — la spec decía 3.
+
+# Etapa 7
+
+- Después de la primera prueba en los iPhones (pedido de Nacho): la sinopsis ya no tiene scroll propio (en iOS se quedaba con el gesto y no dejaba deslizar; con una sinopsis larga la carta se alarga y scrollea la página), y la partida entra en una pantalla de iPhone 13/15: fila única "Volver a los modos" / "Terminar", una línea chica de estado (vuelta, avance, matches), la carta con el alto que sobra, "↩️" entre 👎 y 👍, y el "¡Match!" flotando sobre la carta. Se sacó el texto "Vuelven a deslizar los matches" de la vuelta 2 (queda "Vuelta 2") — el plan no fijaba el diseño de la pantalla.
