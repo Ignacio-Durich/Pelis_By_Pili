@@ -1,4 +1,5 @@
 import { supabase } from '../../lib/supabase'
+import { subscribeCouple } from '../../lib/realtime'
 
 // Lo que llegó del menú Compartir de otra app (por el Atajo), esperando en la bandeja.
 export type SharedItem = {
@@ -48,20 +49,9 @@ async function call<T>(name: string): Promise<T> {
 export const createShareKey = () => call<string>('create_share_key')
 export const shareKeyCreatedAt = () => call<string | null>('share_key_created_at')
 
-// Igual que subscribeTitles: ante cualquier cambio se recarga la bandeja. Los DELETE van sin
-// filtro porque Realtime no los filtra; con RLS solo traen el id.
+// Ante cualquier cambio se recarga la bandeja.
 export function subscribeShared(coupleId: string, onChange: () => void): () => void {
-  const channel = supabase
-    .channel(`shared:${coupleId}:${crypto.randomUUID()}`)
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'shared_items', filter: `couple_id=eq.${coupleId}` }, () => onChange())
-    .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'shared_items' }, () => onChange())
-    .on('system', {}, (payload: { extension?: string; status?: string }) => {
-      if (payload.extension === 'postgres_changes' && payload.status === 'ok') onChange()
-    })
-    .subscribe()
-  return () => {
-    supabase.removeChannel(channel)
-  }
+  return subscribeCouple('shared', coupleId, [['INSERT', 'shared_items'], ['DELETE', 'shared_items']], onChange)
 }
 
 const KINDS: Record<string, string> = { Instagram: 'Reel', TikTok: 'Video', YouTube: 'Video' }

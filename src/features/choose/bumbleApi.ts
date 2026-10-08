@@ -1,4 +1,5 @@
 import { supabase } from '../../lib/supabase'
+import { subscribeCouple, type Change } from '../../lib/realtime'
 import type { Vote } from './bumbleLogic'
 
 // Partida de dos celulares. (Con un solo celular la partida no pasa por la base.)
@@ -53,21 +54,13 @@ export const bumbleUndo = (sessionId: string) => call<void>('bumble_undo', { p_s
 export const finishBumble = (sessionId: string, resultTitleId: string | null) =>
   call<void>('finish_bumble', { p_session_id: sessionId, p_result_title_id: resultTitleId })
 
-// Igual que subscribeTitles: ante cualquier cambio se recarga la partida entera. Los DELETE
-// (deshacer) van sin filtro porque Realtime no los filtra; con RLS solo traen el id.
+// Ante cualquier cambio (incluido deshacer, que borra un voto) se recarga la partida entera.
 export function subscribeBumble(coupleId: string, onChange: () => void): () => void {
-  const filter = `couple_id=eq.${coupleId}`
-  const channel = supabase
-    .channel(`bumble:${coupleId}:${crypto.randomUUID()}`)
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'bumble_sessions', filter }, () => onChange())
-    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'bumble_sessions', filter }, () => onChange())
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'bumble_votes', filter }, () => onChange())
-    .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'bumble_votes' }, () => onChange())
-    .on('system', {}, (payload: { extension?: string; status?: string }) => {
-      if (payload.extension === 'postgres_changes' && payload.status === 'ok') onChange()
-    })
-    .subscribe()
-  return () => {
-    supabase.removeChannel(channel)
-  }
+  const changes: Change[] = [
+    ['INSERT', 'bumble_sessions'],
+    ['UPDATE', 'bumble_sessions'],
+    ['INSERT', 'bumble_votes'],
+    ['DELETE', 'bumble_votes'],
+  ]
+  return subscribeCouple('bumble', coupleId, changes, onChange)
 }
