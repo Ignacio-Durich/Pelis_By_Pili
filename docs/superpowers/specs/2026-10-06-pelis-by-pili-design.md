@@ -200,7 +200,18 @@ Puntos menores que dejaron las revisiones de las etapas anteriores. Se arreglan 
   - Faltan tests de que `MyScore` conserva lo que uno está escribiendo cuando llega un cambio de la pareja, y de que el detalle se cierra si el título desaparece.
   - Accesibilidad: el aviso de puntaje inválido no está asociado al campo (`aria-describedby`) y "Guardado" no se anuncia (`role="status"`).
   - Más recargas por Realtime (puntajes y cambios de estado) hacen un poco más probable el desorden entre cargas de la lista ya anotado en la etapa 2.
-- Se suman acá los puntos menores que dejen las revisiones de las etapas 5 a 11.
+- Entra, de la etapa 5:
+  - Si TMDB da una duración fuera de 1–1000 minutos (existen), o más de 20 géneros o 50 plataformas, el guardado de la función de detalle falla entero sin aviso: no se guardan los puntajes, OMDb se consulta en cada apertura y el completado en segundo plano reintenta ese título siempre. Arreglo: guardar `null` o recortar las listas, y registrar el error.
+  - El completado en segundo plano puede correr dos veces a la vez (al pasar de "Lista" a "Elegir" y volver, o con los dos celulares abiertos), y también renueva títulos ya vistos, que no se filtran.
+  - Después de girar, la mitad de los nombres de la rueda queda cabeza abajo (el volteo se decide antes de girar).
+  - Con 7 o 13 títulos, el primer y el último gajo de la rueda tienen el mismo color.
+  - Lectores de pantalla: "Girando…" y el resultado de la ruleta, y el contador de filtros, no siempre se anuncian (la región `aria-live` se crea junto con el texto).
+  - CSS sin uso: `.filters-panel select` y `.roulette-spin`.
+  - Nombres accesibles: "Duración mínimo/máximo" debería ser "Duración mínima/máxima".
+  - Una barra puede quedar en un rango vacío ("Hasta 0 min", "Hasta 1"), que nunca da resultados.
+  - La pestaña "Elegir" no completa datos en segundo plano, y "No quedan títulos con estos filtros" no se actualiza si la pareja agrega uno mientras tanto.
+  - Con un filtro activo, la ruleta muestra dos contadores ("3 de 12…" y "Hay 3 títulos…"), que después de un veto pueden no coincidir.
+- Se suman acá los puntos menores que dejen las revisiones de las etapas 6 a 11.
 - Terminada cuando: cada punto tiene su test y está arreglado, o hay una decisión anotada de por qué se deja.
 - No entra: funciones nuevas.
 
