@@ -8,7 +8,7 @@ import type { Title } from '../titles/titlesApi'
 import { useTitles } from '../titles/useTitles'
 import { seededIndex } from './bumbleLogic'
 import { GameTop } from './GameTop'
-import { finishReveal, startReveal, submitReveal, type RevealSession } from './revealApi'
+import { finishReveal, RevealError, startReveal, submitReveal, type RevealSession } from './revealApi'
 import { PICKS, revealResult } from './revealLogic'
 import { TieBreak } from './TieBreak'
 import { useReveal } from './useReveal'
@@ -148,10 +148,17 @@ function TwoPhones({ session, me, partner, titles, matching, reload, onBack }: G
 
   function send(ids: string[]) {
     setError(null)
-    submitReveal(session.id, ids).then(() => {
-      setEditing(false)
-      reload()
-    }, fail('No se pudo guardar. Probá de nuevo.'))
+    submitReveal(session.id, ids).then(
+      () => {
+        setEditing(false)
+        reload()
+      },
+      (e) => {
+        // El otro reveló justo antes (o fue un doble toque): no es un error, se muestra la revelación.
+        if (e instanceof RevealError && e.kind === 'closed') reload()
+        else setError('No se pudo guardar. Probá de nuevo.')
+      },
+    )
   }
 
   return (
@@ -277,7 +284,8 @@ function Revelation({ picks, names, titles, seed, onDone }: { picks: [string[], 
   }
 
   const byId = new Map(titles.map((t) => [t.id, t]))
-  const result = revealResult(picks, (id) => byId.has(id))
+  // Lo que se marcó como visto o se borró antes de revelar ya no cuenta.
+  const result = revealResult(picks, (id) => byId.get(id)?.status === 'to_watch')
   const winnerId = result.winner ?? rouletteWinner
   const winner = winnerId ? byId.get(winnerId) : undefined
   const cards = (ids: string[]) => (

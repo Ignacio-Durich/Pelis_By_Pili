@@ -181,3 +181,15 @@ test('the partner hears that someone chose, never what', async () => {
   expect(outsider.events).toEqual([])
   await Promise.all([sessions.stop(), picks.stop(), outsider.stop()])
 }, 30_000)
+
+test('before the reveal nobody can end the game with a winner (it would tell what the other chose)', async () => {
+  await closeOpen()
+  const id = await start(A)
+  await submit(A, id, [ids[1]])
+  for (const guess of [ids[0], ids[1]]) {
+    expect((await B.client.rpc('finish_reveal', { p_session_id: id, p_result_title_id: guess })).error?.message).toBe('not_revealed')
+  }
+  expect((await sessionRow(id)).status).toBe('open')
+  expect((await B.client.rpc('finish_reveal', { p_session_id: id, p_result_title_id: null })).error).toBeNull()
+  expect((await sessionRow(id)).status).toBe('cancelled')
+})

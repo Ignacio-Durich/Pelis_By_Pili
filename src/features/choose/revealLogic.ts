@@ -10,6 +10,7 @@ export function revealResult(picks: [string[], string[]], exists: (id: string) =
   const only: [string[], string[]] = [first.filter((id) => !matches.includes(id)), second.filter((id) => !matches.includes(id))]
   const everyone = [...new Set([...first, ...second])]
   if (matches.length === 1) return { matches, only, winner: matches[0], roulette: null }
-  const roulette = matches.length > 1 ? matches : everyone.length > 0 ? everyone : null
+  // Ordenada: cada celular pone primero lo suyo, y la ruleta tiene que dar la misma en los dos.
+  const roulette = matches.length > 1 ? matches.toSorted() : everyone.length > 0 ? everyone.toSorted() : null
   return { matches, only, winner: null, roulette }
 }
