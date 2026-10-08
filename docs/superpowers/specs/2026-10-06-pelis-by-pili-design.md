@@ -59,7 +59,7 @@ Capas del código, cada una con un único trabajo: pantallas; acceso a datos (Su
 - Puntajes externos (guardados al consultarlos): IMDb, Rotten Tomatoes, Metacritic, TMDB, y fecha de última actualización. Así se cuidan las 1.000 consultas diarias de OMDb.
 - Puntaje propio: una fila por persona y título, con nota corta opcional.
 - Sesión de elección: modo usado, candidatas, votos o swipes de cada uno, y resultado.
-- La disponibilidad en plataformas no se guarda; se consulta al abrir el detalle.
+- La disponibilidad en plataformas se consulta al abrir el detalle. Desde la etapa 5 (decisión confirmada por Nacho) se guarda además la lista de plataformas de suscripción y gratis de cada título, renovada como mucho cada 7 días, para poder filtrar toda la lista por plataforma.
 
 Seguridad: solo los dos miembros de la pareja pueden leer y modificar los datos del espacio.
 
