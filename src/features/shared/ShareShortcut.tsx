@@ -90,6 +90,20 @@ export function ShareShortcut() {
           </li>
         </ol>
       </details>
+      <details>
+        <summary>¿Te pasaron el Atajo ya armado?</summary>
+        <p>Solo cambiá la clave: la dirección y lo demás son iguales para los dos.</p>
+        <ol>
+          <li>Abrí el link de iCloud y tocá "Agregar atajo" (Add Shortcut).</li>
+          <li>Acá arriba tocá "Crear mi clave" y después "Copiar clave".</li>
+          <li>En la app Atajos (Shortcuts), mantené apretado "Pelis By Pili" y tocá "Editar" (Edit).</li>
+          <li>
+            En "Obtener contenido de URL" (Get Contents of URL) tocá la flechita, y en Encabezados (Headers) reemplazá el valor de{' '}
+            <code>x-share-key</code> por tu clave.
+          </li>
+          <li>No cambies nada más. Probalo compartiendo un reel: tiene que decir "Guardado en Pelis By Pili".</li>
+        </ol>
+      </details>
     </section>
   )
 }

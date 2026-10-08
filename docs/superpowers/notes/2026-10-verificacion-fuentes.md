@@ -119,3 +119,12 @@ Impacto en el plan: afecta ya a la Etapa 1, no solo a las siguientes. La novia d
 - Primera prueba de Nacho en los iPhones: desde la sinopsis no se podía deslizar (el reverso tenía scroll propio y iOS se quedaba con el gesto) y la partida ocupaba demasiado alto. Se rehízo la pantalla para que entre en un iPhone 13 y 15 sin scroll (306/306, medido a 390×844 y 393×852). Nacho: "Perfecto".
 - La etapa queda terminada: el match aparece en dos celulares al mismo tiempo, y también se puede jugar con uno solo.
 
+## Cierre de la Etapa 8 (2026-10-08)
+
+- iOS no deja que una app web instalada reciba lo compartido (WebKit no soporta `share_target`) y un Atajo abre los links en Safari, con la sesión aparte: Nacho eligió una bandeja de compartidos a la que el Atajo manda lo compartido con una clave personal.
+- Antes de publicar: `npm test` 329/329, `npm run test:security` 77/77 contra el Supabase local (claves, bandeja, Realtime y la función `share`), typecheck y lint sin errores.
+- Nacho subió `20261013000000_shared_items.sql` con `db push`; se desplegó la función `share` (`--no-verify-jwt`). Un pedido a la función real sin `apikey` y con clave inventada respondió 401 con su mensaje: el Atajo solo necesita `x-share-key`. `npm run test:security:remote` dio 75/77 por el límite de pedidos de Auth del proyecto real; a los 6 minutos, los dos archivos afectados (shared y titles) pasaron 19/19.
+- Revisión final (opus): sin críticos. Arreglado con test que falla primero: el Atajo decía "Guardado" aunque la clave no sirviera o la bandeja estuviera llena (ahora la función contesta en texto y el Atajo muestra esa respuesta), la guía avisa que hay que borrar la clave antes de pasar el Atajo por iCloud, y el paso del menú Compartir coincide con iOS actual. Los menores van a la Etapa 12.
+- Prueba de aceptación (Nacho, iPhone en inglés con iOS 26): armó el Atajo con la guía (en iOS 26 el menú del nombre no tiene "Detalles": se usa el bloque "Receive … from Nowhere"), "Pedir entrada" se puede mandar vacío, un reel real llegó a la bandeja. Pedidos después de probarla: el botón dice "Agregar", la guía nombra las acciones también en inglés y explica qué cambiar en un Atajo recibido ya armado (solo la clave). Nacho: "todo anda".
+- La etapa queda terminada: desde un reel real, Compartir → Pelis By Pili → Listo, y en la app "Agregar" abre la búsqueda con el reel como "de dónde vino".
+
