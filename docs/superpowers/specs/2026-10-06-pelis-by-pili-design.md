@@ -234,6 +234,7 @@ Decisiones de orden: las etapas 0 a 4 son lo imprescindible para usar la app de 
 - Con una clave real de OMDb: si devuelve Rotten Tomatoes para películas, y confirmar que para series no lo hace (un reporte de la comunidad dice que no, por razones legales; sin fecha clara).
 - Con una clave real de TMDB: si hay datos de plataformas para Argentina (consultar la lista de regiones disponibles).
 - Límites de los planes gratuitos de Supabase y del hosting, en especial si pausan proyectos inactivos.
+- Los celulares son un iPhone 13 (Nacho, 390×844) y un iPhone 15 (Pili, 393×852), con la app instalada en la pantalla de inicio. Cada pantalla de juego tiene que entrar sin scroll en los dos, con la muesca, la barra de inicio y las pestañas de la app (pedido de Nacho en la etapa 7). Revisar a 390×844 y 393×852 antes de publicar.
 
 ## 13. Inspiración
 

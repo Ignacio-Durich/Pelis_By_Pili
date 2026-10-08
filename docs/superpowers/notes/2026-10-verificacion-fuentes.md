@@ -108,3 +108,14 @@ Impacto en el plan: afecta ya a la Etapa 1, no solo a las siguientes. La novia d
 - Prueba de aceptación (Nacho, con la cuenta de prueba en el celular de su hermana): "salio todo bien" en la primera prueba y "todo bien" después de los cambios.
 - Revisión final (sin críticos; 2 importantes, arreglados con test que falla primero): "Volver a los modos" seguía visible con un detalle abierto y, al tocarlo, se perdían el resultado y los vetos de la ruleta o las respuestas (ahora el botón está dentro de cada modo y se oculta con él); una plataforma elegida cuyo último título desaparecía perdía su chip pero seguía filtrando (ahora se usa `withChosen`, movido a `filters.ts`, como en el panel de filtros). 259/259, typecheck y lint sin errores. Los puntos menores van a la Etapa 12.
 - La etapa queda terminada: devuelve 5 opciones coherentes con las respuestas.
+
+## Cierre de la Etapa 7 (2026-10-08)
+
+- Antes de publicar: `npm test` 301/301, `npm run test:security` 67/67 contra el Supabase local (10 nuevos de Bumble: una partida por pareja aun con dos "Empezar" a la vez, mazo de 2 a 30 títulos de la pareja en "Por ver", votos y deshacer, cierre, lectura y escritura de ajenos, Realtime de votos y borrados), typecheck y lint sin errores.
+- Nacho subió la migración `20261012000000_bumble.sql` con `db push`; `npm run test:security:remote` 67/67 en una sola corrida.
+- Revisión visual en local: un celular entero, y dos celulares con una Pili local creada por script (el match apareció en vivo en el celular de Nacho al votar ella).
+- Revisión final (opus): sin críticos. Arreglados con test que falla primero: "Deshacer" desaparecía si se borraba un título ya votado, un doble toque en "Deshacer" borraba dos votos, y una recarga vieja que llegaba tarde podía dejar un celular en "Esperando a Pili". Los puntos menores van a la Etapa 12.
+- Publicado en https://pelis-by-pili.con-amor-nacho.workers.dev.
+- Primera prueba de Nacho en los iPhones: desde la sinopsis no se podía deslizar (el reverso tenía scroll propio y iOS se quedaba con el gesto) y la partida ocupaba demasiado alto. Se rehízo la pantalla para que entre en un iPhone 13 y 15 sin scroll (306/306, medido a 390×844 y 393×852). Nacho: "Perfecto".
+- La etapa queda terminada: el match aparece en dos celulares al mismo tiempo, y también se puede jugar con uno solo.
+
