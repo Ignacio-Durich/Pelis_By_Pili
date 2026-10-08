@@ -32,10 +32,12 @@ test('time: only titles that fit, and without runtime they do not', () => {
   expect(quickPick([fits, long, unknown], NO_ANSWERS).picks).toHaveLength(3)
 })
 
-test('platform: only titles on that platform', () => {
+test('platforms: only titles on any of the chosen ones', () => {
   const netflix = t({ id: 'nf', streaming: ['Netflix'] })
   const prime = t({ id: 'pv', streaming: ['Prime Video'] })
-  expect(ids(quickPick([netflix, prime], a({ platform: 'Netflix' })))).toEqual(['nf'])
+  const hbo = t({ id: 'hbo', streaming: ['HBO Max'] })
+  expect(ids(quickPick([netflix, prime, hbo], a({ platforms: ['Netflix'] })))).toEqual(['nf'])
+  expect(ids(quickPick([netflix, prime, hbo], a({ platforms: ['Netflix', 'HBO Max'] }))).sort()).toEqual(['hbo', 'nf'])
 })
 
 test('a mood match beats a better score', () => {

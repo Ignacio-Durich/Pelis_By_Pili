@@ -86,7 +86,7 @@ El mazo de candidatas sale de la lista "Por ver", no de un catálogo general.
 1. Swipe y match: cada uno desliza sobre un mazo de 20 a 30 títulos; hay match cuando los dos eligen el mismo. Si hay varios matches, final de a pares.
 2. Ruleta con filtros: filtra por película o serie, duración, género, plataforma y puntaje mínimo de IMDb; se gira; con veto.
 3. Torneo de a pares: se eligen 8 candidatas y se enfrentan de a pares hasta que queda una.
-4. Preguntas rápidas del momento: tiempo disponible, ánimo y plataforma; devuelve las 3 mejores de la lista según esas respuestas y los puntajes.
+4. Preguntas rápidas del momento: tiempo disponible, ánimo (uno o varios) y plataforma (una o varias); devuelve las 3 mejores de la lista según esas respuestas y los puntajes.
 5. Revelación simultánea: cada uno elige su top 3 en secreto y se muestra a la vez; las coincidencias van primero.
 
 A definir al armar el plan: cuántos vetos permite la ruleta, cómo se traduce "ánimo" a géneros y cómo se arma el mazo del swipe.

@@ -5,7 +5,7 @@ import { imdbScore, rtScore } from '../titles/ratings'
 import { TitleCard } from '../titles/TitleCard'
 import { TitleDetail } from '../titles/TitleDetail'
 import { useTitles } from '../titles/useTitles'
-import { MOODS, NO_ANSWERS, quickPick, TIME_OPTIONS, type Answers, type MoodId } from './quickPick'
+import { MOODS, NO_ANSWERS, quickPick, TIME_OPTIONS, type Answers } from './quickPick'
 
 export function QuickQuestions() {
   const { coupleId } = useCouple()
@@ -18,8 +18,7 @@ export function QuickQuestions() {
   const { picks, filled } = quickPick(titles ?? [], answers)
   const detail = titles?.find((t) => t.id === detailId)
   const set = (patch: Partial<Answers>) => setAnswers({ ...answers, ...patch })
-  const toggleMood = (id: MoodId) =>
-    set({ moods: answers.moods.includes(id) ? answers.moods.filter((m) => m !== id) : [...answers.moods, id] })
+  const toggle = <T,>(list: T[], item: T) => (list.includes(item) ? list.filter((x) => x !== item) : [...list, item])
 
   function openDetail(id: string) {
     scroll.current = window.scrollY
@@ -48,16 +47,19 @@ export function QuickQuestions() {
         <span>¿Qué ánimo tienen?</span>
         <div className="chips">
           {MOODS.map((m) => (
-            <button key={m.id} className="chip" aria-pressed={answers.moods.includes(m.id)} onClick={() => toggleMood(m.id)}>
+            <button key={m.id} className="chip" aria-pressed={answers.moods.includes(m.id)} onClick={() => set({ moods: toggle(answers.moods, m.id) })}>
               {m.label}
             </button>
           ))}
         </div>
         <span>¿Dónde lo ven?</span>
         <div className="chips">
-          {[null, ...filterOptions(toWatch).platforms].map((p) => (
-            <button key={p ?? 'any'} className="chip" aria-pressed={answers.platform === p} onClick={() => set({ platform: p })}>
-              {p ?? 'Cualquiera'}
+          <button className="chip" aria-pressed={answers.platforms.length === 0} onClick={() => set({ platforms: [] })}>
+            Cualquiera
+          </button>
+          {filterOptions(toWatch).platforms.map((p) => (
+            <button key={p} className="chip" aria-pressed={answers.platforms.includes(p)} onClick={() => set({ platforms: toggle(answers.platforms, p) })}>
+              {p}
             </button>
           ))}
         </div>

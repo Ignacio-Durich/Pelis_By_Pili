@@ -22,9 +22,9 @@ export const TIME_OPTIONS: { minutes: number | null; label: string }[] = [
   { minutes: null, label: 'Sin apuro' },
 ]
 
-export type Answers = { maxMinutes: number | null; moods: MoodId[]; platform: string | null }
+export type Answers = { maxMinutes: number | null; moods: MoodId[]; platforms: string[] }
 
-export const NO_ANSWERS: Answers = { maxMinutes: null, moods: [], platform: null }
+export const NO_ANSWERS: Answers = { maxMinutes: null, moods: [], platforms: [] }
 
 const PICKS = 3
 
@@ -43,7 +43,7 @@ export function quickPick(titles: Title[], answers: Answers): { picks: Title[]; 
     (t) =>
       t.status === 'to_watch' &&
       (answers.maxMinutes === null || (t.runtime !== null && t.runtime <= answers.maxMinutes)) &&
-      (answers.platform === null || t.streaming.includes(answers.platform)),
+      (answers.platforms.length === 0 || answers.platforms.some((p) => t.streaming.includes(p))),
   )
 
   // Siempre el mismo orden: más ánimos en común, mejor puntaje, más nuevo.
