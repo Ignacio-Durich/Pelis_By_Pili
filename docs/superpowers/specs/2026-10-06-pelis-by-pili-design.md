@@ -151,7 +151,7 @@ Cada etapa se construye, se prueba y se cierra antes de empezar la siguiente. Cl
 - No entra: Atajo de iOS, revelación simultánea ni torneo.
 
 ### Etapa 8 — Atajo de iOS para "Compartir"
-- Entra: el Atajo que aparece en el menú Compartir y abre la búsqueda ya hecha, más la guía de instalación para los dos iPhone.
+- Entra: el Atajo que aparece en el menú Compartir, más la guía de instalación para los dos iPhone. Como iOS no deja que una app web instalada reciba lo compartido y un Atajo abre los links en Safari (con la sesión aparte), el Atajo guarda lo compartido en una bandeja de la pareja con una clave personal, y en la app un toque abre la búsqueda ya hecha (elegido por Nacho el 2026-10-08).
 - Terminada cuando: desde un reel real se llega a la búsqueda en unos 3 toques.
 - No entra: revelación simultánea, torneo ni modo sin internet.
 
