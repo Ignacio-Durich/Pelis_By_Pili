@@ -127,6 +127,6 @@ Cada línea: decisión — motivo — costo si está mal.
 
 # Hosting
 
-- Mudanza de Netlify a Cloudflare (elegido por Nacho): Worker con archivos estáticos en vez del Pages anterior, porque Wrangler ya delega Pages a Workers y el Pages viejo es el camino que Cloudflare deja atrás (otra mudanza obligaría a reinstalar la app en los celulares) — la dirección queda `pelis-by-pili.pelis-by-pili.workers.dev`; se puede cambiar el subdominio de la cuenta más adelante, antes del regalo.
+- Mudanza de Netlify a Cloudflare (elegido por Nacho): Worker con archivos estáticos en vez del Pages anterior, porque Wrangler ya delega Pages a Workers y el Pages viejo es el camino que Cloudflare deja atrás (otra mudanza obligaría a reinstalar la app en los celulares) — la dirección queda `pelis-by-pili.pelis-by-pili.workers.dev`; se puede cambiar el subdominio de la cuenta más adelante, antes del regalo. El 2026-10-08 Nacho lo cambió a `con-amor-nacho`: la app queda en `pelis-by-pili.con-amor-nacho.workers.dev`.
 - `scripts/check-dist.ts` (con test) reemplaza al chequeo manual de claves antes de publicar, y `npm run deploy` lo corre siempre — ninguno.
 - Se borró `netlify.toml` — ya no se publica en Netlify.
