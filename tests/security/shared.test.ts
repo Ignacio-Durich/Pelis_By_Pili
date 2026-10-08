@@ -1,6 +1,7 @@
 import type { RealtimePostgresChangesPayload, SupabaseClient } from '@supabase/supabase-js'
 import { createHash } from 'node:crypto'
 import { afterAll, beforeAll, expect, test } from 'vitest'
+import { requireEnv } from '../../scripts/lib/env.ts'
 import { adminClient, anonClient, cleanup, createCouple, createTestUser } from './helpers.ts'
 
 type User = { id: string; client: SupabaseClient }
@@ -115,3 +116,42 @@ test('a new item reaches the partner in realtime and not an outsider', async () 
   expect(outsider.events).toEqual([])
   await Promise.all([partner.stop(), outsider.stop()])
 }, 30_000)
+
+const share = (key: string | null, body: unknown) =>
+  fetch(`${requireEnv(['VITE_SUPABASE_URL']).VITE_SUPABASE_URL}/functions/v1/share`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...(key ? { 'x-share-key': key } : {}) },
+    body: JSON.stringify(body),
+  })
+
+test('the share function saves what was shared with the right key', async () => {
+  const key = (await A.client.rpc('create_share_key')).data as string
+  const res = await share(key, { shared: 'https://www.instagram.com/reel/Zz9/?igsh=abc', name: 'Relatos salvajes' })
+  expect(res.status).toBe(200)
+  const { data } = await adminClient().from('shared_items').select('couple_id, shared_by, url, query, source').eq('query', 'Relatos salvajes').single()
+  expect(data).toEqual({ couple_id: coupleA, shared_by: A.id, url: 'https://www.instagram.com/reel/Zz9/', query: 'Relatos salvajes', source: 'Instagram' })
+})
+
+test('old, made-up or missing keys are rejected and empty shares too', async () => {
+  const old = (await B.client.rpc('create_share_key')).data as string
+  const current = (await B.client.rpc('create_share_key')).data as string
+  expect((await share(old, { shared: 'https://x.com/a' })).status).toBe(401)
+  expect((await share('f'.repeat(48), { shared: 'https://x.com/a' })).status).toBe(401)
+  expect((await share(null, { shared: 'https://x.com/a' })).status).toBe(401)
+  expect((await share(current, { shared: ' ', name: '' })).status).toBe(400)
+})
+
+test('a key of someone who left the space stops working', async () => {
+  const [D, E] = await Promise.all([createTestUser(), createTestUser()])
+  await createCouple(D, E)
+  const key = (await E.client.rpc('create_share_key')).data as string
+  await adminClient().from('couple_members').delete().eq('user_id', E.id)
+  expect((await share(key, { name: 'Dark' })).status).toBe(401)
+})
+
+test('the inbox holds at most 100 items', async () => {
+  const key = (await C.client.rpc('create_share_key')).data as string
+  const rows = Array.from({ length: 100 }, (_, i) => ({ couple_id: coupleC, shared_by: C.id, query: `Peli ${i}` }))
+  expect((await adminClient().from('shared_items').insert(rows)).error).toBeNull()
+  expect((await share(key, { name: 'Una más' })).status).toBe(429)
+})
