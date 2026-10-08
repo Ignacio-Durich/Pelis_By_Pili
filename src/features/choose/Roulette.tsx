@@ -112,59 +112,65 @@ function Session({ matching, random, onOpenDetail }: { matching: Title[]; random
     <Wheel items={wheelItems.map((t) => ({ id: t.id, label: t.title }))} rotation={rotation} animate={spinning} onEnd={finish} />
   )
 
-  if (spinning) {
-    return (
-      <>
-        {wheel}
-        <p className="spinning" aria-live="polite">
-          Girando…
-        </p>
-      </>
-    )
-  }
-
-  if (noneLeft) return <p>No quedan títulos con estos filtros</p>
-
-  if (result) {
-    const allUsed = members.every((m) => usedBy.includes(m.userId))
-    return (
-      <div className="roulette-result">
-        {wheel}
-        <h3>Les tocó</h3>
-        <div data-testid="roulette-result">
-          <TitleCard title={result.title} originalTitle={result.originalTitle} year={result.year} mediaType={result.mediaType} posterPath={result.posterPath} />
-        </div>
-        <button className="secondary" onClick={() => onOpenDetail(result.id)}>
-          Ver detalle
-        </button>
-        <div className="vetoes">
-          {members.map((m) =>
-            usedBy.includes(m.userId) ? (
-              <button key={m.userId} disabled>{`${nameOf(m.userId)} ya vetó`}</button>
-            ) : (
-              <button key={m.userId} onClick={() => veto(m.userId)}>{`Veto de ${nameOf(m.userId)}`}</button>
-            ),
-          )}
-        </div>
-        {allUsed && <p>No quedan vetos: ¡a ver esta!</p>}
-      </div>
-    )
-  }
-
+  // La rueda va siempre en el mismo lugar: si cambiara de contenedor, React la recrearía ya en su
+  // posición final y el giro (por ejemplo, después de un veto) no se vería.
   return (
     <>
       {wheel}
-      {lost && <p>Ese título ya no está en Por ver. Giren de nuevo.</p>}
-      {candidates.length === 0 ? (
-        <p>Ningún título cumple estos filtros</p>
-      ) : (
-        <p>
-          {candidates.length === 1 ? 'Hay 1 título que cumple los filtros' : `Hay ${candidates.length} títulos que cumplen los filtros`}
-        </p>
-      )}
-      <button disabled={candidates.length === 0} onClick={() => spin(candidates)}>
-        Girar
-      </button>
+      {content()}
     </>
   )
+
+  function content() {
+    if (spinning) {
+      return (
+        <p className="spinning" aria-live="polite">
+          Girando…
+        </p>
+      )
+    }
+
+    if (noneLeft) return <p>No quedan títulos con estos filtros</p>
+
+    if (result) {
+      const allUsed = members.every((m) => usedBy.includes(m.userId))
+      return (
+        <div className="roulette-result">
+          <h3>Les tocó</h3>
+          <div data-testid="roulette-result">
+            <TitleCard title={result.title} originalTitle={result.originalTitle} year={result.year} mediaType={result.mediaType} posterPath={result.posterPath} />
+          </div>
+          <button className="secondary" onClick={() => onOpenDetail(result.id)}>
+            Ver detalle
+          </button>
+          <div className="vetoes">
+            {members.map((m) =>
+              usedBy.includes(m.userId) ? (
+                <button key={m.userId} disabled>{`${nameOf(m.userId)} ya vetó`}</button>
+              ) : (
+                <button key={m.userId} onClick={() => veto(m.userId)}>{`Veto de ${nameOf(m.userId)}`}</button>
+              ),
+            )}
+          </div>
+          {allUsed && <p>No quedan vetos: ¡a ver esta!</p>}
+        </div>
+      )
+    }
+
+    return (
+      <>
+        {lost && <p>Ese título ya no está en Por ver. Giren de nuevo.</p>}
+        {candidates.length === 0 ? (
+          <p>Ningún título cumple estos filtros</p>
+        ) : (
+          <p>
+            {candidates.length === 1 ? 'Hay 1 título que cumple los filtros' : `Hay ${candidates.length} títulos que cumplen los filtros`}
+          </p>
+        )}
+        <button disabled={candidates.length === 0} onClick={() => spin(candidates)}>
+          Girar
+        </button>
+      </>
+    )
+  }
 }

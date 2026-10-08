@@ -174,3 +174,21 @@ test('if the wheel never reports the end, the result still appears', async () =>
   await act(async () => vi.advanceTimersByTime(4500))
   expect(screen.getByRole('heading', { name: 'Les tocó' })).toBeInTheDocument()
 })
+
+test('vetoing spins the same wheel again, animated', async () => {
+  reducedMotion(false)
+  renderRoulette()
+  await screen.findByText('Hay 3 títulos que cumplen los filtros')
+  spin()
+  const rotor = screen.getByTestId('wheel-rotor')
+  fireEvent.transitionEnd(rotor)
+  const landed = rotor.style.transform
+  fireEvent.click(screen.getByRole('button', { name: 'Veto de Nacho' }))
+  expect(screen.getByText('Girando…')).toBeInTheDocument()
+  // La misma rueda (no una nueva): si se recreara, aparecería ya en su posición final, sin animar.
+  expect(screen.getByTestId('wheel-rotor')).toBe(rotor)
+  expect(rotor.style.transform).not.toBe(landed)
+  expect(rotor.style.transition).toContain('4s')
+  fireEvent.transitionEnd(rotor)
+  expect(resultName()).toBe('Segunda')
+})
