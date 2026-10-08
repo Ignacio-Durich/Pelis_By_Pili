@@ -581,3 +581,10 @@ button.chip[aria-pressed='true'] {
 .bumble-votes button {
   flex: 1;
 }
+
+.bumble-match {
+  margin: 0;
+  color: #ffb703;
+  font-weight: 700;
+  font-size: 1.15rem;
+}
