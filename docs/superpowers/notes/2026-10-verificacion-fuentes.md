@@ -158,3 +158,7 @@ Impacto en el plan: afecta ya a la Etapa 1, no solo a las siguientes. La novia d
 - Prueba de aceptación (Nacho, modo avión en los iPhones): "funciona todo bien".
 - La etapa queda terminada: un título anotado en modo avión aparece en el otro celular al reconectar.
 
+## Cuenta de prueba borrada (2026-10-08)
+
+- Antes de mostrarle la app a Pili, Nacho borró desde el panel de Supabase la cuenta de prueba que usaba en el celular de su hermana. Comprobado leyendo el proyecto real (sin mostrar claves): 1 cuenta, el espacio con solo "Nacho" y ninguna partida abierta. Los títulos que había agregado quedan con "La agregó alguien"; sus puntajes y votos se borraron con la cuenta. Pili entra con "Invitar a mi pareja".
+
