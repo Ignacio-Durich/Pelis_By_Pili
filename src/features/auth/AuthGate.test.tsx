@@ -169,3 +169,21 @@ test('after signing out, offline does not open the old account', async () => {
   renderGate()
   expect(await screen.findByText('Sin conexión. Probá de nuevo.')).toBeInTheDocument()
 })
+
+test('with an account saved on this phone it opens at once, before the session answers', async () => {
+  api.getSession.mockResolvedValueOnce(session)
+  const first = render(
+    <AuthGate>
+      <WhoAmI />
+    </AuthGate>,
+  )
+  await screen.findByText('cuenta u1')
+  first.unmount()
+  api.getSession.mockReturnValue(new Promise(() => {}))
+  render(
+    <AuthGate>
+      <WhoAmI />
+    </AuthGate>,
+  )
+  expect(screen.getByText('cuenta u1')).toBeInTheDocument()
+})

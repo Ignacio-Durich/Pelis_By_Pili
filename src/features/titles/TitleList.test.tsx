@@ -382,3 +382,20 @@ test('a change that no longer applies is dropped with a notice', async () => {
   expect(screen.queryByText(/No se pudo guardar un cambio/)).not.toBeInTheDocument()
   expect(pendingFor('u1:c1')).toEqual([])
 })
+
+test('names saved for later go to Compartidos when the connection is back', async () => {
+  enqueue('u1:c1', { kind: 'later', query: 'Dark', note: 'la dijo Juan' })
+  api.addSharedItem.mockResolvedValue(undefined)
+  api.listTitles.mockResolvedValue([toWatch])
+  renderList()
+  await act(async () => {})
+  expect(api.addSharedItem).toHaveBeenCalledWith('Dark', 'la dijo Juan')
+  expect(pendingFor('u1:c1')).toEqual([])
+})
+
+test('a saved list shows at once while the server answers (sin red tarda en rendirse)', () => {
+  saveCache('titles', 'c1', [toWatch])
+  api.listTitles.mockReturnValue(new Promise(() => {}))
+  renderList()
+  expect(screen.getByText('Una por ver')).toBeInTheDocument()
+})

@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
+import { enqueue } from '../../lib/offline'
 import { useMemberName } from '../couple/coupleContext'
 import { dismissShared, originNote, type SharedItem } from '../shared/sharedApi'
 import { fetchTitleDetail } from './detailApi'
 import { searchTitles, type SearchResult } from './searchApi'
 import { TitleCard } from './TitleCard'
 import { addTitle, TitleError, type Title } from './titlesApi'
+import { usePendingOwner } from './useTitles'
 
 // `shared`: se abrió desde la bandeja de compartidos, con la búsqueda y la nota ya cargadas.
 type Props = { coupleId: string; titles: Title[]; onClose: () => void; shared?: SharedItem }
@@ -29,6 +31,9 @@ export function AddTitle({ coupleId, titles, onClose, shared }: Props) {
   const [busyKey, setBusyKey] = useState<string | null>(null)
   const [added, setAdded] = useState<string[]>([])
   const [addError, setAddError] = useState<'duplicate' | 'network' | null>(null)
+  const owner = usePendingOwner()
+  const [online, setOnline] = useState(() => navigator.onLine)
+  const [savedForLater, setSavedForLater] = useState(false)
   // La última consulta: una respuesta que llega tarde para una consulta vieja se descarta.
   const latest = useRef('')
 
@@ -54,6 +59,24 @@ export function AddTitle({ coupleId, titles, onClose, shared }: Props) {
     }, 400)
     return () => clearTimeout(timer)
   }, [query])
+
+  useEffect(() => {
+    const update = () => setOnline(navigator.onLine)
+    window.addEventListener('online', update)
+    window.addEventListener('offline', update)
+    return () => {
+      window.removeEventListener('online', update)
+      window.removeEventListener('offline', update)
+    }
+  }, [])
+
+  // Sin poder buscar, el nombre queda en el celular y al volver la conexión va a Compartidos.
+  function saveForLater() {
+    enqueue(owner, { kind: 'later', query: query.trim(), note: note.trim() })
+    setSavedForLater(true)
+    setQuery('')
+    setNote('')
+  }
 
   async function add(result: SearchResult) {
     if (busyKey) return
@@ -100,7 +123,14 @@ export function AddTitle({ coupleId, titles, onClose, shared }: Props) {
       </label>
       <button onClick={onClose}>Volver</button>
       {active && searching && <p>Buscando…</p>}
-      {active && searchFailed && <p role="alert">No se pudo buscar. Probá de nuevo.</p>}
+      {!online && <p>Sin conexión: no se puede buscar ahora.</p>}
+      {online && active && searchFailed && <p role="alert">No se pudo buscar. Probá de nuevo.</p>}
+      {(!online || (active && searchFailed)) && (
+        <button className="secondary" disabled={!query.trim()} onClick={saveForLater}>
+          Guardar para agregar después
+        </button>
+      )}
+      {savedForLater && <p>⏳ Guardado. Va a aparecer en Compartidos cuando vuelva la conexión</p>}
       {addError && <p role="alert">{addMessages[addError]}</p>}
       {active && !searching && results?.length === 0 && <p>No encontramos nada con ese nombre</p>}
       <ul className="title-list">

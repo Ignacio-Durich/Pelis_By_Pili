@@ -117,3 +117,10 @@ test('offline it uses the couple saved for this account, not another one', async
   renderGate()
   expect(await screen.findByText('Sin conexión. Probá de nuevo.')).toBeInTheDocument()
 })
+
+test('with a couple saved for this account it opens at once, before the server answers', () => {
+  saveCache('couple', 'u1', { coupleId: 'c1', memberCount: 2, members: [nacho, pili] })
+  api.getMyCouple.mockReturnValue(new Promise(() => {}))
+  renderGate()
+  expect(screen.getByText('espacio c1 con 2')).toBeInTheDocument()
+})
