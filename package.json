@@ -10,7 +10,6 @@
     "typecheck": "tsc -b",
     "lint": "oxlint",
     "preview": "vite preview",
-    "generate-pwa-assets": "pwa-assets-generator",
     "test:security": "vitest run --config vitest.security.config.ts",
     "test:security:remote": "SUPABASE_TARGET=remote vitest run --config vitest.security.config.ts",
     "deploy": "npm run build && tsx --env-file=.env.local scripts/check-dist.ts && wrangler deploy"
@@ -26,7 +25,6 @@
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
-    "@vite-pwa/assets-generator": "^2.0.0",
     "@vitejs/plugin-react": "^6.1.1",
     "jsdom": "^30.1.2",
     "oxlint": "^1.81.0",
