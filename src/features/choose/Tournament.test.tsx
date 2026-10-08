@@ -148,3 +148,24 @@ test('the tournament survives the app reloading', async () => {
   expect(await screen.findByText('Cuartos de final · duelo 2 de 4')).toBeInTheDocument()
   expect(duel()).toEqual(['Peli B', 'Peli F'])
 })
+
+test('while the list loads after a reload it says Cargando…, never that nothing is left', async () => {
+  const view = await startDuels()
+  view.unmount()
+  api.listTitles.mockReturnValue(new Promise(() => {}))
+  renderTournament()
+  expect(screen.getByText('Cargando…')).toBeInTheDocument()
+  expect(screen.queryByText('No quedó ninguna candidata en la lista')).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Listo' })).not.toBeInTheDocument()
+})
+
+test('a double tap on the final card does not hit Listo or Deshacer', async () => {
+  await startDuels()
+  for (const card of ['A', 'B', 'C', 'D', 'A', 'C']) press(new RegExp(`Peli ${card}`))
+  expect(screen.getByText('Final · duelo 1 de 1')).toBeInTheDocument()
+  vi.spyOn(Date, 'now').mockReturnValue(900_000)
+  press(/Peli C/)
+  press('Listo')
+  press('Deshacer')
+  expect(screen.getByText('¡Ganó Peli C!')).toBeInTheDocument()
+})

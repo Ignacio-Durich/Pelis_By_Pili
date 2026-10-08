@@ -43,8 +43,11 @@ test('holes pass the other one without a duel', () => {
   expect(tournamentState(Array(8).fill(null), [], all)).toEqual({ kind: 'none' })
 })
 
-test('a title that is gone becomes a hole, and its old decisions do not get in the way', () => {
+test('a title that is gone becomes a hole where it stands, and the losers stay out', () => {
   const exists = (id: string) => id !== 'a'
-  const decided = [win('a', 'b', 'a'), win('c', 'd', 'c')]
-  expect(tournamentState(eight, decided, exists)).toEqual({ kind: 'duel', round: 1, index: 2, total: 3, pair: ['e', 'f'] })
+  // A todavía no jugó: B pasa sola.
+  expect(tournamentState(eight, [win('c', 'd', 'c')], exists)).toEqual({ kind: 'duel', round: 1, index: 2, total: 3, pair: ['e', 'f'] })
+  // A ya le había ganado a B: B no revive, el hueco queda donde estaba A.
+  const quarters = [win('a', 'b', 'a'), win('c', 'd', 'c'), win('e', 'f', 'e'), win('g', 'h', 'g')]
+  expect(tournamentState(eight, quarters, exists)).toEqual({ kind: 'duel', round: 2, index: 1, total: 1, pair: ['e', 'g'] })
 })

@@ -36,24 +36,33 @@ export function buildBracket(first: string[], second: string[], fill: string[], 
   return slots.map((slot) => slot ?? extra.shift() ?? null)
 }
 
+// Un título que se borró o se marcó como visto queda como hueco donde está: si su duelo no se jugó,
+// pasa el rival; si ya lo había ganado, el hueco sigue en su lugar (la que perdió no revive).
 export function tournamentState(slots: (string | null)[], decisions: Decision[], exists: (id: string) => boolean): TournamentState {
   const decided = (a: string, b: string) => decisions.find((d) => d.pair.includes(a) && d.pair.includes(b) && (d.winner === a || d.winner === b))?.winner
-  let current = slots.map((slot) => (slot && exists(slot) ? slot : null))
+  let current = slots
 
   for (const round of [1, 2, 3] as Round[]) {
     const pairs = Array.from({ length: current.length / 2 }, (_, i) => [current[2 * i], current[2 * i + 1]] as const)
-    const total = pairs.filter(([a, b]) => a && b).length
+    const isDuel = ([a, b]: readonly [string | null, string | null]) => !!a && !!b && (!!decided(a, b) || (exists(a) && exists(b)))
+    const total = pairs.filter(isDuel).length
     const next: (string | null)[] = []
     let index = 0
     for (const [a, b] of pairs) {
-      if (!a || !b) {
-        next.push(a ?? b)
+      const winner = a && b ? decided(a, b) : undefined
+      if (winner) {
+        index++
+        next.push(exists(winner) ? winner : null)
+        continue
+      }
+      const left = a && exists(a) ? a : null
+      const right = b && exists(b) ? b : null
+      if (!left || !right) {
+        next.push(left ?? right)
         continue
       }
       index++
-      const winner = decided(a, b)
-      if (!winner) return { kind: 'duel', round, index, total, pair: [a, b] }
-      next.push(winner)
+      return { kind: 'duel', round, index, total, pair: [left, right] }
     }
     current = next
   }

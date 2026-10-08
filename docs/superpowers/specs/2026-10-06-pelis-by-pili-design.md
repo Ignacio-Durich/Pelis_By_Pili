@@ -229,7 +229,10 @@ Puntos menores que dejaron las revisiones de las etapas anteriores. Se arreglan 
   - "Descartar" depende de Realtime para que el ítem desaparezca; sin conexión de Realtime queda en pantalla hasta volver a la app.
 - Entra, de la etapa 9:
   - En "Cambiar mi elección", un título ya elegido que se marcó como visto sigue marcado y "Listo" termina en un error genérico; y si se entra directo a una partida con filtros que no dejan ningún título, aparece "Listo (0 de 0)" habilitado.
-- Se suman acá los puntos menores que dejen las revisiones de las etapas 10 y 11.
+- Entra, de la etapa 10:
+  - La carta de la ganadora del torneo es un botón deshabilitado (VoiceOver dice "botón atenuado"); mejor un elemento que no sea botón.
+  - Las partidas de un celular (Bumble, Top 3 secreto, Torneo) se guardan en el celular sin fijarse de qué cuenta son: si en ese celular entra otra cuenta, ve la partida ajena.
+- Se suman acá los puntos menores que deje la revisión de la etapa 11.
 - Entra, pedido de Nacho (2026-10-08): que todos los modos se puedan jugar con un solo celular, porque a veces usan uno solo de los dos. Bumble ya lo trae desde la etapa 7; la revelación simultánea y el torneo (etapas 9 y 10) conviene diseñarlos con esa opción desde el principio.
 - Entra, pedido de Nacho (2026-10-08): un botón para mandar comentarios sobre la app o reportar errores.
 - Terminada cuando: cada punto tiene su test y está arreglado, o hay una decisión anotada de por qué se deja.
