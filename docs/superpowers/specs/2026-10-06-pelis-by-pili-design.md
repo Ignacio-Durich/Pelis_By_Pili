@@ -224,8 +224,9 @@ Puntos menores que dejaron las revisiones de las etapas anteriores. Se arreglan 
   - La carta desaparece de golpe al votar; se podría animar la salida hacia el costado.
 - Se suman acá los puntos menores que dejen las revisiones de las etapas 8 a 11.
 - Entra, pedido de Nacho (2026-10-08): que todos los modos se puedan jugar con un solo celular, porque a veces usan uno solo de los dos. Bumble ya lo trae desde la etapa 7; la revelación simultánea y el torneo (etapas 9 y 10) conviene diseñarlos con esa opción desde el principio.
+- Entra, pedido de Nacho (2026-10-08): un botón para mandar comentarios sobre la app o reportar errores.
 - Terminada cuando: cada punto tiene su test y está arreglado, o hay una decisión anotada de por qué se deja.
-- No entra: funciones nuevas, salvo la de jugar con un solo celular.
+- No entra: funciones nuevas, salvo jugar con un solo celular y el botón de comentarios.
 
 Decisiones de orden: las etapas 0 a 4 son lo imprescindible para usar la app de verdad; los modos de un solo celular (ruleta y preguntas) van antes que los de a dos; el Atajo de iOS va después del swipe y match por decisión de Nacho, aunque técnicamente solo depende del buscador de la etapa 2.
 
