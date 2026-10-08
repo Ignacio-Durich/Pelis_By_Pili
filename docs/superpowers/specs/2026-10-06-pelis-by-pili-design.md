@@ -83,7 +83,7 @@ Primer uso: la primera persona crea el espacio e invita a la otra con un link. S
 
 El mazo de candidatas sale de la lista "Por ver", no de un catálogo general.
 
-1. Bumble (swipe y match; nombre elegido por Nacho): cada uno desliza sobre un mazo de hasta 20 títulos, con dos celulares o pasándose uno; hay match cuando los dos eligen el mismo. Si hay varios matches, segunda vuelta solo con ellos (decisión de Nacho en la etapa 7, en lugar de la final de a pares).
+1. Bumble (swipe y match; nombre elegido por Nacho): cada uno desliza sobre un mazo de hasta 30 títulos, con dos celulares o pasándose uno; hay match cuando los dos eligen el mismo. Si hay varios matches, segunda vuelta solo con ellos (decisión de Nacho en la etapa 7, en lugar de la final de a pares).
 2. Ruleta con filtros: filtra por película o serie, duración, género, plataforma y puntaje mínimo de IMDb; se gira; con veto.
 3. Torneo de a pares: se eligen 8 candidatas y se enfrentan de a pares hasta que queda una.
 4. Preguntas rápidas del momento: tiempo disponible, ánimo (uno o varios) y plataforma (una o varias); devuelve las 5 mejores de la lista según esas respuestas y los puntajes.
@@ -146,7 +146,7 @@ Cada etapa se construye, se prueba y se cierra antes de empezar la siguiente. Cl
 - No entra: sesiones en tiempo real.
 
 ### Etapa 7 — Bumble (swipe y match)
-- Entra: sesión compartida en tiempo real, o un solo celular que se pasan; mazo de hasta 20 títulos con cartas que muestran los datos y la sinopsis; detección de match y segunda vuelta con los matches (hasta 3 vueltas; si siguen empatados, ruleta).
+- Entra: sesión compartida en tiempo real, o un solo celular que se pasan; mazo de hasta 30 títulos con cartas que muestran los datos y la sinopsis; votos que se pueden deshacer; detección de match y segunda vuelta con los matches (hasta 3 vueltas; si siguen empatados, ruleta).
 - Terminada cuando: dos celulares distintos detectan el match al mismo tiempo, y también se puede jugar con uno solo.
 - No entra: Atajo de iOS, revelación simultánea ni torneo.
 
