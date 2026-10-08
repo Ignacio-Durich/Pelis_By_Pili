@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { beforeEach, expect, test, vi } from 'vitest'
 
 const api = vi.hoisted(() => ({
@@ -22,6 +22,7 @@ let authListener: (s: unknown) => void
 
 beforeEach(() => {
   vi.resetAllMocks()
+  localStorage.clear()
   api.getSession.mockResolvedValue(null)
   api.onAuthChange.mockImplementation((cb) => {
     authListener = cb
@@ -129,4 +130,42 @@ test('with a session the children can read the user id', async () => {
     </AuthGate>,
   )
   expect(await screen.findByText('usuario u1')).toBeInTheDocument()
+})
+
+function WhoAmI() {
+  return <p>{`cuenta ${useUserId()}`}</p>
+}
+
+test('offline with an account used before on this phone, it opens with that account', async () => {
+  api.getSession.mockResolvedValueOnce(session)
+  const first = render(
+    <AuthGate>
+      <WhoAmI />
+    </AuthGate>,
+  )
+  expect(await screen.findByText('cuenta u1')).toBeInTheDocument()
+  first.unmount()
+  api.getSession.mockRejectedValueOnce(new AuthError('network'))
+  render(
+    <AuthGate>
+      <WhoAmI />
+    </AuthGate>,
+  )
+  expect(await screen.findByText('cuenta u1')).toBeInTheDocument()
+  expect(screen.queryByText('Sin conexión. Probá de nuevo.')).not.toBeInTheDocument()
+})
+
+test('after signing out, offline does not open the old account', async () => {
+  api.getSession.mockResolvedValueOnce(session)
+  const first = render(
+    <AuthGate>
+      <WhoAmI />
+    </AuthGate>,
+  )
+  await screen.findByText('cuenta u1')
+  act(() => authListener(null))
+  first.unmount()
+  api.getSession.mockRejectedValueOnce(new AuthError('network'))
+  renderGate()
+  expect(await screen.findByText('Sin conexión. Probá de nuevo.')).toBeInTheDocument()
 })
