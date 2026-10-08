@@ -8,6 +8,7 @@ import type { Title } from '../titles/titlesApi'
 import { useTitles } from '../titles/useTitles'
 import { seededIndex } from './bumbleLogic'
 import { GameTop } from './GameTop'
+import { NO_PARTNER, playerName } from './players'
 import { finishReveal, RevealError, startReveal, submitReveal, type RevealSession } from './revealApi'
 import { PICKS, revealResult } from './revealLogic'
 import { TieBreak } from './TieBreak'
@@ -21,7 +22,6 @@ type Props = { filters: Filters; onFiltersChange: (f: Filters) => void; onBack: 
 type LocalReveal = { id: string; players: [string, string]; picks: [string[] | null, string[] | null]; active: 0 | 1; revealed: boolean }
 
 const LOCAL_KEY = 'pelis-reveal-local'
-const NO_PARTNER = 'pareja'
 
 function readLocal(): LocalReveal | null {
   try {
@@ -185,7 +185,7 @@ function TwoPhones({ session, me, partner, titles, matching, reload, onBack }: G
 
 function OnePhone({ game, titles, matching, onChange, onBack }: GameProps & { game: LocalReveal; onChange: (g: LocalReveal | null) => void }) {
   const nameOf = useMemberName()
-  const name = (i: 0 | 1) => (game.players[i] === NO_PARTNER ? 'tu pareja' : nameOf(game.players[i]))
+  const name = (i: 0 | 1) => playerName(game.players[i], nameOf)
   const end = () => onChange(null)
   const [first, second] = game.picks
 

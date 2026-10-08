@@ -8,6 +8,7 @@ import type { Title } from '../titles/titlesApi'
 import { useTitles } from '../titles/useTitles'
 import { buildBracket, ROUND_NAMES, TOURNAMENT_PICKS, tournamentState, type Decision } from './bracket'
 import { GameTop } from './GameTop'
+import { NO_PARTNER, playerName } from './players'
 import { TitlePicker } from './TitlePicker'
 
 type Props = { filters: Filters; onFiltersChange: (f: Filters) => void; onBack: () => void; random?: () => number }
@@ -24,7 +25,6 @@ type LocalTournament = {
 }
 
 const LOCAL_KEY = 'pelis-tournament-local'
-const NO_PARTNER = 'pareja'
 // Un segundo toque enseguida cae sobre la carta del duelo siguiente: se ignora.
 const DOUBLE_TAP_MS = 600
 
@@ -123,7 +123,7 @@ export function Tournament({ filters, onFiltersChange, onBack, random = Math.ran
 
   const all = titles
   const byId = new Map(all.map((t) => [t.id, t]))
-  const name = (i: 0 | 1) => (game.players[i] === NO_PARTNER ? 'tu pareja' : nameOf(game.players[i]))
+  const name = (i: 0 | 1) => playerName(game.players[i], nameOf)
   const end = () => setGame(null)
   const [first, second] = game.picks
 
