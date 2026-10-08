@@ -134,11 +134,14 @@ function TwoPhones({ session, me, partner, titles, reload }: { session: BumbleSe
   const [pending, setPending] = useState<Vote[]>([])
   const [error, setError] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
+  // Los votos que había al tocar Deshacer: el botón vuelve recién con la partida recargada.
+  const [undoingFrom, setUndoingFrom] = useState<Vote[] | null>(null)
   const seen = useRef<string[] | null>(null)
 
   // Un título borrado de la lista se saltea en los dos celulares.
   const deck = session.deck.filter((id) => byId.has(id))
-  const waiting = pending.filter((p) => !session.votes.some((s) => sameVote(s, p)))
+  // Un voto a un título borrado se fue con él (cascade): ya no está en camino.
+  const waiting = pending.filter((p) => deck.includes(p.titleId) && !session.votes.some((s) => sameVote(s, p)))
   const votes = [...session.votes, ...waiting]
   const players: [string, string] = [me, partner]
   const state = bumbleState(deck, votes, players)
@@ -167,7 +170,11 @@ function TwoPhones({ session, me, partner, titles, reload }: { session: BumbleSe
     // Solo se ofrece sin votos en camino, así que los pendientes ya están todos en la base.
     setPending([])
     setError(null)
-    bumbleUndo(session.id).then(reload, () => setError('No se pudo deshacer. Probá de nuevo.'))
+    setUndoingFrom(session.votes)
+    bumbleUndo(session.id).then(reload, () => {
+      setUndoingFrom(null)
+      setError('No se pudo deshacer. Probá de nuevo.')
+    })
   }
 
   const finish = (result: string | null) => finishBumble(session.id, result).then(reload, () => setError('No se pudo guardar. Probá de nuevo.'))
@@ -197,7 +204,7 @@ function TwoPhones({ session, me, partner, titles, reload }: { session: BumbleSe
       {error && <p role="alert">{error}</p>}
       <p>{`Matches: ${state.matches.length}`}</p>
       {canUndo && (
-        <button className="secondary" onClick={undo}>
+        <button className="secondary" disabled={undoingFrom === session.votes} onClick={undo}>
           ↩️ Deshacer
         </button>
       )}

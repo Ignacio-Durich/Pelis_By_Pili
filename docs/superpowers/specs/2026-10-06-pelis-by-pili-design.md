@@ -216,7 +216,13 @@ Puntos menores que dejaron las revisiones de las etapas anteriores. Se arreglan 
 - Entra, de la etapa 6:
   - Con "Por ver" vacía, las preguntas rápidas dicen "Ningún título entra en ese tiempo y plataforma" aunque no se haya elegido nada; debería decir que no hay títulos en "Por ver".
   - Accesibilidad: las preguntas ("¿Cuánto tiempo tienen?", etc.) no agrupan sus chips (`fieldset` o `role="group"`); lo mismo en el panel de filtros.
-- Se suman acá los puntos menores que dejen las revisiones de las etapas 7 a 11.
+- Entra, de la etapa 7:
+  - `bumble_undo` no revisa en la base que la vuelta siga abierta: si uno deshace justo cuando el otro termina, la vuelta se reabre y el otro celular salta de "¡Ganó…!" a la vuelta anterior (al final queda todo coherente).
+  - Con la ruleta de desempate, si un celular toca "Listo" antes de que el otro gire, el otro vuelve al inicio sin ver la ganadora; se podría mostrar el resultado de la última partida.
+  - Accesibilidad de la carta: el `aria-label` "Ver sinopsis" tapa el título (VoiceOver no dice qué carta es) y la barra espaciadora además hace scroll.
+  - La ganadora se muestra en chico (TitleCard); se podría mostrar con la carta grande y "Ver detalle".
+  - La carta desaparece de golpe al votar; se podría animar la salida hacia el costado.
+- Se suman acá los puntos menores que dejen las revisiones de las etapas 8 a 11.
 - Entra, pedido de Nacho (2026-10-08): que todos los modos se puedan jugar con un solo celular, porque a veces usan uno solo de los dos. Bumble ya lo trae desde la etapa 7; la revelación simultánea y el torneo (etapas 9 y 10) conviene diseñarlos con esa opción desde el principio.
 - Terminada cuando: cada punto tiene su test y está arreglado, o hay una decisión anotada de por qué se deja.
 - No entra: funciones nuevas, salvo la de jugar con un solo celular.
