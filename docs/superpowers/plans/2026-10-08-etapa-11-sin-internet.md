@@ -22,7 +22,7 @@
 - Pantallas que entran en iPhone 13 (390×844) y 15 (393×852) (spec, sección 12).
 - Alcance estricto. **No entra:** nada fuera de la carga y la calificación sin conexión (ni quitar títulos, ni Bumble o Top 3 secreto con dos celulares, ni buscar en TMDB sin red).
 - Cada decisión fuera del plan va a `docs/superpowers/notes/2026-10-decisiones.md`; los menores de la revisión final, a la Etapa 12.
-- **Decisiones** (1 y 2 confirmadas por Nacho el 2026-10-08; el resto, a confirmar):
+- **Decisiones confirmadas por Nacho el 2026-10-08:**
   1. **Agregar sin internet** = anotar el nombre (y "de dónde vino"); al volver la conexión va a "📥 Compartidos" de los dos, y desde ahí "Agregar" busca el título.
   2. **Sin internet se ve la última lista** (Por ver, Vistas, detalle con lo guardado) y se puede **marcar como vista y puntuar**. Los modos de un celular (Ruleta, Preguntas rápidas, Bumble, Top 3 secreto y Torneo con un celular) también andan con la lista guardada.
   3. **Lo pendiente se ve al instante con ⏳** (en la tarjeta y en el detalle) y arriba de la lista un aviso: "Sin conexión. Lo que hagas se guarda cuando vuelva la conexión (n pendientes)".
