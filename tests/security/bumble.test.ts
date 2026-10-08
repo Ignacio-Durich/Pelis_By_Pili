@@ -65,7 +65,7 @@ test('starting gives one open game per couple, even when both start at once', as
   const [x, y] = await Promise.all([start(A, deck.slice(0, 3)), start(B, deck.slice(0, 4))])
   expect(x).toBe(y)
   const { data } = await adminClient().from('bumble_sessions').select('deck').eq('id', x).single()
-  expect([3, 4]).toContain((data?.deck as string[]).length)
+  expect([3, 4]).toContain((data?.deck as string[] | undefined)?.length)
 })
 
 test('the deck must have 2 to 30 of the couple titles still to watch', async () => {
