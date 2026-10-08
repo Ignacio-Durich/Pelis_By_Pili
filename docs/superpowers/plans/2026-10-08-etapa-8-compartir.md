@@ -22,7 +22,7 @@
 - Pantallas que entran sin scroll en iPhone 13 (390×844) y 15 (393×852) (spec, sección 12).
 - Alcance estricto. **No entra:** revelación simultánea, torneo, modo sin internet; tampoco leer el nombre de la peli del video o del texto del post (el nombre lo escribe la persona en el Atajo, o después en la búsqueda).
 - Cada decisión fuera del plan va a `docs/superpowers/notes/2026-10-decisiones.md`; los menores de la revisión final, a la Etapa 12.
-- **Decisiones a confirmar por Nacho:**
+- **Decisiones confirmadas por Nacho el 2026-10-08:**
   1. **El Atajo** recibe "URLs y texto" del menú Compartir, pregunta "¿Qué peli o serie es? (opcional)" y lo manda; termina con la notificación "Guardado en Pelis By Pili". Son 3 toques: Compartir, Pelis By Pili, Listo.
   2. **Una clave por persona** (así la bandeja dice "lo compartió Pili"). Nacho puede pasarle el Atajo a Pili por iCloud y ella solo cambia la clave.
   3. **La bandeja es de los dos** y está arriba de "Por ver": "📥 Compartidos (n)". Cada ítem muestra el nombre escrito (si hay), "Reel de Instagram" (o la app que corresponda), quién lo compartió, "Ver el link", "Buscar" y "Descartar".
