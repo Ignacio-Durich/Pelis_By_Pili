@@ -76,3 +76,7 @@ export function imdbText([low, high]: [number, number]): string {
   if (high === IMDB_RANGE.max) return `${low} o más`
   return `Entre ${low} y ${high}`
 }
+
+// Las opciones más las elegidas: un chip elegido no desaparece aunque ya no quede ningún título con él.
+export const withChosen = (options: string[], chosen: string[]) =>
+  [...new Set([...options, ...chosen])].sort((a, b) => a.localeCompare(b, 'es'))

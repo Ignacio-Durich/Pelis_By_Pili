@@ -142,7 +142,7 @@ Cada etapa se construye, se prueba y se cierra antes de empezar la siguiente. Cl
 
 ### Etapa 6 — Preguntas rápidas del momento
 - Entra: tiempo disponible, ánimo y plataforma; devuelve las 5 mejores de la lista (eran 3; Nacho pidió 5 después de probarla).
-- Terminada cuando: devuelve 3 opciones coherentes con las respuestas.
+- Terminada cuando: devuelve 5 opciones coherentes con las respuestas.
 - No entra: sesiones en tiempo real.
 
 ### Etapa 7 — Swipe y match
@@ -213,7 +213,10 @@ Puntos menores que dejaron las revisiones de las etapas anteriores. Se arreglan 
   - Una barra puede quedar en un rango vacío ("Hasta 0 min", "Hasta 1"), que nunca da resultados.
   - La pestaña "Elegir" no completa datos en segundo plano, y "No quedan títulos con estos filtros" no se actualiza si la pareja agrega uno mientras tanto.
   - Con un filtro activo, la ruleta muestra dos contadores ("3 de 12…" y "Hay 3 títulos…"), que después de un veto pueden no coincidir.
-- Se suman acá los puntos menores que dejen las revisiones de las etapas 6 a 11.
+- Entra, de la etapa 6:
+  - Con "Por ver" vacía, las preguntas rápidas dicen "Ningún título entra en ese tiempo y plataforma" aunque no se haya elegido nada; debería decir que no hay títulos en "Por ver".
+  - Accesibilidad: las preguntas ("¿Cuánto tiempo tienen?", etc.) no agrupan sus chips (`fieldset` o `role="group"`); lo mismo en el panel de filtros.
+- Se suman acá los puntos menores que dejen las revisiones de las etapas 7 a 11.
 - Terminada cuando: cada punto tiene su test y está arreglado, o hay una decisión anotada de por qué se deja.
 - No entra: funciones nuevas.
 

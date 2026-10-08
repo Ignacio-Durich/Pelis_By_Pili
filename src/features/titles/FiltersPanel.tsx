@@ -7,6 +7,7 @@ import {
   NO_FILTERS,
   RUNTIME_RANGE,
   runtimeText,
+  withChosen,
   type Filters,
 } from './filters'
 import { RangeSlider } from './RangeSlider'
@@ -27,9 +28,6 @@ const types = [
 
 // Lo elegido se muestra siempre, aunque ya no quede ningún título con eso: si no, sería un
 // filtro activo sin botón para apagarlo.
-const withChosen = (options: string[], chosen: string[]) =>
-  [...new Set([...options, ...chosen])].sort((a, b) => a.localeCompare(b, 'es'))
-
 const toggle = (list: string[], item: string) => (list.includes(item) ? list.filter((x) => x !== item) : [...list, item])
 
 export function FiltersPanel({ value, options, count: { matching, total }, onChange }: Props) {

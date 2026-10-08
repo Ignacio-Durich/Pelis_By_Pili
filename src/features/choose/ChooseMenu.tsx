@@ -10,12 +10,9 @@ export function ChooseMenu({ filters, onFiltersChange }: Props) {
 
   if (mode) {
     return (
-      <>
-        <button className="back" onClick={() => setMode(null)}>
-          Volver a los modos
-        </button>
-        {mode === 'roulette' ? <Roulette filters={filters} onFiltersChange={onFiltersChange} /> : <QuickQuestions />}
-      </>
+      mode === 'roulette'
+        ? <Roulette filters={filters} onFiltersChange={onFiltersChange} onBack={() => setMode(null)} />
+        : <QuickQuestions onBack={() => setMode(null)} />
     )
   }
 
