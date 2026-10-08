@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { readCache, saveCache } from '../../lib/offline'
 import { useUserId } from '../auth/sessionContext'
 import { useCouple, useMemberName } from '../couple/coupleContext'
 import { filterOptions, matchesFilters, type Filters } from '../titles/filters'
@@ -24,7 +25,6 @@ type LocalTournament = {
   decisions: Decision[]
 }
 
-const LOCAL_KEY = 'pelis-tournament-local'
 // Un segundo toque enseguida cae sobre la carta del duelo siguiente: se ignora.
 const DOUBLE_TAP_MS = 600
 
@@ -36,30 +36,12 @@ function freshTap(last: { current: number }): boolean {
   return true
 }
 
-function readLocal(): LocalTournament | null {
-  try {
-    const game = JSON.parse(localStorage.getItem(LOCAL_KEY) ?? 'null') as LocalTournament | null
-    return game && Array.isArray(game.picks) && Array.isArray(game.decisions) ? game : null
-  } catch {
-    return null
-  }
-}
-
-function saveLocal(game: LocalTournament | null) {
-  try {
-    if (game) localStorage.setItem(LOCAL_KEY, JSON.stringify(game))
-    else localStorage.removeItem(LOCAL_KEY)
-  } catch {
-    // Sin almacenamiento el torneo sigue, solo que no sobrevive a una recarga.
-  }
-}
-
 export function Tournament({ filters, onFiltersChange, onBack, random = Math.random }: Props) {
   const { coupleId, members } = useCouple()
   const me = useUserId()
   const nameOf = useMemberName()
   const { titles, offline, load } = useTitles(coupleId)
-  const [game, setGameState] = useState<LocalTournament | null>(readLocal)
+  const [game, setGameState] = useState<LocalTournament | null>(() => readCache<LocalTournament>('tournament', me))
   const lastTap = useRef(0)
   const partner = members.find((m) => m.userId !== me)?.userId ?? null
 
@@ -68,7 +50,7 @@ export function Tournament({ filters, onFiltersChange, onBack, random = Math.ran
 
   function setGame(next: LocalTournament | null) {
     setGameState(next)
-    saveLocal(next)
+    saveCache('tournament', me, next)
   }
 
   if (!game) {
