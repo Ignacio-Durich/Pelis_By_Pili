@@ -44,6 +44,8 @@ test('shows the three modes with their help texts, Bumble first', () => {
   expect(modes[0]).toHaveTextContent('Deslicen y gana la que les guste a los dos')
   expect(modes[1]).toHaveTextContent('Top 3 secreto')
   expect(modes[1]).toHaveTextContent('Cada uno elige 3 en secreto y se muestran a la vez')
+  expect(modes[2]).toHaveTextContent('Torneo')
+  expect(modes[2]).toHaveTextContent('Elijan 4 cada uno y que se enfrenten de a dos')
   expect(screen.getByRole('button', { name: /Ruleta/ })).toHaveTextContent('Gira entre los títulos que cumplen los filtros')
   expect(screen.getByRole('button', { name: /Preguntas rápidas/ })).toHaveTextContent('Respondan tres preguntas y les sugerimos 5')
 })

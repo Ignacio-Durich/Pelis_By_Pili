@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { buildBracket, tournamentState, type Decision } from './tournament'
+import { buildBracket, tournamentState, type Decision } from './bracket'
 
 const keep = () => 0.999
 const all = () => true

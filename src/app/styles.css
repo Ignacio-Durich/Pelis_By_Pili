@@ -32,6 +32,7 @@ form,
 .bumble,
 .bumble-mode,
 .reveal-mode,
+.tournament-mode,
 .choose-menu,
 .titles,
 .add-title,
@@ -777,6 +778,72 @@ button.chip[aria-pressed='true'] {
   margin: 120px 0;
   text-align: center;
   font-size: 96px;
+  font-weight: 800;
+  color: #ffb703;
+}
+
+/* Torneo: el duelo entra en una pantalla de iPhone 13/15. 250 px son la fila de arriba, la ronda,
+   el "vs", "Deshacer", los espacios y la barra de pestañas; las dos cartas se reparten el resto. */
+.tournament-mode {
+  --duel-card: max(150px, calc((100dvh - 250px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) / 2));
+}
+
+.duel-round {
+  margin: 0;
+  font-size: 14px;
+  color: #b8b8d0;
+}
+
+.duel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.duel-card {
+  display: flex;
+  gap: 12px;
+  height: var(--duel-card);
+  padding: 0;
+  overflow: hidden;
+  text-align: left;
+  font-weight: normal;
+  color: inherit;
+  background: #2a2a45;
+  border: 1px solid #44446a;
+  border-radius: 12px;
+}
+
+.duel-card:disabled {
+  opacity: 1;
+}
+
+.duel-card img,
+.duel-poster {
+  flex: none;
+  height: 100%;
+  width: 42%;
+  object-fit: cover;
+  background: #1b1b2f;
+}
+
+.duel-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 12px 12px 0;
+  overflow: hidden;
+  font-size: 14px;
+  color: #d8d8ea;
+}
+
+.duel-info strong {
+  font-size: 18px;
+  color: #f4f4f8;
+}
+
+.duel-vs {
+  text-align: center;
   font-weight: 800;
   color: #ffb703;
 }
