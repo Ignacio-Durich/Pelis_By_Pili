@@ -76,6 +76,22 @@ test('time and platform narrow the suggestions', async () => {
   expect(screen.getByText('Ningún título entra en ese tiempo y plataforma')).toBeInTheDocument()
 })
 
+test('several platforms can be chosen, and Cualquiera clears them', async () => {
+  await renderQuick()
+  const pressed = (name: string) => screen.getByRole('button', { name }).getAttribute('aria-pressed')
+  press('Hasta 1 h 30')
+  press('Netflix')
+  press('Prime Video')
+  expect([pressed('Netflix'), pressed('Prime Video'), pressed('Cualquiera')]).toEqual(['true', 'true', 'false'])
+  expect(suggested()).toEqual(['Un drama', 'Documental'])
+  press('Prime Video')
+  expect(pressed('Prime Video')).toBe('false')
+  expect(screen.getByText('Ningún título entra en ese tiempo y plataforma')).toBeInTheDocument()
+  press('Cualquiera')
+  expect([pressed('Netflix'), pressed('Cualquiera')]).toEqual(['false', 'true'])
+  expect(suggested()).toEqual(['Un drama', 'Documental'])
+})
+
 test('with a single mood match it fills and says so', async () => {
   await renderQuick()
   press('👻 Miedo')
