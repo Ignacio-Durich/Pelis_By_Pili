@@ -157,6 +157,11 @@ begin
   if v_session.status <> 'open' then
     return;
   end if;
+  -- Antes de revelar no se puede elegir ganadora: decir si un título está entre las elecciones
+  -- contaría lo que eligió el otro. Sí se puede terminar sin resultado.
+  if p_result_title_id is not null and v_session.revealed_at is null then
+    raise exception 'not_revealed';
+  end if;
   if p_result_title_id is not null
     and not exists (select 1 from public.reveal_picks where session_id = p_session_id and p_result_title_id = any (title_ids)) then
     raise exception 'not_in_picks';

@@ -177,3 +177,21 @@ test('one phone: the first chooses, passes the phone without showing, the second
   press('Listo')
   expect(screen.getByText('¿Cuántos celulares van a usar?')).toBeInTheDocument()
 })
+
+test('a title marked as watched before the reveal no longer counts', async () => {
+  api.listTitles.mockResolvedValue(titles.map((t) => (t.id === 'c' ? { ...t, status: 'watched' as const, watchedAt: '2026-10-08T20:00:00Z' } : t)))
+  await renderGame(game({ ready: ['u1', 'u2'], revealed: true, picks: [{ userId: 'u1', titleIds: ['a', 'c'] }, { userId: 'u2', titleIds: ['c', 'a'] }] }))
+  expect(screen.getByText('¡Ganó Peli A!')).toBeInTheDocument()
+  expect(screen.queryByText('Peli C')).not.toBeInTheDocument()
+})
+
+test('a late Listo after the other already revealed just shows the reveal, without an error', async () => {
+  const { RevealError } = await import('./revealApi')
+  api.submitReveal.mockRejectedValue(new RevealError('closed'))
+  await renderGame(game({ ready: ['u2'] }))
+  pick('a', 'b', 'c')
+  api.loadOpenReveal.mockResolvedValue(game({ ready: ['u1', 'u2'], revealed: true, picks: [{ userId: 'u1', titleIds: ['a', 'b', 'c'] }, { userId: 'u2', titleIds: ['c', 'd', 'e'] }] }))
+  await act(async () => press('Listo (3 de 3)'))
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  expect(screen.getByText('¡Ganó Peli C!')).toBeInTheDocument()
+})

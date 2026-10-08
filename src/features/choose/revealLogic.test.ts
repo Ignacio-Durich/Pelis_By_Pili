@@ -31,3 +31,10 @@ test('titles no longer in the list are left out', () => {
   expect(revealResult([['a', 'b'], ['b', 'c']], exists)).toEqual({ matches: [], only: [['a'], ['c']], winner: null, roulette: ['a', 'c'] })
   expect(revealResult([['b'], ['b']], exists)).toEqual({ matches: [], only: [[], []], winner: null, roulette: null })
 })
+
+test('both phones get the same roulette, whoever looks', () => {
+  const mine = ['a', 'b', 'c']
+  const theirs = ['d', 'e', 'f']
+  expect(revealResult([mine, theirs], all).roulette).toEqual(revealResult([theirs, mine], all).roulette)
+  expect(revealResult([['c', 'a', 'x'], ['a', 'c', 'y']], all).roulette).toEqual(revealResult([['a', 'c', 'y'], ['c', 'a', 'x']], all).roulette)
+})

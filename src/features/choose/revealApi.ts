@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabase'
 // propia: la del otro la esconde la base (RLS). (Con un solo celular no pasa por la base.)
 export type RevealSession = { id: string; ready: string[]; revealed: boolean; picks: { userId: string; titleIds: string[] }[] }
 
-export type RevealErrorKind = 'network' | 'closed' | 'invalid_picks' | 'no_partner' | 'not_found' | 'not_in_picks'
+export type RevealErrorKind = 'network' | 'closed' | 'invalid_picks' | 'no_partner' | 'not_found' | 'not_in_picks' | 'not_revealed'
 
 export class RevealError extends Error {
   kind: RevealErrorKind
@@ -35,7 +35,7 @@ export async function loadOpenReveal(coupleId: string): Promise<RevealSession | 
 }
 
 // Las funciones SQL lanzan excepciones cuyo mensaje es exactamente el código.
-const functionErrors: string[] = ['closed', 'invalid_picks', 'no_partner', 'not_found', 'not_in_picks']
+const functionErrors: string[] = ['closed', 'invalid_picks', 'no_partner', 'not_found', 'not_in_picks', 'not_revealed']
 
 async function call<T>(name: string, args?: Record<string, unknown>): Promise<T> {
   const { data, error } = await (args ? supabase.rpc(name, args) : supabase.rpc(name))
