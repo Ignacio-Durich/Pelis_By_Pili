@@ -9,9 +9,8 @@ import { useTitles } from '../titles/useTitles'
 import { BumbleCard } from './BumbleCard'
 import { bumbleUndo, bumbleVote, finishBumble, startBumble, type BumbleSession } from './bumbleApi'
 import { bumbleState, buildDeck, lastUndoable, seededIndex, type BumbleState, type Vote } from './bumbleLogic'
+import { TieBreak } from './TieBreak'
 import { useBumble } from './useBumble'
-import { Wheel } from './Wheel'
-import { targetRotation } from './wheelMath'
 
 type Props = { filters: Filters; onFiltersChange: (f: Filters) => void; onBack: () => void; random?: () => number }
 
@@ -339,40 +338,5 @@ function Outcome({ state, byId, seed, onDone }: { state: Ending; byId: Map<strin
   }
 
   if (state.kind !== 'roulette') return null
-  return <TieBreak candidates={state.candidates.map((id) => byId.get(id)!)} index={seededIndex(`${seed}:${state.round}`, state.candidates.length)} onEnd={setRouletteWinner} />
-}
-
-// Si la rueda no avisa que terminó (pestaña en segundo plano), el resultado aparece igual.
-const SPIN_FALLBACK_MS = 4500
-
-// La ruleta de desempate: el resultado sale de la semilla, así los dos celulares ven la misma.
-function TieBreak({ candidates, index, onEnd }: { candidates: Title[]; index: number; onEnd: (id: string) => void }) {
-  const [rotation, setRotation] = useState(0)
-  const [spinning, setSpinning] = useState(false)
-  const fallback = useRef<number | undefined>(undefined)
-
-  useEffect(() => () => clearTimeout(fallback.current), [])
-
-  function finish() {
-    clearTimeout(fallback.current)
-    setSpinning(false)
-    onEnd(candidates[index].id)
-  }
-
-  function spin() {
-    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return finish()
-    setSpinning(true)
-    setRotation((r) => targetRotation(r, index, candidates.length))
-    fallback.current = window.setTimeout(finish, SPIN_FALLBACK_MS)
-  }
-
-  return (
-    <>
-      <p>Siguen empatados: decide la ruleta</p>
-      <Wheel items={candidates.map((t) => ({ id: t.id, label: t.title }))} rotation={rotation} animate={spinning} onEnd={finish} />
-      <button disabled={spinning} onClick={spin}>
-        Girar
-      </button>
-    </>
-  )
+  return <TieBreak candidates={state.candidates.map((id) => byId.get(id)!)} index={seededIndex(`${seed}:${state.round}`, state.candidates.length)} label="Siguen empatados: decide la ruleta" onEnd={setRouletteWinner} />
 }
