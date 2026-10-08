@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useCouple } from '../features/couple/coupleContext'
-import { Roulette } from '../features/choose/Roulette'
+import { ChooseMenu } from '../features/choose/ChooseMenu'
 import { Settings } from '../features/settings/Settings'
 import { NO_FILTERS, type Filters } from '../features/titles/filters'
 import { TitleList } from '../features/titles/TitleList'
@@ -21,7 +21,7 @@ export function Home() {
             <TitleList filters={filters} onFiltersChange={setFilters} />
           </>
         ) : tab === 'elegir' ? (
-          <Roulette filters={filters} onFiltersChange={setFilters} />
+          <ChooseMenu filters={filters} onFiltersChange={setFilters} />
         ) : (
           <Settings />
         )}
