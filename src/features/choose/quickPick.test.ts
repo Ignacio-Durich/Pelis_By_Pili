@@ -59,29 +59,29 @@ test('ties: IMDb, then TMDB, then no score last, then the newest', () => {
   const none = t({ id: 'none' })
   const older = t({ id: 'older', imdbRating: '7.0/10', createdAt: '2026-10-01T00:00:00Z' })
   const newer = t({ id: 'newer', imdbRating: '7.0/10', createdAt: '2026-10-05T00:00:00Z' })
-  expect(ids(quickPick([none, older, imdb8, newer, tmdb9], NO_ANSWERS))).toEqual(['tmdb9', 'imdb8', 'newer'])
+  expect(ids(quickPick([none, older, imdb8, newer, tmdb9], NO_ANSWERS))).toEqual(['tmdb9', 'imdb8', 'newer', 'older', 'none'])
   expect(ids(quickPick([none, older, newer], NO_ANSWERS))).toEqual(['newer', 'older', 'none'])
 })
 
-test('with fewer than 3 mood matches it fills with the rest and says so', () => {
+test('with fewer than 5 mood matches it fills with the rest and says so', () => {
   const match = t({ id: 'match', genres: ['Terror'] })
-  const others = [t({ imdbRating: '5.0/10' }), t({ imdbRating: '9.0/10' }), t({ imdbRating: '7.0/10' }), t({})]
-  const r = quickPick([...others, match], a({ moods: ['scary'] }))
-  expect(r.picks).toHaveLength(3)
+  const others = ['5.0/10', '9.0/10', '7.0/10', '8.0/10', '6.0/10'].map((imdbRating) => t({ imdbRating }))
+  const r = quickPick([...others, t({}), match], a({ moods: ['scary'] }))
+  expect(r.picks).toHaveLength(5)
   expect(r.picks[0].id).toBe('match')
-  expect(r.picks.slice(1).map((p) => p.imdbRating)).toEqual(['9.0/10', '7.0/10'])
+  expect(r.picks.slice(1).map((p) => p.imdbRating)).toEqual(['9.0/10', '8.0/10', '7.0/10', '6.0/10'])
   expect(r.filled).toBe(true)
 })
 
-test('with 3 or more mood matches nothing is filled', () => {
-  const scary = [1, 2, 3].map(() => t({ genres: ['Terror'] }))
+test('with 5 or more mood matches nothing is filled', () => {
+  const scary = [1, 2, 3, 4, 5].map(() => t({ genres: ['Terror'] }))
   expect(quickPick([...scary, t({})], a({ moods: ['scary'] })).filled).toBe(false)
 })
 
-test('without moods the best 3 by score, not filled', () => {
-  const titles = [t({ imdbRating: '5.0/10' }), t({ imdbRating: '9.0/10' }), t({ imdbRating: '7.0/10' }), t({ imdbRating: '8.0/10' })]
+test('without moods the best 5 by score, not filled', () => {
+  const titles = ['5.0/10', '9.0/10', '7.0/10', '8.0/10', '4.0/10', '6.0/10'].map((imdbRating) => t({ imdbRating }))
   const r = quickPick(titles, NO_ANSWERS)
-  expect(r.picks.map((p) => p.imdbRating)).toEqual(['9.0/10', '8.0/10', '7.0/10'])
+  expect(r.picks.map((p) => p.imdbRating)).toEqual(['9.0/10', '8.0/10', '7.0/10', '6.0/10', '5.0/10'])
   expect(r.filled).toBe(false)
 })
 

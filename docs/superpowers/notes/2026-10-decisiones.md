@@ -134,3 +134,4 @@ Cada línea: decisión — motivo — costo si está mal.
 # Etapa 6
 
 - "¿Dónde lo ven?" pasa de una plataforma a varias (pedido de Nacho después de probarla en los iPhones): un título entra si está en alguna de las elegidas; "Cualquiera" borra la elección y queda marcada cuando no hay ninguna — la plataforma de la spec era una sola.
+- Las preguntas rápidas sugieren 5 títulos en vez de 3 (pedido de Nacho después de probarla); el aviso de relleno y el texto del menú dicen 5 — la spec decía 3.

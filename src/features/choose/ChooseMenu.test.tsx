@@ -28,7 +28,7 @@ test('shows the two modes with their help texts', () => {
   renderMenu()
   expect(screen.getByRole('heading', { name: '¿Qué vemos?' })).toBeInTheDocument()
   expect(screen.getByRole('button', { name: /Ruleta/ })).toHaveTextContent('Gira entre los títulos que cumplen los filtros')
-  expect(screen.getByRole('button', { name: /Preguntas rápidas/ })).toHaveTextContent('Respondan tres preguntas y les sugerimos 3')
+  expect(screen.getByRole('button', { name: /Preguntas rápidas/ })).toHaveTextContent('Respondan tres preguntas y les sugerimos 5')
 })
 
 test('each mode opens and Volver a los modos returns to the menu', async () => {

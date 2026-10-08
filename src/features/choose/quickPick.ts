@@ -26,7 +26,7 @@ export type Answers = { maxMinutes: number | null; moods: MoodId[]; platforms: s
 
 export const NO_ANSWERS: Answers = { maxMinutes: null, moods: [], platforms: [] }
 
-const PICKS = 3
+const PICKS = 5
 
 // IMDb, o TMDB si no hay; null = sin puntaje (va al final).
 function score(t: Title): number | null {
@@ -56,7 +56,7 @@ export function quickPick(titles: Title[], answers: Answers): { picks: Title[]; 
         b.t.createdAt.localeCompare(a.t.createdAt),
     )
 
-  // Los que coinciden con el ánimo van primero; si no llegan a 3, completan los demás.
+  // Los que coinciden con el ánimo van primero; si no llegan a 5, completan los demás.
   const picks = ranked.slice(0, PICKS)
   const filled = chosen.length > 0 && picks.some((r) => r.moods === 0)
   return { picks: picks.map((r) => r.t), filled }
