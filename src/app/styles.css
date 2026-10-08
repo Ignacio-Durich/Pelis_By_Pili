@@ -28,6 +28,8 @@ body {
 }
 
 form,
+.quick,
+.choose-menu,
 .titles,
 .add-title,
 .detail,
@@ -503,4 +505,15 @@ button.chip[aria-pressed='true'] {
 
 .filters-count {
   color: #ffb703;
+}
+
+.choose-menu button {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+}
+
+.choose-menu small {
+  font-weight: normal;
 }

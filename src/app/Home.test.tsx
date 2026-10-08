@@ -42,6 +42,8 @@ test('the bottom bar has Lista, Elegir and Ajustes, and filters are shared', asy
   fireEvent.click(await screen.findByRole('button', { name: 'Filtros' }))
   fireEvent.click(screen.getByRole('button', { name: 'Series' }))
   fireEvent.click(screen.getByRole('button', { name: 'Elegir' }))
+  expect(screen.getByRole('heading', { name: '¿Qué vemos?' })).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: /Ruleta/ }))
   expect(await screen.findByRole('heading', { name: 'Ruleta' })).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Filtros (1)' })).toBeInTheDocument()
 })
