@@ -37,7 +37,7 @@
 
   - Se pueden elegir **varios ánimos**. Un título coincide si tiene algún género de alguno de los ánimos elegidos.
   - Si hay menos de 3 que cumplen todo, **se completa** con títulos que cumplen el tiempo y la plataforma aunque no coincidan con el ánimo, con el aviso "No encontramos 3 con ese ánimo; sumamos estas".
-- Decisiones de este plan a confirmar con Nacho:
+- También confirmadas por Nacho el 2026-10-07:
   - **Géneros de Relax** (lo pidió Nacho "para antes de dormir o de fondo"): los de la tabla. No se excluye nada intenso: un drama que también es "Música" cuenta como Relax.
   - **Tiempo:** "Hasta 1 h 30" (90 min), "Hasta 2 h" (120), "Hasta 2 h 30" (150) o "Sin apuro" (sin límite, opción por defecto). En series cuenta la duración de un capítulo.
   - **Plataforma:** "Cualquiera" (por defecto) o una sola de las que aparecen en "Por ver".
@@ -186,10 +186,8 @@ git add src && git commit -m "feat: menú de Elegir y preguntas rápidas"
 
 - [ ] **Step 1: Suite completa y publicación**
 
-Antes de publicar, revisar que `dist/` no contenga claves secretas ni `127.0.0.1:54321`.
-
-Run: `npm test && npm run test:security && npm run typecheck && npm run build`, y después `npx netlify-cli deploy --prod --no-build --dir=dist`
-Expected: todo en verde, `HTTP/2 200`, y el bundle publicado es el mismo que el local. No hace falta `db push` ni desplegar funciones.
+Run: `npm test && npm run test:security && npm run typecheck`, y después `npm run deploy` (compila, revisa que `dist/` no tenga claves ni la URL local, y publica en Cloudflare).
+Expected: todo en verde, `HTTP/2 200` en la dirección de la app, y el bundle publicado es el mismo que el local. No hace falta `db push` ni desplegar funciones.
 
 - [ ] **Step 2: Prueba de aceptación** (Nacho, y la cuenta de prueba en el celular de su hermana)
 
