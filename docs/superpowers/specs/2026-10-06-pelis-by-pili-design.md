@@ -75,7 +75,7 @@ Seguridad: solo los dos miembros de la pareja pueden leer y modificar los datos 
 - Agregar: buscador que mezcla películas y series; un toque agrega; campo opcional "de dónde vino". Si el título ya existe, avisa.
 - Detalle: sinopsis, puntajes externos con fecha, dónde verla en Argentina, puntaje de cada uno, marcar vista.
 - Elegir qué ver: menú con los modos.
-- Ajustes: invitar a la pareja, cerrar sesión, atribuciones.
+- Ajustes: invitar a la pareja, tema de color (15 para elegir, cada celular el suyo), Atajo para compartir, cerrar sesión, atribuciones.
 
 Primer uso: la primera persona crea el espacio e invita a la otra con un link. Solo caben dos.
 

@@ -6,6 +6,7 @@ import { useCouple } from '../couple/coupleContext'
 import { buildInviteLink } from '../couple/invite'
 import { coupleMessages } from '../couple/messages'
 import { ShareShortcut } from '../shared/ShareShortcut'
+import { ThemePicker } from './ThemePicker'
 
 export function Settings() {
   const { memberCount, members } = useCouple()
@@ -56,6 +57,7 @@ export function Settings() {
       ) : (
         <p>{`Son dos personas en este espacio${together}`}</p>
       )}
+      <ThemePicker />
       <ShareShortcut />
       <button onClick={() => signOut()}>Cerrar sesión</button>
       <section className="attribution">

@@ -40,7 +40,7 @@ export function Wheel({ items, rotation, animate, onEnd }: Props) {
                     data-slice
                     d={`M0 0 L${point(i * seg)} A${R} ${R} 0 ${seg > 180 ? 1 : 0} 1 ${point((i + 1) * seg)} Z`}
                     fill={color}
-                    stroke="#1b1b2f"
+                    style={{ stroke: 'var(--bg)' }}
                     strokeWidth="1"
                   />
                 )}
@@ -53,7 +53,7 @@ export function Wheel({ items, rotation, animate, onEnd }: Props) {
             )
           })}
         </g>
-        <circle r="10" fill="#1b1b2f" />
+        <circle r="10" style={{ fill: 'var(--bg)' }} />
         <path className="wheel-pointer" d="M-9 -104 L9 -104 L0 -84 Z" />
       </svg>
     </div>
