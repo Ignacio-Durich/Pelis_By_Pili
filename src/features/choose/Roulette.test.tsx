@@ -42,7 +42,7 @@ afterEach(() => vi.useRealTimers())
 
 function Harness({ initial = NO_FILTERS }: { initial?: Filters }) {
   const [filters, setFilters] = useState(initial)
-  return <Roulette filters={filters} onFiltersChange={setFilters} random={first} />
+  return <Roulette filters={filters} onFiltersChange={setFilters} random={first} onBack={() => {}} />
 }
 
 function renderRoulette(initial?: Filters, members?: Parameters<typeof withCouple>[1]) {
@@ -142,8 +142,10 @@ test('Ver detalle opens the detail and Volver comes back to the same result', as
   spin()
   fireEvent.click(screen.getByRole('button', { name: 'Ver detalle' }))
   expect(screen.getByRole('heading', { name: 'Primera' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Volver a los modos' })).not.toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: 'Volver' }))
   expect(resultName()).toBe('Primera')
+  expect(screen.getByRole('button', { name: 'Volver a los modos' })).toBeInTheDocument()
 })
 
 test('the wheel is there from the start with the candidates', async () => {

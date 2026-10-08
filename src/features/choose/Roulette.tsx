@@ -10,9 +10,9 @@ import { pick } from './pick'
 import { Wheel } from './Wheel'
 import { targetRotation } from './wheelMath'
 
-type Props = { filters: Filters; onFiltersChange: (f: Filters) => void; random?: () => number }
+type Props = { filters: Filters; onFiltersChange: (f: Filters) => void; random?: () => number; onBack: () => void }
 
-export function Roulette({ filters, onFiltersChange, random = Math.random }: Props) {
+export function Roulette({ filters, onFiltersChange, random = Math.random, onBack }: Props) {
   const { coupleId } = useCouple()
   const { titles, offline, load } = useTitles(coupleId)
   const [detailId, setDetailId] = useState<string | null>(null)
@@ -37,6 +37,9 @@ export function Roulette({ filters, onFiltersChange, random = Math.random }: Pro
     <>
       {/* Oculta y no desmontada mientras se ve el detalle: así no se pierden el resultado ni los vetos. */}
       <section className="roulette" hidden={!!detail}>
+        <button className="back" onClick={onBack}>
+          Volver a los modos
+        </button>
         <h2>Ruleta</h2>
         <FiltersPanel
           value={filters}

@@ -1,13 +1,13 @@
 import { useRef, useState } from 'react'
 import { useCouple } from '../couple/coupleContext'
-import { filterOptions } from '../titles/filters'
+import { filterOptions, withChosen } from '../titles/filters'
 import { imdbScore, rtScore } from '../titles/ratings'
 import { TitleCard } from '../titles/TitleCard'
 import { TitleDetail } from '../titles/TitleDetail'
 import { useTitles } from '../titles/useTitles'
 import { MOODS, NO_ANSWERS, quickPick, TIME_OPTIONS, type Answers } from './quickPick'
 
-export function QuickQuestions() {
+export function QuickQuestions({ onBack }: { onBack: () => void }) {
   const { coupleId } = useCouple()
   const { titles, offline, load } = useTitles(coupleId)
   const [answers, setAnswers] = useState<Answers>(NO_ANSWERS)
@@ -35,6 +35,9 @@ export function QuickQuestions() {
     <>
       {/* Oculta (no desmontada) mientras se ve un detalle: se conservan las respuestas. */}
       <section className="quick" hidden={!!detail}>
+        <button className="back" onClick={onBack}>
+          Volver a los modos
+        </button>
         <h2>Preguntas rápidas</h2>
         <span>¿Cuánto tiempo tienen?</span>
         <div className="chips">
@@ -57,7 +60,7 @@ export function QuickQuestions() {
           <button className="chip" aria-pressed={answers.platforms.length === 0} onClick={() => set({ platforms: [] })}>
             Cualquiera
           </button>
-          {filterOptions(toWatch).platforms.map((p) => (
+          {withChosen(filterOptions(toWatch).platforms, answers.platforms).map((p) => (
             <button key={p} className="chip" aria-pressed={answers.platforms.includes(p)} onClick={() => set({ platforms: toggle(answers.platforms, p) })}>
               {p}
             </button>

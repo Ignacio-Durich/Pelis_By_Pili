@@ -1,16 +1,17 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { beforeEach, expect, test, vi } from 'vitest'
 
-const api = vi.hoisted(() => ({ listTitles: vi.fn(), subscribeTitles: vi.fn() }))
+const api = vi.hoisted(() => ({ listTitles: vi.fn(), subscribeTitles: vi.fn(), fetchTitleDetail: vi.fn() }))
 vi.mock('../titles/titlesApi', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../titles/titlesApi')>()),
   listTitles: api.listTitles,
   subscribeTitles: api.subscribeTitles,
 }))
-vi.mock('../titles/detailApi', () => ({ fetchTitleDetail: vi.fn().mockReturnValue(new Promise(() => {})) }))
+vi.mock('../titles/detailApi', () => ({ fetchTitleDetail: api.fetchTitleDetail }))
 vi.mock('../../lib/supabase', () => ({ supabase: {} }))
 
 import { withCouple } from '../../test/providers'
+import { makeTitle } from '../../test/titles'
 import { NO_FILTERS } from '../titles/filters'
 import { ChooseMenu } from './ChooseMenu'
 
@@ -18,6 +19,7 @@ beforeEach(() => {
   vi.resetAllMocks()
   api.listTitles.mockResolvedValue([])
   api.subscribeTitles.mockReturnValue(() => {})
+  api.fetchTitleDetail.mockReturnValue(new Promise(() => {}))
 })
 
 function renderMenu() {
@@ -40,4 +42,16 @@ test('each mode opens and Volver a los modos returns to the menu', async () => {
   expect(await screen.findByRole('heading', { name: 'Preguntas rápidas' })).toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: 'Volver a los modos' }))
   expect(screen.getByRole('heading', { name: '¿Qué vemos?' })).toBeInTheDocument()
+})
+
+test('with a detail open there is only the detail Volver, and the answers stay', async () => {
+  api.listTitles.mockResolvedValue([makeTitle({ id: 'x', title: 'Una', genres: ['Terror'] })])
+  renderMenu()
+  fireEvent.click(screen.getByRole('button', { name: /Preguntas rápidas/ }))
+  fireEvent.click(await screen.findByRole('button', { name: '👻 Miedo' }))
+  fireEvent.click(await screen.findByRole('button', { name: 'Ver detalle de Una' }))
+  expect(screen.queryByRole('button', { name: 'Volver a los modos' })).not.toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: 'Volver' }))
+  expect(screen.getByRole('button', { name: '👻 Miedo' })).toHaveAttribute('aria-pressed', 'true')
+  expect(screen.getByRole('button', { name: 'Volver a los modos' })).toBeInTheDocument()
 })

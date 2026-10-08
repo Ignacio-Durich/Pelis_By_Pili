@@ -36,7 +36,7 @@ const press = (name: string | RegExp) => fireEvent.click(screen.getByRole('butto
 const suggested = () => [...document.querySelectorAll('[data-testid=suggestion] strong')].map((s) => s.textContent)
 
 async function renderQuick() {
-  render(withCouple(<QuickQuestions />))
+  render(withCouple(<QuickQuestions onBack={() => {}} />))
   await screen.findByRole('heading', { name: 'Les sugerimos' })
 }
 
@@ -125,8 +125,19 @@ test('Ver detalle opens the detail at the top and Volver comes back to the same 
 
 test('offline shows Reintentar', async () => {
   api.listTitles.mockRejectedValueOnce(new TitleError('network')).mockResolvedValueOnce([comedy])
-  render(withCouple(<QuickQuestions />))
+  render(withCouple(<QuickQuestions onBack={() => {}} />))
   expect(await screen.findByText('Sin conexión. Probá de nuevo.')).toBeInTheDocument()
   press('Reintentar')
   expect(await screen.findByText('Comedia buena')).toBeInTheDocument()
+})
+
+test('a chosen platform whose titles are gone keeps its chip pressed', async () => {
+  await renderQuick()
+  press('Prime Video')
+  api.listTitles.mockResolvedValue([comedy, horror])
+  await act(async () => notify())
+  expect(screen.getByRole('button', { name: 'Prime Video' })).toHaveAttribute('aria-pressed', 'true')
+  press('Prime Video')
+  expect(screen.queryByRole('button', { name: 'Prime Video' })).not.toBeInTheDocument()
+  expect(suggested()).toEqual(['Comedia buena', 'De terror'])
 })
