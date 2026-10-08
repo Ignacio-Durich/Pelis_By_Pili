@@ -207,7 +207,8 @@ test('my score editor starts with my own score', () => {
 
 test('Volver a Por ver unmarks, and a failure says so', async () => {
   api.fetchTitleDetail.mockReturnValue(new Promise(() => {}))
-  api.setWatched.mockRejectedValueOnce(new TitleError('network'))
+  // Un error con motivo se muestra; uno de red queda pendiente (test de TitleList).
+  api.setWatched.mockRejectedValueOnce(new TitleError('not_found'))
   renderDetail(watched)
   await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Volver a Por ver' })))
   expect(api.setWatched).toHaveBeenCalledWith('t1', false)
