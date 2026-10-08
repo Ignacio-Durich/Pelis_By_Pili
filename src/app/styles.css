@@ -644,3 +644,41 @@ button.chip[aria-pressed='true'] {
   padding: 0;
   background: none;
 }
+
+/* Ajustes → Atajo para compartir */
+.share-shortcut {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.share-shortcut code {
+  display: block;
+  margin: 4px 0;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: #2a2a45;
+  font-size: 13px;
+  word-break: break-all;
+}
+
+.share-shortcut li code {
+  display: inline;
+  padding: 1px 4px;
+}
+
+.share-shortcut li > code:first-of-type {
+  display: block;
+}
+
+.share-shortcut ol {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-left: 20px;
+}
+
+.share-shortcut summary {
+  color: #ffb703;
+  font-weight: 600;
+}
