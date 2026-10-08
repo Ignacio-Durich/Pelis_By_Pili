@@ -74,7 +74,7 @@ export function QuickQuestions() {
         {titles !== null && (
           <>
             <h3>Les sugerimos</h3>
-            {filled && <p>No encontramos 3 con ese ánimo; sumamos estas</p>}
+            {filled && <p>No encontramos 5 con ese ánimo; sumamos estas</p>}
             {picks.length === 0 && <p>Ningún título entra en ese tiempo y plataforma</p>}
             <ul className="title-list">
               {picks.map((t) => (

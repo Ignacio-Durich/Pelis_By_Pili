@@ -28,7 +28,7 @@ export function ChooseMenu({ filters, onFiltersChange }: Props) {
       </button>
       <button onClick={() => setMode('quick')}>
         Preguntas rápidas
-        <small>Respondan tres preguntas y les sugerimos 3</small>
+        <small>Respondan tres preguntas y les sugerimos 5</small>
       </button>
     </section>
   )

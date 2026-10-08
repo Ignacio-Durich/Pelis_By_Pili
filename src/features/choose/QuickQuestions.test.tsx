@@ -49,9 +49,9 @@ test('shows the three questions with Sin apuro and Cualquiera chosen', async () 
   expect(screen.getByRole('button', { name: 'Prime Video' })).toBeInTheDocument()
 })
 
-test('without answers it suggests the best 3 by score', async () => {
+test('without answers it suggests up to 5 by score', async () => {
   await renderQuick()
-  expect(suggested()).toEqual(['Comedia buena', 'Un drama', 'Documental'])
+  expect(suggested()).toEqual(['Comedia buena', 'Un drama', 'Documental', 'De terror'])
   expect(screen.getAllByText(/^IMDb /)[0]).toHaveTextContent('IMDb 9.0 · RT —')
 })
 
@@ -95,8 +95,8 @@ test('several platforms can be chosen, and Cualquiera clears them', async () => 
 test('with a single mood match it fills and says so', async () => {
   await renderQuick()
   press('👻 Miedo')
-  expect(screen.getByText('No encontramos 3 con ese ánimo; sumamos estas')).toBeInTheDocument()
-  expect(suggested()).toHaveLength(3)
+  expect(screen.getByText('No encontramos 5 con ese ánimo; sumamos estas')).toBeInTheDocument()
+  expect(suggested()).toHaveLength(4)
 })
 
 test('a title the partner marks as watched disappears', async () => {
