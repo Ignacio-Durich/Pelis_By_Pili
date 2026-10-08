@@ -151,5 +151,5 @@ Cada línea: decisión — motivo — costo si está mal.
 # Limpieza (2026-10-08)
 
 - Auditoría pedida por Nacho ("que todo funcione igual"): un solo hook para lo que se actualiza en vivo (`src/lib/useLive.ts`), un solo armado de escuchas de Realtime (`src/lib/realtime.ts`), un solo error con código y llamado a funciones SQL (`src/lib/rpc.ts`), las partidas de un celular guardadas con `readCache`/`saveCache` (ahora con dueño, así otra cuenta no ve la partida ajena; las partidas a medio jugar del momento de publicar se pierden una vez), y componentes compartidos `TitleFacts`, `PhonesChoice` y `players.ts`. Bumble y Top 3 secreto ahora también recargan al volver la conexión (como la bandeja).
-- Se sacó `@vite-pwa/assets-generator` (y `pwa-assets.config.ts` y el script `generate-pwa-assets`): los íconos ya están en `public/`. Si cambia el logo: `npx @vite-pwa/assets-generator@2 --preset minimal-2023 public/icon.svg`.
-
+- Se sacó `@vite-pwa/assets-generator` (y `pwa-assets.config.ts` y el script `generate-pwa-assets`): los íconos ya están en `public/`. Si cambia el logo: instalarlo un momento (`npm i -D @vite-pwa/assets-generator@^2.0.0`), correr `npx pwa-assets-generator` (usa `pwa-assets.config.ts`) y volver a sacarlo.
+- Ícono sin el margen blanco (pedido de Nacho al verlo en su iPhone): `pwa-assets.config.ts` genera el de iPhone y el "maskable" sin margen y con el fondo azul de la app (#1b1b2f). El archivo queda en el repo con esos ajustes aunque el generador no esté instalado.
