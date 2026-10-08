@@ -103,7 +103,25 @@ export function Tournament({ filters, onFiltersChange, onBack, random = Math.ran
     )
   }
 
-  const all = titles ?? []
+  // Mientras carga la lista (o sin conexión) no se calcula nada: con la lista vacía todo
+  // parecería borrado.
+  if (titles === null) {
+    return (
+      <section className="tournament-mode">
+        <GameTop onBack={onBack} />
+        {offline ? (
+          <>
+            <p role="alert">Sin conexión. Probá de nuevo.</p>
+            <button onClick={load}>Reintentar</button>
+          </>
+        ) : (
+          <p>Cargando…</p>
+        )}
+      </section>
+    )
+  }
+
+  const all = titles
   const byId = new Map(all.map((t) => [t.id, t]))
   const name = (i: 0 | 1) => (game.players[i] === NO_PARTNER ? 'tu pareja' : nameOf(game.players[i]))
   const end = () => setGame(null)
@@ -147,7 +165,7 @@ export function Tournament({ filters, onFiltersChange, onBack, random = Math.ran
     // Lo que se marca como visto o se borra a mitad del torneo queda como hueco.
     const state = tournamentState(game.slots, game.decisions, (id) => byId.get(id)?.status === 'to_watch')
     const undo = game.decisions.length > 0 && (
-      <button className="secondary" aria-label="Deshacer" onClick={() => setGame({ ...game, decisions: game.decisions.slice(0, -1) })}>
+      <button className="secondary" aria-label="Deshacer" onClick={() => freshTap(lastTap) && setGame({ ...game, decisions: game.decisions.slice(0, -1) })}>
         ↩️ Deshacer
       </button>
     )
@@ -177,7 +195,8 @@ export function Tournament({ filters, onFiltersChange, onBack, random = Math.ran
           <div className="duel">
             <DuelCard title={winner} />
           </div>
-          <button onClick={end}>Listo</button>
+          {/* También pasa por freshTap: un doble toque en la final no tiene que caer acá. */}
+          <button onClick={() => freshTap(lastTap) && end()}>Listo</button>
           {undo}
         </>
       )
