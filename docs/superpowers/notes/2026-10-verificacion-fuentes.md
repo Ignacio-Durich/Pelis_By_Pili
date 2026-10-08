@@ -81,3 +81,11 @@ Impacto en el plan: afecta ya a la Etapa 1, no solo a las siguientes. La novia d
 - El cartel "Powered by Netlify" quedó apagado desde el panel (Project configuration → General → Powered by Netlify badge): Netlify ya no inyecta su script en la página.
 - Prueba de aceptación en los dos iPhones (Nacho y Pili), según Nacho, "funcionó todo": pestañas "Por ver" y "Vistas", marcar vista y deshacer sin perder puntajes, puntajes con decimales de cada uno visibles para el otro sin recargar, aviso ante un puntaje inválido, y Ajustes sin el cartel.
 - La etapa queda terminada: cada uno califica por separado y ve el puntaje del otro.
+
+## Cierre de la Etapa 5 (2026-10-07)
+
+- Antes de publicar: `npm test` 230/230; `npm run test:security` 57/57 contra el Supabase local y `npm run test:security:remote` 57/57 contra el proyecto real (una sola corrida, antes de los cambios de interfaz pedidos después, que no tocan la base ni las funciones); typecheck y build sin errores.
+- Publicado en https://pelis-by-pili.netlify.app; `dist/` sin claves secretas ni la URL local. Función `title-detail` actualizada (guarda duración, géneros y plataformas).
+- Cambios pedidos por Nacho después de la primera prueba: barras de rango para duración e IMDb, ruleta animada (rueda), y cuántos títulos cumplen los filtros. Arreglo reportado por Nacho: después de un veto la rueda no volvía a girar.
+- Prueba de aceptación (Nacho, con la cuenta de prueba en el celular de su hermana): "Perfecto, sigamos" después de probar el arreglo del veto y el contador.
+- La etapa queda terminada: la ruleta solo sugiere títulos que cumplen los filtros.
