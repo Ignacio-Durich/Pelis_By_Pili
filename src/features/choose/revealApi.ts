@@ -1,4 +1,5 @@
 import { supabase } from '../../lib/supabase'
+import { callRpc, CodedError } from '../../lib/rpc'
 import { subscribeCouple } from '../../lib/realtime'
 
 // Partida de Top 3 secreto con dos celulares. Antes de revelar, `picks` trae solo la elección
@@ -7,13 +8,7 @@ export type RevealSession = { id: string; ready: string[]; revealed: boolean; pi
 
 export type RevealErrorKind = 'network' | 'closed' | 'invalid_picks' | 'no_partner' | 'not_found' | 'not_in_picks' | 'not_revealed'
 
-export class RevealError extends Error {
-  kind: RevealErrorKind
-  constructor(kind: RevealErrorKind) {
-    super(kind)
-    this.kind = kind
-  }
-}
+export class RevealError extends CodedError<RevealErrorKind> {}
 
 type Row = { id: string; ready: string[]; revealed_at: string | null; reveal_picks: { user_id: string; title_ids: string[] }[] }
 
@@ -35,14 +30,13 @@ export async function loadOpenReveal(coupleId: string): Promise<RevealSession | 
   }
 }
 
-// Las funciones SQL lanzan excepciones cuyo mensaje es exactamente el código.
-const functionErrors: string[] = ['closed', 'invalid_picks', 'no_partner', 'not_found', 'not_in_picks', 'not_revealed']
-
-async function call<T>(name: string, args?: Record<string, unknown>): Promise<T> {
-  const { data, error } = await (args ? supabase.rpc(name, args) : supabase.rpc(name))
-  if (error) throw new RevealError(functionErrors.includes(error.message) ? (error.message as RevealErrorKind) : 'network')
-  return data as T
-}
+const call = <T>(name: string, args?: Record<string, unknown>) =>
+  callRpc<T, RevealErrorKind>(
+    name,
+    args,
+    ['closed', 'invalid_picks', 'no_partner', 'not_found', 'not_in_picks', 'not_revealed'],
+    (kind) => new RevealError(kind),
+  )
 
 export const startReveal = () => call<string>('start_reveal')
 

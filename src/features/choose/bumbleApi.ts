@@ -1,4 +1,5 @@
 import { supabase } from '../../lib/supabase'
+import { callRpc, CodedError } from '../../lib/rpc'
 import { subscribeCouple, type Change } from '../../lib/realtime'
 import type { Vote } from './bumbleLogic'
 
@@ -7,13 +8,7 @@ export type BumbleSession = { id: string; deck: string[]; votes: Vote[] }
 
 export type BumbleErrorKind = 'network' | 'closed' | 'invalid_deck' | 'no_partner' | 'not_found' | 'not_in_deck'
 
-export class BumbleError extends Error {
-  kind: BumbleErrorKind
-  constructor(kind: BumbleErrorKind) {
-    super(kind)
-    this.kind = kind
-  }
-}
+export class BumbleError extends CodedError<BumbleErrorKind> {}
 
 type VoteRow = { id: string; user_id: string; round: number; title_id: string; liked: boolean; created_at: string }
 
@@ -35,14 +30,8 @@ export async function loadOpenBumble(coupleId: string): Promise<BumbleSession | 
   }
 }
 
-// Las funciones SQL lanzan excepciones cuyo mensaje es exactamente el código.
-const functionErrors: string[] = ['closed', 'invalid_deck', 'no_partner', 'not_found', 'not_in_deck']
-
-async function call<T>(name: string, args: Record<string, unknown>): Promise<T> {
-  const { data, error } = await supabase.rpc(name, args)
-  if (error) throw new BumbleError(functionErrors.includes(error.message) ? (error.message as BumbleErrorKind) : 'network')
-  return data as T
-}
+const call = <T>(name: string, args: Record<string, unknown>) =>
+  callRpc<T, BumbleErrorKind>(name, args, ['closed', 'invalid_deck', 'no_partner', 'not_found', 'not_in_deck'], (kind) => new BumbleError(kind))
 
 export const startBumble = (titleIds: string[]) => call<string>('start_bumble', { p_title_ids: titleIds })
 

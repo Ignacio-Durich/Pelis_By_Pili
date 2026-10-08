@@ -1,4 +1,5 @@
 import { supabase } from '../../lib/supabase'
+import { callRpc, CodedError } from '../../lib/rpc'
 import { subscribeCouple, type Change } from '../../lib/realtime'
 import type { SearchResult } from './searchApi'
 
@@ -31,13 +32,7 @@ export type Score = { userId: string; score: number; note: string | null; update
 
 export type TitleErrorKind = 'duplicate' | 'network' | 'not_found' | 'not_watched' | 'invalid_score' | 'invalid_note'
 
-export class TitleError extends Error {
-  kind: TitleErrorKind
-  constructor(kind: TitleErrorKind) {
-    super(kind)
-    this.kind = kind
-  }
-}
+export class TitleError extends CodedError<TitleErrorKind> {}
 
 type Row = {
   id: string
@@ -123,13 +118,8 @@ export async function addTitle(coupleId: string, result: SearchResult, originNot
   return data.id
 }
 
-// Las funciones SQL lanzan excepciones cuyo mensaje es exactamente el código.
-const functionErrors: string[] = ['not_found', 'not_watched', 'invalid_score', 'invalid_note']
-
-async function call(name: string, args: Record<string, unknown>): Promise<void> {
-  const { error } = await supabase.rpc(name, args)
-  if (error) throw new TitleError(functionErrors.includes(error.message) ? (error.message as TitleErrorKind) : 'network')
-}
+const call = (name: string, args: Record<string, unknown>) =>
+  callRpc<void, TitleErrorKind>(name, args, ['not_found', 'not_watched', 'invalid_score', 'invalid_note'], (kind) => new TitleError(kind))
 
 export const setWatched = (titleId: string, watched: boolean) => call('set_watched', { p_title_id: titleId, p_watched: watched })
 

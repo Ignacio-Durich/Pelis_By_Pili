@@ -1,16 +1,11 @@
 import type { Session } from '@supabase/supabase-js'
 import { isPlausibleEmail, normalizeEmail } from '../../lib/email'
 import { supabase } from '../../lib/supabase'
+import { CodedError } from '../../lib/rpc'
 
 export type AuthErrorKind = 'invalid_email' | 'rate_limited' | 'wrong_code' | 'network'
 
-export class AuthError extends Error {
-  kind: AuthErrorKind
-  constructor(kind: AuthErrorKind) {
-    super(kind)
-    this.kind = kind
-  }
-}
+export class AuthError extends CodedError<AuthErrorKind> {}
 
 type SupabaseAuthError = { name: string; status?: number; code?: string }
 

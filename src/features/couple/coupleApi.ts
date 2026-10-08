@@ -1,4 +1,5 @@
 import { supabase } from '../../lib/supabase'
+import { callRpc, CodedError } from '../../lib/rpc'
 import type { Couple } from './coupleContext'
 
 export type CoupleErrorKind =
@@ -9,13 +10,7 @@ export type CoupleErrorKind =
   | 'invalid_name'
   | 'network'
 
-export class CoupleError extends Error {
-  kind: CoupleErrorKind
-  constructor(kind: CoupleErrorKind) {
-    super(kind)
-    this.kind = kind
-  }
-}
+export class CoupleError extends CodedError<CoupleErrorKind> {}
 
 const knownKinds: string[] = ['already_in_couple', 'couple_full', 'invite_invalid', 'not_a_member', 'invalid_name']
 
@@ -24,11 +19,8 @@ function toCoupleError(error: { message: string }): CoupleError {
   return new CoupleError(knownKinds.includes(error.message) ? (error.message as CoupleErrorKind) : 'network')
 }
 
-async function rpc(name: string, args?: Record<string, string>): Promise<string> {
-  const { data, error } = await supabase.rpc(name, args)
-  if (error) throw toCoupleError(error)
-  return data as string
-}
+const rpc = (name: string, args?: Record<string, string>) =>
+  callRpc<string, CoupleErrorKind>(name, args, knownKinds as CoupleErrorKind[], (kind) => new CoupleError(kind))
 
 export async function getMyCouple(): Promise<Couple | null> {
   // RLS solo deja ver las filas del propio espacio, y cada persona está en un solo espacio.
