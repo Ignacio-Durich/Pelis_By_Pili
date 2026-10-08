@@ -1,4 +1,5 @@
 import { supabase } from '../../lib/supabase'
+import { callRpc } from '../../lib/rpc'
 import { subscribeCouple } from '../../lib/realtime'
 
 // Lo que llegó del menú Compartir de otra app (por el Atajo), esperando en la bandeja.
@@ -40,14 +41,10 @@ export async function dismissShared(id: string): Promise<void> {
   if (error) throw new Error('network')
 }
 
-async function call<T>(name: string): Promise<T> {
-  const { data, error } = await supabase.rpc(name)
-  if (error) throw new Error('network')
-  return data as T
-}
+const toError = (kind: string) => new Error(kind)
 
-export const createShareKey = () => call<string>('create_share_key')
-export const shareKeyCreatedAt = () => call<string | null>('share_key_created_at')
+export const createShareKey = () => callRpc<string, never>('create_share_key', undefined, [], toError)
+export const shareKeyCreatedAt = () => callRpc<string | null, never>('share_key_created_at', undefined, [], toError)
 
 // Ante cualquier cambio se recarga la bandeja.
 export function subscribeShared(coupleId: string, onChange: () => void): () => void {
@@ -73,7 +70,5 @@ export function originNote(item: SharedItem): string {
 }
 
 // "Agregar después" sin internet: al volver la conexión va a la bandeja con la sesión.
-export async function addSharedItem(query: string, body: string): Promise<void> {
-  const { error } = await supabase.rpc('add_shared_item', { p_query: query, p_body: body })
-  if (error) throw new Error(['invalid_item', 'inbox_full', 'no_couple'].includes(error.message) ? error.message : 'network')
-}
+export const addSharedItem = (query: string, body: string) =>
+  callRpc<void, string>('add_shared_item', { p_query: query, p_body: body }, ['invalid_item', 'inbox_full', 'no_couple'], toError)
