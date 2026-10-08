@@ -75,3 +75,12 @@ test('with active filters it says how many titles match, even with the panel clo
   rerender(<FiltersPanel value={NO_FILTERS} options={options} count={{ matching: 12, total: 12 }} onChange={onChange} />)
   expect(screen.queryByText(/cumplen? los filtros/)).not.toBeInTheDocument()
 })
+
+test('a chosen genre or platform that no longer has titles can still be turned off', () => {
+  open({ ...NO_FILTERS, platforms: ['Disney Plus'], genres: ['Western'] })
+  const platform = screen.getByRole('button', { name: 'Disney Plus' })
+  expect(platform).toHaveAttribute('aria-pressed', 'true')
+  fireEvent.click(platform)
+  expect(onChange).toHaveBeenLastCalledWith({ ...NO_FILTERS, platforms: [], genres: ['Western'] })
+  expect(screen.getByRole('button', { name: 'Western' })).toHaveAttribute('aria-pressed', 'true')
+})
