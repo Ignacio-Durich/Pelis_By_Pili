@@ -124,3 +124,9 @@ Cada línea: decisión — motivo — costo si está mal.
 - Revisión final: regla global `[hidden] { display: none !important }`. Sin ella, la ruleta "oculta" seguía visible (su clase define `display: flex`) y el detalle abierto desde la ruleta quedaba debajo, fuera de la pantalla. Verificado en el navegador midiendo el `display` antes (flex) y después (none) — ninguno.
 - Revisión final: lo elegido en géneros y plataformas siempre aparece como botón, aunque ya no quede ningún título con eso, para poder apagarlo — ninguno.
 - Revisión final: con los dos extremos de una barra juntos en la mitad alta, el pulgar del mínimo queda arriba, para que se pueda volver a bajar con el dedo — ninguno.
+
+# Hosting
+
+- Mudanza de Netlify a Cloudflare (elegido por Nacho): Worker con archivos estáticos en vez del Pages anterior, porque Wrangler ya delega Pages a Workers y el Pages viejo es el camino que Cloudflare deja atrás (otra mudanza obligaría a reinstalar la app en los celulares) — la dirección queda `pelis-by-pili.pelis-by-pili.workers.dev`; se puede cambiar el subdominio de la cuenta más adelante, antes del regalo.
+- `scripts/check-dist.ts` (con test) reemplaza al chequeo manual de claves antes de publicar, y `npm run deploy` lo corre siempre — ninguno.
+- Se borró `netlify.toml` — ya no se publica en Netlify.
