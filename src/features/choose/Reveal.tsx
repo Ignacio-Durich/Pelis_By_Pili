@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { readCache, saveCache } from '../../lib/offline'
 import { useUserId } from '../auth/sessionContext'
 import { useCouple, useMemberName } from '../couple/coupleContext'
 import { filterOptions, matchesFilters, type Filters } from '../titles/filters'
@@ -21,32 +22,12 @@ type Props = { filters: Filters; onFiltersChange: (f: Filters) => void; onBack: 
 // app. `active` es quién tiene el celular.
 type LocalReveal = { id: string; players: [string, string]; picks: [string[] | null, string[] | null]; active: 0 | 1; revealed: boolean }
 
-const LOCAL_KEY = 'pelis-reveal-local'
-
-function readLocal(): LocalReveal | null {
-  try {
-    const game = JSON.parse(localStorage.getItem(LOCAL_KEY) ?? 'null') as LocalReveal | null
-    return game && Array.isArray(game.picks) && Array.isArray(game.players) ? game : null
-  } catch {
-    return null
-  }
-}
-
-function saveLocal(game: LocalReveal | null) {
-  try {
-    if (game) localStorage.setItem(LOCAL_KEY, JSON.stringify(game))
-    else localStorage.removeItem(LOCAL_KEY)
-  } catch {
-    // Sin almacenamiento la partida sigue, solo que no sobrevive a una recarga.
-  }
-}
-
 export function Reveal({ filters, onFiltersChange, onBack }: Props) {
   const { coupleId, members } = useCouple()
   const me = useUserId()
   const { titles, offline, load: loadTitles } = useTitles(coupleId)
   const { session, offline: revealOffline, load } = useReveal(coupleId)
-  const [local, setLocalState] = useState<LocalReveal | null>(readLocal)
+  const [local, setLocalState] = useState<LocalReveal | null>(() => readCache<LocalReveal>('reveal', me))
   const [error, setError] = useState<string | null>(null)
   const partner = members.find((m) => m.userId !== me)?.userId ?? null
 
@@ -55,7 +36,7 @@ export function Reveal({ filters, onFiltersChange, onBack }: Props) {
 
   function setLocal(game: LocalReveal | null) {
     setLocalState(game)
-    saveLocal(game)
+    saveCache('reveal', me, game)
   }
 
   function startTwo() {

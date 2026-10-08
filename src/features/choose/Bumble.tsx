@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { readCache, saveCache } from '../../lib/offline'
 import { useUserId } from '../auth/sessionContext'
 import { useCouple, useMemberName } from '../couple/coupleContext'
 import { filterOptions, matchesFilters, type Filters } from '../titles/filters'
@@ -21,26 +22,6 @@ type Props = { filters: Filters; onFiltersChange: (f: Filters) => void; onBack: 
 // vuelta que vieron empezar (para avisar cuando arranca la siguiente).
 type LocalGame = { id: string; deck: string[]; votes: Vote[]; players: [string, string]; active: 0 | 1; round: number }
 
-const LOCAL_KEY = 'pelis-bumble-local'
-
-function readLocal(): LocalGame | null {
-  try {
-    const game = JSON.parse(localStorage.getItem(LOCAL_KEY) ?? 'null') as LocalGame | null
-    return game && Array.isArray(game.deck) && Array.isArray(game.votes) && Array.isArray(game.players) ? game : null
-  } catch {
-    return null
-  }
-}
-
-function saveLocal(game: LocalGame | null) {
-  try {
-    if (game) localStorage.setItem(LOCAL_KEY, JSON.stringify(game))
-    else localStorage.removeItem(LOCAL_KEY)
-  } catch {
-    // Sin almacenamiento la partida sigue, solo que no sobrevive a una recarga.
-  }
-}
-
 const sameVote = (x: Vote, y: Vote) => x.userId === y.userId && x.round === y.round && x.titleId === y.titleId
 
 export function Bumble({ filters, onFiltersChange, onBack, random = Math.random }: Props) {
@@ -48,7 +29,7 @@ export function Bumble({ filters, onFiltersChange, onBack, random = Math.random 
   const me = useUserId()
   const { titles, offline, load: loadTitles } = useTitles(coupleId)
   const { session, offline: bumbleOffline, load } = useBumble(coupleId)
-  const [local, setLocalState] = useState<LocalGame | null>(readLocal)
+  const [local, setLocalState] = useState<LocalGame | null>(() => readCache<LocalGame>('bumble', me))
   const [error, setError] = useState<string | null>(null)
   const partner = members.find((m) => m.userId !== me)?.userId ?? null
 
@@ -57,7 +38,7 @@ export function Bumble({ filters, onFiltersChange, onBack, random = Math.random 
 
   function setLocal(game: LocalGame | null) {
     setLocalState(game)
-    saveLocal(game)
+    saveCache('bumble', me, game)
   }
 
   function startOne() {
