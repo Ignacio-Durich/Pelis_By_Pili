@@ -15,6 +15,9 @@ type Props = {
 // teclado sin librerías. Un extremo se frena en el valor del otro.
 export function RangeSlider({ label, min, max, step, value: [low, high], text, format, onChange }: Props) {
   const percent = (v: number) => ((v - min) / (max - min)) * 100
+  // Con los dos pulgares juntos solo se puede tocar el de arriba: en la mitad alta tiene que ser
+  // el mínimo (el máximo no puede subir más), si no la barra queda trabada.
+  const minOnTop = low === high && low > (min + max) / 2
   return (
     <div className="range">
       <div className="range-head">
@@ -25,6 +28,7 @@ export function RangeSlider({ label, min, max, step, value: [low, high], text, f
         <input
           type="range"
           aria-label={`${label} mínimo`}
+          style={{ zIndex: minOnTop ? 2 : 1 }}
           aria-valuetext={format(low)}
           min={min}
           max={max}
