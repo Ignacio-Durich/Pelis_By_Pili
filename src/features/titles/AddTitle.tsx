@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { useMemberName } from '../couple/coupleContext'
+import { dismissShared, originNote, type SharedItem } from '../shared/sharedApi'
 import { fetchTitleDetail } from './detailApi'
 import { searchTitles, type SearchResult } from './searchApi'
 import { TitleCard } from './TitleCard'
 import { addTitle, TitleError, type Title } from './titlesApi'
 
-type Props = { coupleId: string; titles: Title[]; onClose: () => void }
+// `shared`: se abrió desde la bandeja de compartidos, con la búsqueda y la nota ya cargadas.
+type Props = { coupleId: string; titles: Title[]; onClose: () => void; shared?: SharedItem }
 
 const addMessages: Record<'duplicate' | 'network', string> = {
   duplicate: 'Ya está en la lista',
@@ -14,10 +16,12 @@ const addMessages: Record<'duplicate' | 'network', string> = {
 
 const keyOf = (t: { mediaType: string; tmdbId: number }) => `${t.mediaType}:${t.tmdbId}`
 
-export function AddTitle({ coupleId, titles, onClose }: Props) {
+export function AddTitle({ coupleId, titles, onClose, shared }: Props) {
   const nameOf = useMemberName()
-  const [query, setQuery] = useState('')
-  const [note, setNote] = useState('')
+  const [query, setQuery] = useState(shared?.query ?? '')
+  const [note, setNote] = useState(shared ? originNote(shared) : '')
+  // El ítem compartido sale de la bandeja con el primer título agregado desde él.
+  const dismissed = useRef(false)
   // null = todavía no se buscó nada
   const [results, setResults] = useState<SearchResult[] | null>(null)
   const [searching, setSearching] = useState(false)
@@ -60,7 +64,12 @@ export function AddTitle({ coupleId, titles, onClose }: Props) {
       // En segundo plano: la función guarda los puntajes y Realtime actualiza la tarjeta.
       fetchTitleDetail(id).catch(() => {})
       setAdded((list) => [...list, keyOf(result)])
-      setNote('')
+      if (shared && !dismissed.current) {
+        dismissed.current = true
+        dismissShared(shared.id).catch(() => {})
+      }
+      // Desde un compartido la nota queda, por si el reel nombraba varias.
+      if (!shared) setNote('')
     } catch (e) {
       setAddError(e instanceof TitleError && e.kind === 'duplicate' ? 'duplicate' : 'network')
     } finally {

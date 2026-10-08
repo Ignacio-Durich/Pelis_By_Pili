@@ -2,6 +2,11 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { expect, test, vi } from 'vitest'
 
 vi.mock('../lib/supabase', () => ({ supabase: {} }))
+vi.mock('../features/shared/sharedApi', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../features/shared/sharedApi')>()),
+  listShared: () => Promise.resolve([]),
+  subscribeShared: () => () => {},
+}))
 vi.mock('../features/titles/titlesApi', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../features/titles/titlesApi')>()),
   listTitles: vi.fn().mockResolvedValue([]),
