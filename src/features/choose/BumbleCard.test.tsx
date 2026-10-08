@@ -97,3 +97,21 @@ test('a new card starts face up', async () => {
   expect(screen.queryByText('Sinopsis')).not.toBeInTheDocument()
   expect(screen.getByText('Otra')).toBeInTheDocument()
 })
+
+test('the undo button sits between No and Sí', () => {
+  const onUndo = vi.fn()
+  render(<BumbleCard title={dark} onVote={onVote} undo={{ onClick: onUndo, disabled: false }} />)
+  const names = [...screen.getByRole('button', { name: 'Deshacer' }).parentElement!.children].map((b) => b.getAttribute('aria-label') ?? b.textContent)
+  expect(names).toEqual(['👎 No', 'Deshacer', '👍 Sí'])
+  fireEvent.click(screen.getByRole('button', { name: 'Deshacer' }))
+  expect(onUndo).toHaveBeenCalled()
+})
+
+test('the synopsis side can be swiped too, without its own scroll', async () => {
+  render(<BumbleCard title={dark} onVote={onVote} />)
+  tap()
+  await screen.findByText('Un chico desaparece en Winden.')
+  expect(card()).toHaveClass('flipped')
+  drag(150)
+  expect(onVote).toHaveBeenCalledWith(true)
+})
