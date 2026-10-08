@@ -89,3 +89,12 @@ Impacto en el plan: afecta ya a la Etapa 1, no solo a las siguientes. La novia d
 - Cambios pedidos por Nacho después de la primera prueba: barras de rango para duración e IMDb, ruleta animada (rueda), y cuántos títulos cumplen los filtros. Arreglo reportado por Nacho: después de un veto la rueda no volvía a girar.
 - Prueba de aceptación (Nacho, con la cuenta de prueba en el celular de su hermana): "Perfecto, sigamos" después de probar el arreglo del veto y el contador.
 - La etapa queda terminada: la ruleta solo sugiere títulos que cumplen los filtros.
+
+## Mudanza de hosting a Cloudflare (2026-10-07)
+
+- Motivo: el plan gratis de Netlify pasó a créditos (300 por mes; 15 por publicación). Con las publicaciones de las etapas 0 a 5 se agotaron y Netlify frenó las publicaciones nuevas hasta el próximo ciclo (el sitio siguió en línea). Nacho comparó opciones gratis (Cloudflare, Vercel, Firebase Hosting, GitHub Pages, Render) y eligió Cloudflare.
+- Wrangler 4.148 ya no crea proyectos del "Pages" anterior: Cloudflare unificó Pages en Workers. Se usa un Worker solo con archivos estáticos (`wrangler.jsonc`, sin código propio), con `not_found_handling: "single-page-application"`. Servir archivos estáticos es gratis y sin límite.
+- Nueva dirección: https://pelis-by-pili.pelis-by-pili.workers.dev (el subdominio de la cuenta quedó `pelis-by-pili`). El certificado HTTPS tardó ~60 s en estar listo después de la primera publicación.
+- Publicar: `npm run deploy` (compila, corre `scripts/check-dist.ts`, que frena si `dist/` tiene nombres o valores de claves o la URL local, y publica con Wrangler). Wrangler quedó como dependencia de desarrollo; su script de instalación (`workerd`) no se aprobó y no hace falta para publicar.
+- Verificado con curl: `/`, el manifest (`"display":"standalone"`, `"short_name":"Pelis"`), `/sw.js`, el apple-touch-icon, el logo de TMDB y las rutas de la app responden 200; la página carga sin errores en el navegador. Las funciones de Supabase responden al preflight CORS desde la dirección nueva.
+- Pendiente: reinstalar la app en los celulares desde la dirección nueva; actualizar la URL en la configuración de la API de TMDB (opcional); borrar el sitio de Netlify cuando se confirme que todo anda.
