@@ -1,5 +1,8 @@
 import { useRef, useState } from 'react'
 import { useCouple, useMemberName } from '../couple/coupleContext'
+import type { SharedItem } from '../shared/sharedApi'
+import { SharedInbox } from '../shared/SharedInbox'
+import { useShared } from '../shared/useShared'
 import { AddTitle } from './AddTitle'
 import { filterOptions, matchesFilters, NO_FILTERS, type Filters } from './filters'
 import { FiltersPanel } from './FiltersPanel'
@@ -15,7 +18,9 @@ export function TitleList({ filters, onFiltersChange }: { filters: Filters; onFi
   const nameOf = useMemberName()
   const { titles, offline, load } = useTitles(coupleId)
   const [removeFailed, setRemoveFailed] = useState(false)
-  const [adding, setAdding] = useState(false)
+  const { items: shared } = useShared(coupleId)
+  // false = cerrado; si no, Agregar (con el ítem de la bandeja que se está buscando, si hay).
+  const [adding, setAdding] = useState<false | { shared?: SharedItem }>(false)
   // Por id: el detalle abierto toma siempre la versión más nueva del título (Realtime recarga la lista).
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [tab, setTab] = useState<'to_watch' | 'watched'>('to_watch')
@@ -48,7 +53,8 @@ export function TitleList({ filters, onFiltersChange }: { filters: Filters; onFi
 
   const selected = titles?.find((t) => t.id === selectedId)
   if (selected) return <TitleDetail title={selected} onClose={() => backToList(() => setSelectedId(null))} />
-  if (adding) return <AddTitle coupleId={coupleId} titles={titles ?? []} onClose={() => backToList(() => setAdding(false))} />
+  if (adding)
+    return <AddTitle coupleId={coupleId} titles={titles ?? []} shared={adding.shared} onClose={() => backToList(() => setAdding(false))} />
 
   // "Por ver": del más nuevo al más viejo (como llega). "Vistas": la vista más reciente primero.
   const inTab = titles?.filter((t) => t.status === tab)
@@ -75,6 +81,7 @@ export function TitleList({ filters, onFiltersChange }: { filters: Filters; onFi
 
   return (
     <section className="titles">
+      {shared && <SharedInbox items={shared} onSearch={(item) => openScreen(() => setAdding({ shared: item }))} />}
       <div className="segmented">
         <button aria-pressed={tab === 'to_watch'} onClick={() => setTab('to_watch')}>
           Por ver
@@ -137,7 +144,7 @@ export function TitleList({ filters, onFiltersChange }: { filters: Filters; onFi
         ))}
       </ul>
       {tab === 'to_watch' && (
-        <button className="add" aria-label="Agregar" onClick={() => openScreen(() => setAdding(true))}>
+        <button className="add" aria-label="Agregar" onClick={() => openScreen(() => setAdding({}))}>
           +
         </button>
       )}

@@ -665,10 +665,19 @@ button.chip[aria-pressed='true'] {
 .share-shortcut li code {
   display: inline;
   padding: 1px 4px;
+  white-space: nowrap;
+  word-break: normal;
+}
+
+.share-shortcut li button {
+  display: block;
+  margin: 4px 0 8px;
 }
 
 .share-shortcut li > code:first-of-type {
   display: block;
+  white-space: normal;
+  word-break: break-all;
 }
 
 .share-shortcut ol {
@@ -681,4 +690,57 @@ button.chip[aria-pressed='true'] {
 .share-shortcut summary {
   color: #ffb703;
   font-weight: 600;
+}
+
+/* Bandeja de compartidos, arriba de Por ver / Vistas */
+.shared-inbox {
+  border: 1px solid #44446a;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.shared-inbox summary {
+  font-weight: 600;
+  color: #ffb703;
+}
+
+.shared-inbox ul {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.shared-inbox li {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 10px;
+  border-top: 1px solid #2a2a45;
+}
+
+.shared-inbox li span {
+  overflow-wrap: anywhere;
+}
+
+.shared-inbox small {
+  color: #b8b8d0;
+}
+
+.shared-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.shared-actions a {
+  margin-right: auto;
+  color: #ffb703;
+}
+
+.shared-actions button {
+  padding: 8px 12px;
+  font-size: 15px;
 }

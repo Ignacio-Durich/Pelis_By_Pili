@@ -1,16 +1,21 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 
-const api = vi.hoisted(() => ({ addTitle: vi.fn(), searchTitles: vi.fn(), fetchTitleDetail: vi.fn() }))
+const api = vi.hoisted(() => ({ addTitle: vi.fn(), searchTitles: vi.fn(), fetchTitleDetail: vi.fn(), dismissShared: vi.fn() }))
 vi.mock('./titlesApi', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./titlesApi')>()),
   addTitle: api.addTitle,
 }))
 vi.mock('./searchApi', () => ({ searchTitles: api.searchTitles }))
 vi.mock('./detailApi', () => ({ fetchTitleDetail: api.fetchTitleDetail }))
+vi.mock('../shared/sharedApi', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../shared/sharedApi')>()),
+  dismissShared: api.dismissShared,
+}))
 vi.mock('../../lib/supabase', () => ({ supabase: {} }))
 
 import { withCouple } from '../../test/providers'
+import type { SharedItem } from '../shared/sharedApi'
 import { AddTitle } from './AddTitle'
 import type { SearchResult } from './searchApi'
 import { TitleError, type Title } from './titlesApi'
@@ -33,11 +38,12 @@ beforeEach(() => {
   vi.resetAllMocks()
   vi.useFakeTimers()
   api.fetchTitleDetail.mockResolvedValue({})
+  api.dismissShared.mockResolvedValue(undefined)
 })
 afterEach(() => vi.useRealTimers())
 
-function renderAdd(titles: Title[] = []) {
-  render(withCouple(<AddTitle coupleId="c1" titles={titles} onClose={onClose} />))
+function renderAdd(titles: Title[] = [], shared?: SharedItem) {
+  render(withCouple(<AddTitle coupleId="c1" titles={titles} onClose={onClose} shared={shared} />))
 }
 
 async function typeQuery(value: string) {
@@ -193,4 +199,41 @@ test('a failing background detail does not show an error', async () => {
   await act(async () => fireEvent.click(screen.getByRole('button', { name: /Mi pobre angelito/ })))
   expect(screen.getByText('✓ Agregada')).toBeInTheDocument()
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+})
+
+const reel: SharedItem = {
+  id: 'i1',
+  url: 'https://www.instagram.com/reel/abc/',
+  body: null,
+  query: 'Mi pobre',
+  source: 'Instagram',
+  sharedBy: 'u2',
+  createdAt: '2026-10-08T12:00:00Z',
+}
+
+test('from a shared item it starts with the search and the note already filled in', async () => {
+  api.searchTitles.mockResolvedValue([angelito])
+  renderAdd([], reel)
+  expect(screen.getByLabelText('Buscar película o serie')).toHaveValue('Mi pobre')
+  expect(screen.getByLabelText('¿De dónde vino? (opcional)')).toHaveValue('Reel de Instagram · https://www.instagram.com/reel/abc/')
+  await act(async () => vi.advanceTimersByTime(400))
+  expect(api.searchTitles).toHaveBeenCalledWith('Mi pobre')
+})
+
+test('a shared item without a name starts with an empty search', () => {
+  renderAdd([], { ...reel, query: null })
+  expect(screen.getByLabelText('Buscar película o serie')).toHaveValue('')
+})
+
+test('adding from a shared item takes it out of the inbox once and keeps the note', async () => {
+  api.addTitle.mockResolvedValue('t9')
+  api.searchTitles.mockResolvedValue([angelito, parasitos])
+  renderAdd([], reel)
+  await act(async () => vi.advanceTimersByTime(400))
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: /Mi pobre angelito/ })))
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: /Parásitos/ })))
+  expect(api.dismissShared).toHaveBeenCalledTimes(1)
+  expect(api.dismissShared).toHaveBeenCalledWith('i1')
+  expect(api.addTitle).toHaveBeenLastCalledWith('c1', parasitos, 'Reel de Instagram · https://www.instagram.com/reel/abc/')
+  expect(screen.getByLabelText('¿De dónde vino? (opcional)')).toHaveValue('Reel de Instagram · https://www.instagram.com/reel/abc/')
 })

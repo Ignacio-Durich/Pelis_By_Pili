@@ -9,6 +9,8 @@ const api = vi.hoisted(() => ({
   searchTitles: vi.fn(),
   unsubscribe: vi.fn(),
   fetchTitleDetail: vi.fn(),
+  listShared: vi.fn(),
+  subscribeShared: vi.fn(),
 }))
 vi.mock('./titlesApi', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./titlesApi')>()),
@@ -19,6 +21,11 @@ vi.mock('./titlesApi', async (importOriginal) => ({
 }))
 vi.mock('./searchApi', () => ({ searchTitles: api.searchTitles }))
 vi.mock('./detailApi', () => ({ fetchTitleDetail: api.fetchTitleDetail }))
+vi.mock('../shared/sharedApi', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../shared/sharedApi')>()),
+  listShared: api.listShared,
+  subscribeShared: api.subscribeShared,
+}))
 vi.mock('../../lib/supabase', () => ({ supabase: {} }))
 
 import { withCouple } from '../../test/providers'
@@ -63,6 +70,8 @@ beforeEach(() => {
     notify = onChange
     return api.unsubscribe
   })
+  api.listShared.mockResolvedValue([])
+  api.subscribeShared.mockReturnValue(() => {})
 })
 afterEach(() => vi.restoreAllMocks())
 
@@ -284,4 +293,15 @@ test('the list says how many titles match the filters', async () => {
   ])
   renderList({ ...NO_FILTERS, platforms: ['Netflix'] })
   expect(await screen.findByText('1 de 2 títulos cumple los filtros')).toBeInTheDocument()
+})
+
+test('Buscar in the inbox opens Agregar with the shared search', async () => {
+  api.listShared.mockResolvedValue([
+    { id: 'i1', url: 'https://www.instagram.com/reel/abc/', body: null, query: 'Parásitos', source: 'Instagram', sharedBy: 'u2', createdAt: '2026-10-08T12:00:00Z' },
+  ])
+  renderList()
+  expect(await screen.findByText('📥 Compartidos (1)')).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: 'Buscar' }))
+  expect(screen.getByRole('heading', { name: 'Agregar' })).toBeInTheDocument()
+  expect(screen.getByLabelText('Buscar película o serie')).toHaveValue('Parásitos')
 })
