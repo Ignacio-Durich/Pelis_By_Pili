@@ -47,7 +47,7 @@ export function Roulette({ filters, onFiltersChange, random = Math.random, onBac
           count={{ matching: matching.length, total: toWatch.length }}
           onChange={onFiltersChange}
         />
-        {offline && (
+        {offline && titles === null && (
           <>
             <p role="alert">Sin conexión. Probá de nuevo.</p>
             <button onClick={load}>Reintentar</button>

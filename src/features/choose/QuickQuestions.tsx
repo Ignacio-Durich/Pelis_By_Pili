@@ -67,7 +67,7 @@ export function QuickQuestions({ onBack }: { onBack: () => void }) {
           ))}
         </div>
 
-        {offline && (
+        {offline && titles === null && (
           <>
             <p role="alert">Sin conexión. Probá de nuevo.</p>
             <button onClick={load}>Reintentar</button>

@@ -1,8 +1,11 @@
 import { beforeEach, expect, test, vi } from 'vitest'
 import { makeTitle } from '../test/titles'
-import { applyPending, enqueue, flushPending, pendingFor, readCache, saveCache, subscribePending, type Pending } from './offline'
+import { applyPending, clearDropped, droppedFor, enqueue, flushPending, pendingFor, readCache, saveCache, subscribePending, type Pending } from './offline'
 
-beforeEach(() => localStorage.clear())
+beforeEach(() => {
+  localStorage.clear()
+  clearDropped('o')
+})
 
 const network = new Error('Failed to fetch')
 const isNetwork = (e: unknown) => e === network
@@ -78,4 +81,19 @@ test('applyPending shows watched and the own score as pending', () => {
   expect(untouched.pending).toBeUndefined()
   const unwatched = applyPending([{ ...t, status: 'watched', watchedAt: '2026-10-08T00:00:00Z' }], [{ id: 'p', kind: 'watched', titleId: 't1', watched: false }], 'u1')[0]
   expect([unwatched.status, unwatched.watchedAt]).toEqual(['to_watch', null])
+})
+
+test('dropped changes are kept for their owner until cleared, and subscribers hear it', async () => {
+  const heard = vi.fn()
+  const stop = subscribePending(heard)
+  enqueue('o', { kind: 'watched', titleId: 'gone', watched: true })
+  await flushPending('o', async () => {
+    throw new Error('not_found')
+  }, isNetwork)
+  expect(droppedFor('o').map((d) => d.item.kind)).toEqual(['watched'])
+  expect(droppedFor('otro')).toEqual([])
+  clearDropped('o')
+  expect(droppedFor('o')).toEqual([])
+  expect(heard).toHaveBeenCalled()
+  stop()
 })
