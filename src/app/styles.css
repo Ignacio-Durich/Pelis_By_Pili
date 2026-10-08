@@ -31,6 +31,7 @@ form,
 .quick,
 .bumble,
 .bumble-mode,
+.reveal-mode,
 .choose-menu,
 .titles,
 .add-title,
@@ -743,4 +744,39 @@ button.chip[aria-pressed='true'] {
 .shared-actions button {
   padding: 8px 12px;
   font-size: 15px;
+}
+
+/* Top 3 secreto */
+.reveal-options button.result[aria-pressed='true'] {
+  outline: 2px solid #ffb703;
+  outline-offset: -2px;
+}
+
+/* "Listo (n de 3)" queda a la vista arriba de las pestañas aunque la lista scrollee. */
+.reveal-done {
+  position: sticky;
+  bottom: calc(68px + env(safe-area-inset-bottom));
+  z-index: 3;
+  box-shadow: 0 -8px 16px #1b1b2f;
+}
+
+/* Deshabilitado, opaco: si no, la lista se ve a través. */
+.reveal-done:disabled {
+  opacity: 1;
+  background: #5c4c1c;
+  color: #b9b29a;
+}
+
+.reveal-ready {
+  margin: 0;
+  color: #ffb703;
+  font-weight: 600;
+}
+
+.reveal-count {
+  margin: 120px 0;
+  text-align: center;
+  font-size: 96px;
+  font-weight: 800;
+  color: #ffb703;
 }
