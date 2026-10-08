@@ -138,3 +138,13 @@ Impacto en el plan: afecta ya a la Etapa 1, no solo a las siguientes. La novia d
 - Prueba de aceptación (Nacho y la cuenta de prueba en el celular de su hermana): "Anduvo perfecto".
 - La etapa queda terminada: ninguno ve la elección del otro antes de la revelación.
 
+## Cierre de la Etapa 10 (2026-10-08)
+
+- Torneo de un celular (los duelos se deciden juntos): cada uno elige 4 pasándose el celular, en cuartos cada duelo es una de cada uno, el resto se completa al azar y si no alcanza hay huecos; cuartos, semifinal y final con dos cartas grandes y "Deshacer". Sin cambios en la base ni en las funciones (no hubo `db push`).
+- El selector de Top 3 secreto pasó a ser `TitlePicker` (lo usan los dos modos). La lógica se llama `bracket.ts`: en macOS `./Tournament` resolvía a `tournament.ts`.
+- Antes de publicar: `npm test` 370/370, typecheck y lint sin errores; el test de la cuenta 3-2-1 de Top 3 secreto se hizo determinístico (fallaba a veces con la suite completa).
+- Revisión visual en local a 390×844: con 5 títulos (huecos incluidos), las dos cartas del duelo terminan en 702 px y las pestañas empiezan en 783, sin scroll; torneo entero hasta la ganadora.
+- Revisión final (opus): sin críticos; 3 importantes arreglados con test que falla primero (al recargar aparecía "No quedó ninguna candidata", un doble toque en la final podía caer en "Listo" o "Deshacer", y borrar una ganadora ya decidida revivía a la perdedora). Dos menores a la Etapa 12. 372/372.
+- Publicado en https://pelis-by-pili.con-amor-nacho.workers.dev. Prueba de aceptación (Nacho en su iPhone): "perfecto".
+- La etapa queda terminada: de 8 títulos queda una ganadora en tres rondas.
+
