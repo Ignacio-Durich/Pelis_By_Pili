@@ -430,3 +430,7 @@ verify_jwt = false
 
 [functions.title-detail]
 verify_jwt = false
+
+# El Atajo de iOS no tiene sesión: la función valida la clave personal (x-share-key).
+[functions.share]
+verify_jwt = false
