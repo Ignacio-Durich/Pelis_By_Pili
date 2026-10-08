@@ -29,6 +29,8 @@ body {
 
 form,
 .quick,
+.bumble,
+.bumble-mode,
 .choose-menu,
 .titles,
 .add-title,
@@ -516,4 +518,66 @@ button.chip[aria-pressed='true'] {
 
 .choose-menu small {
   font-weight: normal;
+}
+
+/* Bumble: carta tipo Tinder/Bumble */
+.bumble-card {
+  position: relative;
+  aspect-ratio: 2 / 3;
+  max-height: 62vh;
+  width: 100%;
+  margin: 0 auto;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #2a2a45;
+  touch-action: pan-y;
+  user-select: none;
+  cursor: grab;
+}
+
+.bumble-card img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.bumble-info {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 48px 16px 16px;
+  background: linear-gradient(transparent, rgba(20, 20, 42, 0.95) 45%);
+}
+
+.bumble-info strong {
+  font-size: 1.4rem;
+}
+
+.bumble-info span {
+  color: #d8d8ea;
+  font-size: 0.9rem;
+}
+
+.bumble-back {
+  height: 100%;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.bumble-back h3 {
+  margin: 0 0 8px;
+}
+
+.bumble-votes {
+  display: flex;
+  gap: 12px;
+}
+
+.bumble-votes button {
+  flex: 1;
 }
