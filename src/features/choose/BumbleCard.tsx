@@ -1,8 +1,7 @@
 import { useRef, useState, type PointerEvent } from 'react'
 import { fetchTitleDetail } from '../titles/detailApi'
-import { formatMinutes } from '../titles/filters'
-import { imdbScore, rtScore } from '../titles/ratings'
 import type { Title } from '../titles/titlesApi'
+import { TitleFacts } from './TitleFacts'
 
 const VOTE_PX = 100
 const TAP_PX = 10
@@ -48,9 +47,6 @@ export function BumbleCard({ title, onVote, undo }: Props) {
     else if (Math.abs(d) < TAP_PX) flip()
   }
 
-  const kind = title.mediaType === 'movie' ? 'Película' : 'Serie'
-  const facts = [title.year, kind, title.runtime ? formatMinutes(title.runtime) : null].filter(Boolean).join(' · ')
-
   return (
     <div className="bumble">
       <div
@@ -78,11 +74,7 @@ export function BumbleCard({ title, onVote, undo }: Props) {
           <>
             {title.posterPath && <img src={`https://image.tmdb.org/t/p/w500${title.posterPath}`} alt="" draggable={false} />}
             <div className="bumble-info">
-              <strong>{title.title}</strong>
-              <span>{facts}</span>
-              {title.genres.length > 0 && <span>{title.genres.slice(0, 3).join(' · ')}</span>}
-              <span>{`IMDb ${imdbScore(title.imdbRating)} · RT ${rtScore(title.rottenTomatoes)}`}</span>
-              <span>{title.streaming.length ? title.streaming.join(', ') : 'Sin información de dónde verla'}</span>
+              <TitleFacts title={title} />
             </div>
           </>
         )}

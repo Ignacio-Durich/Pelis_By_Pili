@@ -1,14 +1,14 @@
 import { useRef, useState } from 'react'
 import { useUserId } from '../auth/sessionContext'
 import { useCouple, useMemberName } from '../couple/coupleContext'
-import { filterOptions, formatMinutes, matchesFilters, type Filters } from '../titles/filters'
+import { filterOptions, matchesFilters, type Filters } from '../titles/filters'
 import { FiltersPanel } from '../titles/FiltersPanel'
-import { imdbScore, rtScore } from '../titles/ratings'
 import type { Title } from '../titles/titlesApi'
 import { useTitles } from '../titles/useTitles'
 import { buildBracket, ROUND_NAMES, TOURNAMENT_PICKS, tournamentState, type Decision } from './bracket'
 import { GameTop } from './GameTop'
 import { NO_PARTNER, playerName } from './players'
+import { TitleFacts } from './TitleFacts'
 import { TitlePicker } from './TitlePicker'
 
 type Props = { filters: Filters; onFiltersChange: (f: Filters) => void; onBack: () => void; random?: () => number }
@@ -220,17 +220,11 @@ export function Tournament({ filters, onFiltersChange, onBack, random = Math.ran
 
 // Una candidata del duelo: se toca entera para elegirla.
 function DuelCard({ title, onChoose }: { title: Title; onChoose?: () => void }) {
-  const kind = title.mediaType === 'movie' ? 'Película' : 'Serie'
-  const facts = [title.year, kind, title.runtime ? formatMinutes(title.runtime) : null].filter(Boolean).join(' · ')
   return (
     <button className="duel-card" disabled={!onChoose} onClick={onChoose}>
       {title.posterPath ? <img src={`https://image.tmdb.org/t/p/w342${title.posterPath}`} alt="" /> : <span className="duel-poster" />}
       <span className="duel-info">
-        <strong>{title.title}</strong>
-        <span>{facts}</span>
-        {title.genres.length > 0 && <span>{title.genres.slice(0, 3).join(' · ')}</span>}
-        <span>{`IMDb ${imdbScore(title.imdbRating)} · RT ${rtScore(title.rottenTomatoes)}`}</span>
-        <span>{title.streaming.length ? title.streaming.join(', ') : 'Sin información de dónde verla'}</span>
+        <TitleFacts title={title} />
       </span>
     </button>
   )
