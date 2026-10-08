@@ -148,3 +148,13 @@ Impacto en el plan: afecta ya a la Etapa 1, no solo a las siguientes. La novia d
 - Publicado en https://pelis-by-pili.con-amor-nacho.workers.dev. Prueba de aceptación (Nacho en su iPhone): "perfecto".
 - La etapa queda terminada: de 8 títulos queda una ganadora en tres rondas.
 
+## Cierre de la Etapa 11 (2026-10-08)
+
+- Sin internet la app abre con la última cuenta, pareja, lista y bandeja guardadas en el celular (al instante: sin red, postgrest-js reintenta cada lectura 1+2+4 s antes de rendirse, así que lo guardado se muestra enseguida y se reemplaza cuando contesta el servidor). Marcar vista, puntuar y "Guardar para agregar después" quedan en una cola con ⏳ y se mandan en orden al volver la conexión; lo anotado va a "📥 Compartidos" con la función nueva `add_shared_item`. Los pósters vistos quedan en el service worker.
+- Antes de publicar: `npm test` 394/394, `npm run test:security` 88/88 local, typecheck y lint sin errores. Revisión visual con el gateway de Supabase local apagado (equivale a modo avión): la lista aparece en 0,2 s, los cambios quedan pendientes y al volver se mandaron (verificado en la base).
+- Revisión final (opus): sin críticos. Arreglados con test que falla primero: la cola se respeta con señal mala (lo nuevo va detrás, se intenta enseguida y cada 30 s), el aviso de descartados no se pierde si sincroniza otra pantalla, "Sin conexión" al activar modo avión con la app abierta, y los modos no dicen "Sin conexión. Probá de nuevo." con la lista guardada. 400/400. Seis menores a la Etapa 12.
+- Nacho subió `20261015000000_add_shared_item.sql` con `db push`. `npm run test:security:remote`: 83/88 por el límite de Auth; a los 7 minutos couples, names y shared pasaron 31/31.
+- Después: limpieza pedida por Nacho (rama `limpieza`, ver decisiones), −106 líneas en `src` y una dependencia menos, sin cambiar el comportamiento (400/400, 88/88, revisión visual).
+- Prueba de aceptación (Nacho, modo avión en los iPhones): "funciona todo bien".
+- La etapa queda terminada: un título anotado en modo avión aparece en el otro celular al reconectar.
+
