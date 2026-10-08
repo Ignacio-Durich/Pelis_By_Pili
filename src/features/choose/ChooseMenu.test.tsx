@@ -8,6 +8,11 @@ vi.mock('../titles/titlesApi', async (importOriginal) => ({
   subscribeTitles: api.subscribeTitles,
 }))
 vi.mock('../titles/detailApi', () => ({ fetchTitleDetail: api.fetchTitleDetail }))
+vi.mock('./bumbleApi', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./bumbleApi')>()),
+  loadOpenBumble: () => Promise.resolve(null),
+  subscribeBumble: () => () => {},
+}))
 vi.mock('../../lib/supabase', () => ({ supabase: {} }))
 
 import { withCouple } from '../../test/providers'
@@ -26,15 +31,21 @@ function renderMenu() {
   render(withCouple(<ChooseMenu filters={NO_FILTERS} onFiltersChange={vi.fn()} />))
 }
 
-test('shows the two modes with their help texts', () => {
+test('shows the three modes with their help texts, Bumble first', () => {
   renderMenu()
   expect(screen.getByRole('heading', { name: '¿Qué vemos?' })).toBeInTheDocument()
+  const modes = screen.getAllByRole('button')
+  expect(modes[0]).toHaveTextContent('Bumble')
+  expect(modes[0]).toHaveTextContent('Deslicen y gana la que les guste a los dos')
   expect(screen.getByRole('button', { name: /Ruleta/ })).toHaveTextContent('Gira entre los títulos que cumplen los filtros')
   expect(screen.getByRole('button', { name: /Preguntas rápidas/ })).toHaveTextContent('Respondan tres preguntas y les sugerimos 5')
 })
 
 test('each mode opens and Volver a los modos returns to the menu', async () => {
   renderMenu()
+  fireEvent.click(screen.getByRole('button', { name: /Bumble/ }))
+  expect(await screen.findByRole('heading', { name: 'Bumble' })).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: 'Volver a los modos' }))
   fireEvent.click(screen.getByRole('button', { name: /Ruleta/ }))
   expect(await screen.findByRole('heading', { name: 'Ruleta' })).toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: 'Volver a los modos' }))
