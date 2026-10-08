@@ -9,14 +9,14 @@ import { FiltersPanel } from './FiltersPanel'
 import { formatScore, imdbScore, ratingsDate, rtScore } from './ratings'
 import { TitleDetail } from './TitleDetail'
 import { useBackfillDetails } from './useBackfillDetails'
-import { useTitles } from './useTitles'
+import { droppedMessage, useTitles } from './useTitles'
 import { TitleCard } from './TitleCard'
 import { removeTitle, type Title } from './titlesApi'
 
 export function TitleList({ filters, onFiltersChange }: { filters: Filters; onFiltersChange: (f: Filters) => void }) {
   const { coupleId, members } = useCouple()
   const nameOf = useMemberName()
-  const { titles, offline, load } = useTitles(coupleId)
+  const { titles, offline, load, pending, dropped, clearDropped } = useTitles(coupleId)
   const [removeFailed, setRemoveFailed] = useState(false)
   const { items: shared } = useShared(coupleId)
   // false = cerrado; si no, Agregar (con el ítem de la bandeja que se está buscando, si hay).
@@ -91,11 +91,30 @@ export function TitleList({ filters, onFiltersChange }: { filters: Filters; onFi
         </button>
       </div>
       <h2>{tab === 'to_watch' ? 'Por ver' : 'Vistas'}</h2>
-      {offline && (
-        <>
-          <p role="alert">Sin conexión. Probá de nuevo.</p>
-          <button onClick={load}>Reintentar</button>
-        </>
+      {offline && titles ? (
+        // Sin red, con la última lista guardada: se puede seguir y lo hecho se manda después.
+        <p className="offline-note">
+          Sin conexión. Lo que hagas se guarda cuando vuelva la conexión
+          {pending > 0 && ` (${pending} ${pending === 1 ? 'pendiente' : 'pendientes'})`}
+        </p>
+      ) : (
+        offline && (
+          <>
+            <p role="alert">Sin conexión. Probá de nuevo.</p>
+            <button onClick={load}>Reintentar</button>
+          </>
+        )
+      )}
+      {!offline && pending > 0 && <p className="offline-note">{`Guardando ${pending} ${pending === 1 ? 'cambio' : 'cambios'}…`}</p>}
+      {dropped.length > 0 && (
+        <div role="alert" className="dropped">
+          {[...new Set(dropped.map(droppedMessage))].map((m) => (
+            <p key={m}>{m}</p>
+          ))}
+          <button className="secondary" onClick={clearDropped}>
+            Entendido
+          </button>
+        </div>
       )}
       {titles === null && !offline && <p>Cargando…</p>}
       {tab === 'to_watch' && (
@@ -124,6 +143,7 @@ export function TitleList({ filters, onFiltersChange }: { filters: Filters; onFi
             <button className="open" aria-label={`Ver ${t.title}`} onClick={() => openScreen(() => setSelectedId(t.id))}>
               <TitleCard title={t.title} originalTitle={t.originalTitle} year={t.year} mediaType={t.mediaType} posterPath={t.posterPath}>
                 <small>{`IMDb ${imdbScore(t.imdbRating)} · RT ${rtScore(t.rottenTomatoes)}`}</small>
+                {t.pending && <small>⏳ Se guarda cuando vuelva la conexión</small>}
                 {t.status === 'watched' && t.watchedAt ? (
                   <>
                     <small>{`Vista el ${ratingsDate(t.watchedAt)}`}</small>

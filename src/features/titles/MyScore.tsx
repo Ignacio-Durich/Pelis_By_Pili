@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from 'react'
 import { formatScore, parseScore } from './ratings'
+import { enqueue } from '../../lib/offline'
 import { setMyScore, TitleError, type Score, type TitleErrorKind } from './titlesApi'
+import { isNetworkError, usePendingOwner } from './useTitles'
 
 const messages: Partial<Record<TitleErrorKind, string>> = {
   not_found: 'Este título ya no está en la lista',
@@ -13,6 +15,8 @@ export function MyScore({ titleId, current }: { titleId: string; current: Score 
   const [note, setNote] = useState(current?.note ?? '')
   const [busy, setBusy] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [queued, setQueued] = useState(false)
+  const owner = usePendingOwner()
   const [error, setError] = useState<string | null>(null)
   const score = parseScore(text)
 
@@ -21,11 +25,18 @@ export function MyScore({ titleId, current }: { titleId: string; current: Score 
     if (score === null) return
     setBusy(true)
     setSaved(false)
+    setQueued(false)
     setError(null)
     try {
       await setMyScore(titleId, score, note)
       setSaved(true)
     } catch (e) {
+      // Sin red queda pendiente en el celular y se manda al volver la conexión.
+      if (isNetworkError(e)) {
+        enqueue(owner, { kind: 'score', titleId, score, note })
+        setQueued(true)
+        return
+      }
       setError((e instanceof TitleError && messages[e.kind]) || SAVE_FAILED)
     } finally {
       setBusy(false)
@@ -48,6 +59,7 @@ export function MyScore({ titleId, current }: { titleId: string; current: Score 
         Guardar
       </button>
       {saved && <p>Guardado</p>}
+      {queued && <p>⏳ Se guarda cuando vuelva la conexión</p>}
       {error && <p role="alert">{error}</p>}
     </form>
   )

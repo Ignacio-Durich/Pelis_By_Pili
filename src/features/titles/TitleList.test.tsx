@@ -11,6 +11,9 @@ const api = vi.hoisted(() => ({
   fetchTitleDetail: vi.fn(),
   listShared: vi.fn(),
   subscribeShared: vi.fn(),
+  setWatched: vi.fn(),
+  setMyScore: vi.fn(),
+  addSharedItem: vi.fn(),
 }))
 vi.mock('./titlesApi', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./titlesApi')>()),
@@ -18,6 +21,8 @@ vi.mock('./titlesApi', async (importOriginal) => ({
   removeTitle: api.removeTitle,
   subscribeTitles: api.subscribeTitles,
   addTitle: api.addTitle,
+  setWatched: api.setWatched,
+  setMyScore: api.setMyScore,
 }))
 vi.mock('./searchApi', () => ({ searchTitles: api.searchTitles }))
 vi.mock('./detailApi', () => ({ fetchTitleDetail: api.fetchTitleDetail }))
@@ -25,9 +30,11 @@ vi.mock('../shared/sharedApi', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../shared/sharedApi')>()),
   listShared: api.listShared,
   subscribeShared: api.subscribeShared,
+  addSharedItem: api.addSharedItem,
 }))
 vi.mock('../../lib/supabase', () => ({ supabase: {} }))
 
+import { enqueue, pendingFor, saveCache } from '../../lib/offline'
 import { withCouple } from '../../test/providers'
 import { makeTitle } from '../../test/titles'
 import { NO_FILTERS, type Filters } from './filters'
@@ -64,6 +71,7 @@ let notify: () => void
 
 beforeEach(() => {
   vi.resetAllMocks()
+  localStorage.clear()
   api.listTitles.mockResolvedValue([])
   api.fetchTitleDetail.mockReturnValue(new Promise(() => {}))
   api.subscribeTitles.mockImplementation((_coupleId: string, onChange: () => void) => {
@@ -304,4 +312,73 @@ test('Agregar in the inbox opens Agregar with the shared search', async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Agregar lo compartido' }))
   expect(screen.getByRole('heading', { name: 'Agregar' })).toBeInTheDocument()
   expect(screen.getByLabelText('Buscar película o serie')).toHaveValue('Parásitos')
+})
+
+const toWatch: Title = { ...sinDatos, id: 't3', title: 'Una por ver', status: 'to_watch', watchedAt: null, scores: [] }
+
+async function goOffline() {
+  api.listTitles.mockResolvedValue([angelito, toWatch])
+  const view = renderList()
+  await screen.findByText('Una por ver')
+  view.unmount()
+  api.listTitles.mockRejectedValue(new TitleError('network'))
+  renderList()
+  await screen.findByText('Una por ver')
+}
+
+test('without connection it shows the saved list and says changes wait', async () => {
+  await goOffline()
+  expect(screen.getByText('Sin conexión. Lo que hagas se guarda cuando vuelva la conexión')).toBeInTheDocument()
+  expect(screen.queryByText('Sin conexión. Probá de nuevo.')).not.toBeInTheDocument()
+})
+
+test('a list saved for another couple is not shown', async () => {
+  saveCache('titles', 'c9', [toWatch])
+  api.listTitles.mockRejectedValue(new TitleError('network'))
+  renderList()
+  expect(await screen.findByText('Sin conexión. Probá de nuevo.')).toBeInTheDocument()
+  expect(screen.queryByText('Una por ver')).not.toBeInTheDocument()
+})
+
+test('marking as watched offline moves it to Vistas with ⏳, and it is sent when the connection is back', async () => {
+  await goOffline()
+  api.setWatched.mockRejectedValue(new TitleError('network'))
+  fireEvent.click(screen.getByRole('button', { name: 'Ver Una por ver' }))
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Marcar como vista' })))
+  expect(screen.getByText('⏳ Se guarda cuando vuelva la conexión')).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: 'Volver' }))
+  expect(screen.getByText(/1 pendiente/)).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: 'Vistas' }))
+  expect(screen.getByRole('button', { name: 'Ver Una por ver' })).toHaveTextContent('⏳')
+
+  api.setWatched.mockResolvedValue(undefined)
+  api.listTitles.mockResolvedValue([angelito, { ...toWatch, status: 'watched', watchedAt: '2026-10-08T21:00:00Z' }])
+  await act(async () => window.dispatchEvent(new Event('online')))
+  expect(api.setWatched).toHaveBeenLastCalledWith('t3', true)
+  expect(pendingFor('u1:c1')).toEqual([])
+  expect(screen.queryByText(/pendiente/)).not.toBeInTheDocument()
+  expect(screen.queryByText('Sin conexión. Lo que hagas se guarda cuando vuelva la conexión')).not.toBeInTheDocument()
+})
+
+test('watched and score made offline are sent in that order', async () => {
+  enqueue('u1:c1', { kind: 'watched', titleId: 't3', watched: true })
+  enqueue('u1:c1', { kind: 'score', titleId: 't3', score: 9, note: '' })
+  const order: string[] = []
+  api.setWatched.mockImplementation(async () => void order.push('watched'))
+  api.setMyScore.mockImplementation(async () => void order.push('score'))
+  api.listTitles.mockResolvedValue([toWatch])
+  renderList()
+  await act(async () => {})
+  expect(order).toEqual(['watched', 'score'])
+})
+
+test('a change that no longer applies is dropped with a notice', async () => {
+  enqueue('u1:c1', { kind: 'watched', titleId: 'gone', watched: true })
+  api.setWatched.mockRejectedValue(new TitleError('not_found'))
+  api.listTitles.mockResolvedValue([toWatch])
+  renderList()
+  expect(await screen.findByText('No se pudo guardar un cambio: ese título ya no está en la lista')).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: 'Entendido' }))
+  expect(screen.queryByText(/No se pudo guardar un cambio/)).not.toBeInTheDocument()
+  expect(pendingFor('u1:c1')).toEqual([])
 })

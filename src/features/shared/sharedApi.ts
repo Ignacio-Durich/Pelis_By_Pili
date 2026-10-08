@@ -81,3 +81,9 @@ export function originNote(item: SharedItem): string {
   const full = `${label} · ${item.url}`
   return full.length <= NOTE_MAX ? full : label
 }
+
+// "Agregar después" sin internet: al volver la conexión va a la bandeja con la sesión.
+export async function addSharedItem(query: string, body: string): Promise<void> {
+  const { error } = await supabase.rpc('add_shared_item', { p_query: query, p_body: body })
+  if (error) throw new Error(['invalid_item', 'inbox_full', 'no_couple'].includes(error.message) ? error.message : 'network')
+}

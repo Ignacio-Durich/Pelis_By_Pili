@@ -4,7 +4,9 @@ import { useCouple, useMemberName } from '../couple/coupleContext'
 import { fetchTitleDetail, type Provider, type TitleDetail as Detail } from './detailApi'
 import { MyScore } from './MyScore'
 import { formatScore, imdbScore, metacriticScore, ratingsDate, rtScore, tmdbScore } from './ratings'
+import { enqueue } from '../../lib/offline'
 import { removeTitle, setWatched, type Title } from './titlesApi'
+import { isNetworkError, usePendingOwner } from './useTitles'
 
 const groups = [
   ['subscription', 'Suscripción'],
@@ -18,6 +20,8 @@ export function TitleDetail({ title, onClose }: { title: Title; onClose: () => v
   const { members } = useCouple()
   const userId = useUserId()
   const [watchFailed, setWatchFailed] = useState(false)
+  const [watchQueued, setWatchQueued] = useState(false)
+  const owner = usePendingOwner()
   const [detail, setDetail] = useState<Detail | null>(null)
   const [failed, setFailed] = useState(false)
   const [removeFailed, setRemoveFailed] = useState(false)
@@ -47,11 +51,16 @@ export function TitleDetail({ title, onClose }: { title: Title; onClose: () => v
 
   async function toggleWatched(watched: boolean) {
     setWatchFailed(false)
+    setWatchQueued(false)
     try {
       // La pantalla se actualiza sola: Realtime recarga la lista y el detalle recibe el título nuevo.
       await setWatched(title.id, watched)
-    } catch {
-      setWatchFailed(true)
+    } catch (e) {
+      // Sin red queda pendiente en el celular: la lista ya lo muestra cambiado.
+      if (isNetworkError(e)) {
+        enqueue(owner, { kind: 'watched', titleId: title.id, watched })
+        setWatchQueued(true)
+      } else setWatchFailed(true)
     }
   }
 
@@ -109,6 +118,7 @@ export function TitleDetail({ title, onClose }: { title: Title; onClose: () => v
         </>
       )}
       {watchFailed && <p role="alert">No se pudo guardar. Probá de nuevo.</p>}
+      {watchQueued && <p>⏳ Se guarda cuando vuelva la conexión</p>}
 
       {failed && (
         <>

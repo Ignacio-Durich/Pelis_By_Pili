@@ -847,3 +847,23 @@ button.chip[aria-pressed='true'] {
   font-weight: 800;
   color: #ffb703;
 }
+
+/* Sin internet: aviso arriba de la lista y cambios que no se pudieron guardar */
+.offline-note {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: #2a2a45;
+  color: #ffb703;
+  font-size: 14px;
+}
+
+.dropped {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dropped p {
+  margin: 0;
+}
