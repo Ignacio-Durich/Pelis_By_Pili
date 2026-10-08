@@ -152,6 +152,8 @@ test('the tournament survives the app reloading', async () => {
 test('while the list loads after a reload it says Cargando…, never that nothing is left', async () => {
   const view = await startDuels()
   view.unmount()
+  // Sin lista guardada en el celular (con lista, el duelo aparece enseguida).
+  localStorage.removeItem('pelis-cache:titles')
   api.listTitles.mockReturnValue(new Promise(() => {}))
   renderTournament()
   expect(screen.getByText('Cargando…')).toBeInTheDocument()

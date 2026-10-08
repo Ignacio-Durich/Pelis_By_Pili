@@ -10,7 +10,8 @@ import { Onboarding } from './Onboarding'
 export function CoupleGate({ children }: { children: ReactNode }) {
   const userId = useUserId()
   // undefined = cargando, null = sin espacio
-  const [couple, setCouple] = useState<Couple | null | undefined>(undefined)
+  // Con la pareja guardada se entra enseguida y se actualiza cuando contesta el servidor.
+  const [couple, setCouple] = useState<Couple | null | undefined>(() => readCache<Couple | null>('couple', userId) ?? undefined)
   const [offline, setOffline] = useState(false)
 
   function fetchCouple() {
@@ -22,7 +23,7 @@ export function CoupleGate({ children }: { children: ReactNode }) {
       },
       (e) => {
         const saved = e instanceof CoupleError && e.kind === 'network' ? readCache<Couple | null>('couple', userId) : null
-        if (saved) setCouple(saved)
+        if (saved) setCouple((current) => current ?? saved)
         else setOffline(true)
       },
     )

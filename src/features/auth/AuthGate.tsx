@@ -30,8 +30,9 @@ function lastAccount(): Session | null {
 }
 
 export function AuthGate({ children }: { children: ReactNode }) {
-  // undefined = todavía no sabemos si hay sesión
-  const [session, setSession] = useState<Session | null | undefined>(undefined)
+  // undefined = todavía no sabemos si hay sesión. Con una cuenta guardada se entra enseguida (sin
+  // red, Supabase tarda en rendirse); la sesión de verdad la reemplaza cuando llega.
+  const [session, setSession] = useState<Session | null | undefined>(() => lastAccount() ?? undefined)
   const [offline, setOffline] = useState(false)
 
   function fetchSession() {
@@ -42,7 +43,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
       },
       () => {
         const saved = lastAccount()
-        if (saved) setSession(saved)
+        if (saved) setSession((current) => current ?? saved)
         else setOffline(true)
       },
     )

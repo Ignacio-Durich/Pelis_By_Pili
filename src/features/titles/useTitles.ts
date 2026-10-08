@@ -43,9 +43,10 @@ export function useTitles(coupleId: string): {
 } {
   const userId = useUserId()
   const owner = `${userId}:${coupleId}`
-  // null = cargando
-  const [titles, setTitles] = useState<Title[] | null>(null)
-  const [offline, setOffline] = useState(false)
+  // null = cargando. La lista guardada se muestra enseguida (sin red, Supabase reintenta varios
+  // segundos antes de rendirse) y se reemplaza cuando llega la del servidor.
+  const [titles, setTitles] = useState<Title[] | null>(() => readCache<Title[]>('titles', coupleId))
+  const [offline, setOffline] = useState(() => !navigator.onLine)
   const [pending, setPending] = useState<Pending[]>(() => pendingFor(owner))
   const [dropped, setDropped] = useState<Dropped[]>([])
   // Para volver a cargar después de mandar lo pendiente (load no se puede llamar a sí mismo).

@@ -14,6 +14,7 @@ vi.mock('../shared/sharedApi', async (importOriginal) => ({
 }))
 vi.mock('../../lib/supabase', () => ({ supabase: {} }))
 
+import { pendingFor } from '../../lib/offline'
 import { withCouple } from '../../test/providers'
 import type { SharedItem } from '../shared/sharedApi'
 import { AddTitle } from './AddTitle'
@@ -236,4 +237,36 @@ test('adding from a shared item takes it out of the inbox once and keeps the not
   expect(api.dismissShared).toHaveBeenCalledWith('i1')
   expect(api.addTitle).toHaveBeenLastCalledWith('c1', parasitos, 'Reel de Instagram · https://www.instagram.com/reel/abc/')
   expect(screen.getByLabelText('¿De dónde vino? (opcional)')).toHaveValue('Reel de Instagram · https://www.instagram.com/reel/abc/')
+})
+
+function setOnline(online: boolean) {
+  Object.defineProperty(navigator, 'onLine', { value: online, configurable: true })
+}
+
+test('without connection it offers to save the name for later, into Compartidos', () => {
+  localStorage.clear()
+  setOnline(false)
+  try {
+    renderAdd()
+    expect(screen.getByText('Sin conexión: no se puede buscar ahora.')).toBeInTheDocument()
+    const later = screen.getByRole('button', { name: 'Guardar para agregar después' })
+    expect(later).toBeDisabled()
+    fireEvent.change(screen.getByLabelText('Buscar película o serie'), { target: { value: ' Dark ' } })
+    fireEvent.change(screen.getByLabelText('¿De dónde vino? (opcional)'), { target: { value: 'la dijo Juan' } })
+    fireEvent.click(later)
+    expect(pendingFor('u1:c1')).toMatchObject([{ kind: 'later', query: 'Dark', note: 'la dijo Juan' }])
+    expect(screen.getByText('⏳ Guardado. Va a aparecer en Compartidos cuando vuelva la conexión')).toBeInTheDocument()
+    expect(screen.getByLabelText('Buscar película o serie')).toHaveValue('')
+    expect(screen.getByLabelText('¿De dónde vino? (opcional)')).toHaveValue('')
+  } finally {
+    setOnline(true)
+  }
+})
+
+test('a failed search also offers to save it for later', async () => {
+  localStorage.clear()
+  api.searchTitles.mockRejectedValue(new Error('502'))
+  renderAdd()
+  await typeQuery('Oldboy')
+  expect(screen.getByRole('button', { name: 'Guardar para agregar después' })).toBeEnabled()
 })

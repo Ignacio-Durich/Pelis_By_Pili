@@ -95,7 +95,7 @@ Bumble (etapa 7, confirmado por Nacho): el mazo son hasta 30 títulos de "Por ve
 
 ## 9. Errores
 
-- Sin internet: se ve la lista guardada; no se puede agregar ni calificar.
+- Sin internet (desde la etapa 11): la app abre con la última cuenta, pareja y lista guardadas en el celular; se puede marcar como vista, puntuar (se ve con ⏳) y anotar un nombre con "Guardar para agregar después". Todo espera en el celular y se manda en orden al volver la conexión; lo anotado aparece en "📥 Compartidos" de los dos. Lo que ya no aplica (por ejemplo, un título que la pareja quitó) se descarta con un aviso. Sin red no se busca en TMDB, no se quitan títulos ni se juega con dos celulares; los pósters ya vistos quedan guardados.
 - Falta un puntaje externo (por ejemplo, Rotten Tomatoes en una serie): se muestra "—".
 - Se agotan las consultas diarias de OMDb: se usan los puntajes guardados y se avisa que hoy no se pueden actualizar.
 - Sin datos de plataforma: "sin información de dónde verla".
