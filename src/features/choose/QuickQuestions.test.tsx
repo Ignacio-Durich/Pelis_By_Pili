@@ -24,6 +24,7 @@ let notify: () => void
 
 beforeEach(() => {
   vi.resetAllMocks()
+  localStorage.clear()
   api.listTitles.mockResolvedValue([comedy, horror, drama, doc])
   api.subscribeTitles.mockImplementation((_id: string, onChange: () => void) => {
     notify = onChange

@@ -30,6 +30,7 @@ function reducedMotion(reduce: boolean) {
 
 beforeEach(() => {
   vi.resetAllMocks()
+  localStorage.clear()
   reducedMotion(true)
   api.listTitles.mockResolvedValue([a, b, c, watched])
   api.subscribeTitles.mockImplementation((_id: string, onChange: () => void) => {
@@ -216,4 +217,15 @@ test('Ver detalle opens at the top and Volver returns to the same place', async 
   expect(scrollTo).toHaveBeenLastCalledWith(0, 420)
   Object.defineProperty(window, 'scrollY', { value: 0, configurable: true })
   vi.restoreAllMocks()
+})
+
+test('without connection but with the saved list it works, without the Sin conexión alert', async () => {
+  const first = renderRoulette()
+  await screen.findByText('Hay 3 títulos que cumplen los filtros')
+  first.unmount()
+  api.listTitles.mockRejectedValue(new Error('network'))
+  renderRoulette()
+  expect(await screen.findByText('Hay 3 títulos que cumplen los filtros')).toBeInTheDocument()
+  await act(async () => {})
+  expect(screen.queryByText('Sin conexión. Probá de nuevo.')).not.toBeInTheDocument()
 })

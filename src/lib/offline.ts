@@ -65,6 +65,19 @@ export function subscribePending(cb: () => void): () => void {
 
 export type FlushResult = { sent: number; dropped: { item: Pending; error: unknown }[] }
 
+// Lo descartado al sincronizar, para avisarlo aunque haya sincronizado otra pantalla. En memoria:
+// el error original se necesita para el mensaje, y alcanza con que dure mientras la app está abierta.
+const dropped = new Map<string, FlushResult['dropped']>()
+
+export function droppedFor(owner: string): FlushResult['dropped'] {
+  return dropped.get(owner) ?? []
+}
+
+export function clearDropped(owner: string): void {
+  dropped.delete(owner)
+  listeners.forEach((cb) => cb())
+}
+
 const running = new Map<string, Promise<FlushResult>>()
 
 // Manda en orden. Un error de red corta (lo que falta queda para la próxima); cualquier otro
@@ -82,6 +95,7 @@ export function flushPending(owner: string, send: (item: Pending) => Promise<voi
       } catch (error) {
         if (isNetwork(error)) break
         result.dropped.push({ item, error })
+        dropped.set(owner, [...droppedFor(owner), { item, error }])
       }
       write(
         owner,

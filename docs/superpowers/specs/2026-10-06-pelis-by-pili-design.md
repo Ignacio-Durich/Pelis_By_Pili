@@ -232,7 +232,14 @@ Puntos menores que dejaron las revisiones de las etapas anteriores. Se arreglan 
 - Entra, de la etapa 10:
   - La carta de la ganadora del torneo es un botón deshabilitado (VoiceOver dice "botón atenuado"); mejor un elemento que no sea botón.
   - Las partidas de un celular (Bumble, Top 3 secreto, Torneo) se guardan en el celular sin fijarse de qué cuenta son: si en ese celular entra otra cuenta, ve la partida ajena.
-- Se suman acá los puntos menores que deje la revisión de la etapa 11.
+- Entra, de la etapa 11:
+  - Al volver la conexión, la tarjeta vuelve un momento a como estaba (sin ⏳) hasta que llega la lista nueva.
+  - Un pendiente que falla siempre con un error que no se reconoce queda trabado y frena los de atrás ("Guardando 1 cambio…" sin fin).
+  - Si la sesión venció del todo, la app abre con la cuenta guardada y puede guardar listas vacías hasta volver a entrar.
+  - Cerrar sesión deja en el celular la lista, la pareja y la bandeja guardadas (con dueño, así que otra cuenta no las ve).
+  - Un título anotado sin red puede quedar dos veces en Compartidos si la app se cierra justo entre mandarlo y borrarlo de la cola, o con dos pestañas en la compu.
+  - Los pósters guardados son respuestas "opacas" (sin CORS), que ocupan más lugar: sumar `purgeOnQuotaError` o `crossOrigin`.
+- Antes del regalo: borrar la cuenta y el miembro "Pili" de prueba para que la verdadera entre con la invitación.
 - Entra, pedido de Nacho (2026-10-08): que todos los modos se puedan jugar con un solo celular, porque a veces usan uno solo de los dos. Bumble ya lo trae desde la etapa 7; la revelación simultánea y el torneo (etapas 9 y 10) conviene diseñarlos con esa opción desde el principio.
 - Entra, pedido de Nacho (2026-10-08): un botón para mandar comentarios sobre la app o reportar errores.
 - Terminada cuando: cada punto tiene su test y está arreglado, o hay una decisión anotada de por qué se deja.

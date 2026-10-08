@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { formatScore, parseScore } from './ratings'
-import { enqueue } from '../../lib/offline'
+import { enqueue, pendingFor } from '../../lib/offline'
 import { setMyScore, TitleError, type Score, type TitleErrorKind } from './titlesApi'
 import { isNetworkError, usePendingOwner } from './useTitles'
 
@@ -27,6 +27,13 @@ export function MyScore({ titleId, current }: { titleId: string; current: Score 
     setSaved(false)
     setQueued(false)
     setError(null)
+    // Si ya hay algo esperando, esto va detrás (así se manda en orden).
+    if (pendingFor(owner).length > 0) {
+      enqueue(owner, { kind: 'score', titleId, score, note })
+      setQueued(true)
+      setBusy(false)
+      return
+    }
     try {
       await setMyScore(titleId, score, note)
       setSaved(true)

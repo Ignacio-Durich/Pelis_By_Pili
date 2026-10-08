@@ -113,7 +113,7 @@ export function Bumble({ filters, onFiltersChange, onBack, random = Math.random 
           <h2>Bumble</h2>
         </>
       )}
-      {(offline || bumbleOffline) && (
+      {((offline && titles === null) || bumbleOffline) && (
         <>
           <p role="alert">Sin conexión. Probá de nuevo.</p>
           <button

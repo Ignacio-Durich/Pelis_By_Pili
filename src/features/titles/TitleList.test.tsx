@@ -34,7 +34,7 @@ vi.mock('../shared/sharedApi', async (importOriginal) => ({
 }))
 vi.mock('../../lib/supabase', () => ({ supabase: {} }))
 
-import { enqueue, pendingFor, saveCache } from '../../lib/offline'
+import { clearDropped, enqueue, flushPending, pendingFor, saveCache } from '../../lib/offline'
 import { withCouple } from '../../test/providers'
 import { makeTitle } from '../../test/titles'
 import { NO_FILTERS, type Filters } from './filters'
@@ -72,6 +72,7 @@ let notify: () => void
 beforeEach(() => {
   vi.resetAllMocks()
   localStorage.clear()
+  clearDropped('u1:c1')
   api.listTitles.mockResolvedValue([])
   api.fetchTitleDetail.mockReturnValue(new Promise(() => {}))
   api.subscribeTitles.mockImplementation((_coupleId: string, onChange: () => void) => {
@@ -398,4 +399,41 @@ test('a saved list shows at once while the server answers (sin red tarda en rend
   api.listTitles.mockReturnValue(new Promise(() => {}))
   renderList()
   expect(screen.getByText('Una por ver')).toBeInTheDocument()
+})
+
+test('something added to the queue is tried right away, without waiting for an online event', async () => {
+  api.listTitles.mockResolvedValue([toWatch])
+  api.setWatched.mockResolvedValue(undefined)
+  renderList()
+  await screen.findByText('Una por ver')
+  await act(async () => {
+    enqueue('u1:c1', { kind: 'watched', titleId: 't3', watched: true })
+  })
+  expect(api.setWatched).toHaveBeenCalledWith('t3', true)
+  expect(pendingFor('u1:c1')).toEqual([])
+})
+
+test('a change dropped while another screen was syncing is still announced in the list', async () => {
+  enqueue('u1:c1', { kind: 'watched', titleId: 'gone', watched: true })
+  await flushPending('u1:c1', async () => {
+    throw new TitleError('not_found')
+  }, () => false)
+  api.listTitles.mockResolvedValue([toWatch])
+  renderList()
+  expect(await screen.findByText('No se pudo guardar un cambio: ese título ya no está en la lista')).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: 'Entendido' }))
+  expect(screen.queryByText(/No se pudo guardar un cambio/)).not.toBeInTheDocument()
+})
+
+test('going offline with the app open says so at once', async () => {
+  api.listTitles.mockResolvedValue([toWatch])
+  renderList()
+  await screen.findByText('Una por ver')
+  Object.defineProperty(navigator, 'onLine', { value: false, configurable: true })
+  try {
+    await act(async () => window.dispatchEvent(new Event('offline')))
+    expect(screen.getByText('Sin conexión. Lo que hagas se guarda cuando vuelva la conexión')).toBeInTheDocument()
+  } finally {
+    Object.defineProperty(navigator, 'onLine', { value: true, configurable: true })
+  }
 })

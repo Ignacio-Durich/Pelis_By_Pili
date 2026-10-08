@@ -78,7 +78,7 @@ export function Tournament({ filters, onFiltersChange, onBack, random = Math.ran
           Volver a los modos
         </button>
         <h2>Torneo</h2>
-        {offline && (
+        {offline && titles === null && (
           <>
             <p role="alert">Sin conexión. Probá de nuevo.</p>
             <button onClick={load}>Reintentar</button>

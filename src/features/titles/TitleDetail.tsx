@@ -4,7 +4,7 @@ import { useCouple, useMemberName } from '../couple/coupleContext'
 import { fetchTitleDetail, type Provider, type TitleDetail as Detail } from './detailApi'
 import { MyScore } from './MyScore'
 import { formatScore, imdbScore, metacriticScore, ratingsDate, rtScore, tmdbScore } from './ratings'
-import { enqueue } from '../../lib/offline'
+import { enqueue, pendingFor } from '../../lib/offline'
 import { removeTitle, setWatched, type Title } from './titlesApi'
 import { isNetworkError, usePendingOwner } from './useTitles'
 
@@ -52,6 +52,12 @@ export function TitleDetail({ title, onClose }: { title: Title; onClose: () => v
   async function toggleWatched(watched: boolean) {
     setWatchFailed(false)
     setWatchQueued(false)
+    // Si ya hay algo esperando, esto va detrás (así se manda en orden).
+    if (pendingFor(owner).length > 0) {
+      enqueue(owner, { kind: 'watched', titleId: title.id, watched })
+      setWatchQueued(true)
+      return
+    }
     try {
       // La pantalla se actualiza sola: Realtime recarga la lista y el detalle recibe el título nuevo.
       await setWatched(title.id, watched)

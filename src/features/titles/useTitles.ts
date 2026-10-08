@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { applyPending, flushPending, pendingFor, readCache, saveCache, subscribePending, type FlushResult, type Pending } from '../../lib/offline'
+import { applyPending, clearDropped, droppedFor, flushPending, pendingFor, readCache, saveCache, subscribePending, type FlushResult, type Pending } from '../../lib/offline'
 import { useUserId } from '../auth/sessionContext'
 import { useCouple } from '../couple/coupleContext'
 import { addSharedItem } from '../shared/sharedApi'
 import { listTitles, setMyScore, setWatched, subscribeTitles, TitleError, type Title } from './titlesApi'
 
 export type ShownTitle = Title & { pending?: boolean }
+
+const RETRY_MS = 30_000
 export type Dropped = FlushResult['dropped'][number]
 
 // De quién es la cola de pendientes: la cuenta en esta pareja.
@@ -48,7 +50,7 @@ export function useTitles(coupleId: string): {
   const [titles, setTitles] = useState<Title[] | null>(() => readCache<Title[]>('titles', coupleId))
   const [offline, setOffline] = useState(() => !navigator.onLine)
   const [pending, setPending] = useState<Pending[]>(() => pendingFor(owner))
-  const [dropped, setDropped] = useState<Dropped[]>([])
+  const [dropped, setDropped] = useState<Dropped[]>(() => droppedFor(owner))
   // Para volver a cargar después de mandar lo pendiente (load no se puede llamar a sí mismo).
   const reload = useRef<() => void>(() => {})
 
@@ -59,7 +61,6 @@ export function useTitles(coupleId: string): {
         setTitles(list)
         setOffline(false)
         flushPending(owner, send, isNetworkError).then((result) => {
-          if (result.dropped.length) setDropped((d) => [...d, ...result.dropped])
           if (result.sent || result.dropped.length) reload.current()
         })
       },
@@ -77,13 +78,25 @@ export function useTitles(coupleId: string): {
   useEffect(() => {
     load()
     const unsubscribe = subscribeTitles(coupleId, load)
-    const stopPending = subscribePending(() => setPending(pendingFor(owner)))
+    let queued = pendingFor(owner).length
+    const stopPending = subscribePending(() => {
+      const now = pendingFor(owner)
+      setPending(now)
+      setDropped(droppedFor(owner))
+      // Algo nuevo en la cola se intenta mandar enseguida (con señal mala puede no haber evento
+      // 'online' después).
+      if (now.length > queued) load()
+      queued = now.length
+    })
+    const goOffline = () => setOffline(true)
     const onVisible = () => {
       if (document.visibilityState === 'visible') load()
     }
     document.addEventListener('visibilitychange', onVisible)
     window.addEventListener('online', load)
+    window.addEventListener('offline', goOffline)
     return () => {
+      window.removeEventListener('offline', goOffline)
       unsubscribe()
       stopPending()
       document.removeEventListener('visibilitychange', onVisible)
@@ -91,12 +104,20 @@ export function useTitles(coupleId: string): {
     }
   }, [coupleId, owner, load])
 
+  // Mientras haya pendientes se reintenta cada tanto (por si la señal vuelve sin avisar).
+  const waiting = pending.length > 0
+  useEffect(() => {
+    if (!waiting) return
+    const timer = window.setInterval(load, RETRY_MS)
+    return () => clearInterval(timer)
+  }, [waiting, load])
+
   return {
     titles: titles && applyPending(titles, pending, userId),
     offline,
     load,
     pending: pending.length,
     dropped,
-    clearDropped: () => setDropped([]),
+    clearDropped: () => clearDropped(owner),
   }
 }

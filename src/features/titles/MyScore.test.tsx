@@ -8,7 +8,7 @@ vi.mock('./titlesApi', async (importOriginal) => ({
 }))
 vi.mock('../../lib/supabase', () => ({ supabase: {} }))
 
-import { pendingFor } from '../../lib/offline'
+import { enqueue, pendingFor } from '../../lib/offline'
 import { withCouple } from '../../test/providers'
 import { MyScore } from './MyScore'
 import { TitleError, type TitleErrorKind } from './titlesApi'
@@ -76,4 +76,14 @@ test('without connection the score waits in the phone and says so', async () => 
   expect(await screen.findByText('⏳ Se guarda cuando vuelva la conexión')).toBeInTheDocument()
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   expect(pendingFor('u1:c1')).toMatchObject([{ kind: 'score', titleId: 't1', score: 8.5, note: 'linda' }])
+})
+
+test('with something already waiting, a new score waits behind it (so the order holds)', async () => {
+  enqueue('u1:c1', { kind: 'watched', titleId: 't1', watched: true })
+  render(withCouple(<MyScore titleId="t1" current={null} />))
+  fireEvent.change(scoreField(), { target: { value: '9' } })
+  fireEvent.click(save())
+  expect(await screen.findByText('⏳ Se guarda cuando vuelva la conexión')).toBeInTheDocument()
+  expect(api.setMyScore).not.toHaveBeenCalled()
+  expect(pendingFor('u1:c1').map((p) => p.kind)).toEqual(['watched', 'score'])
 })

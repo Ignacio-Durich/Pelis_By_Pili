@@ -108,7 +108,7 @@ export function Reveal({ filters, onFiltersChange, onBack }: Props) {
           <h2>Top 3 secreto</h2>
         </>
       )}
-      {(offline || revealOffline) && (
+      {((offline && titles === null) || revealOffline) && (
         <>
           <p role="alert">Sin conexión. Probá de nuevo.</p>
           <button
