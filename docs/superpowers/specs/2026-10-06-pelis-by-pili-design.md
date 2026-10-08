@@ -71,7 +71,7 @@ Seguridad: solo los dos miembros de la pareja pueden leer y modificar los datos 
 
 ## 7. Pantallas y flujo
 
-- Lista: arriba, "📥 Compartidos (n)" cuando hay algo que llegó del Atajo de iOS (etapa 8): nombre escrito, de dónde vino y quién lo compartió, con "Ver el link", "Buscar" (abre Agregar con la búsqueda y "de dónde vino" ya cargados) y "Descartar". Pestañas Por ver / Vistas. Cada tarjeta muestra póster, título, año, tipo, puntajes de IMDb y Rotten Tomatoes y quién la cargó. Filtros y botón "+".
+- Lista: arriba, "📥 Compartidos (n)" cuando hay algo que llegó del Atajo de iOS (etapa 8): nombre escrito, de dónde vino y quién lo compartió, con "Ver el link", "Agregar" (abre Agregar con la búsqueda y "de dónde vino" ya cargados) y "Descartar". Pestañas Por ver / Vistas. Cada tarjeta muestra póster, título, año, tipo, puntajes de IMDb y Rotten Tomatoes y quién la cargó. Filtros y botón "+".
 - Agregar: buscador que mezcla películas y series; un toque agrega; campo opcional "de dónde vino". Si el título ya existe, avisa.
 - Detalle: sinopsis, puntajes externos con fecha, dónde verla en Argentina, puntaje de cada uno, marcar vista.
 - Elegir qué ver: menú con los modos.

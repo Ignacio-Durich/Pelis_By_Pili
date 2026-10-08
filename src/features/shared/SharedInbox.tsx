@@ -34,7 +34,10 @@ export function SharedInbox({ items, onSearch }: { items: SharedItem[]; onSearch
                     Ver el link
                   </a>
                 )}
-                <button onClick={() => onSearch(item)}>Buscar</button>
+                {/* "Agregar lo compartido": el botón "+" de la lista ya se llama "Agregar". */}
+                <button aria-label="Agregar lo compartido" onClick={() => onSearch(item)}>
+                  Agregar
+                </button>
                 <button className="secondary" onClick={() => dismiss(item.id)}>
                   Descartar
                 </button>

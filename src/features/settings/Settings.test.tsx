@@ -121,7 +121,14 @@ test('the guide shows the address to copy', async () => {
 test('the guide shows the server answer, warns about the key in iCloud and points to the share sheet block', async () => {
   renderSettings(2)
   await screen.findByRole('button', { name: 'Crear mi clave' })
-  expect(screen.getByText(/Agregá "Mostrar notificación" con "Contenido de URL"/)).toBeInTheDocument()
+  expect(screen.getByText(/"Mostrar notificación" \(Show Notification\) con la variable "Contenido de URL"/)).toBeInTheDocument()
   expect(screen.getByText(/antes de compartirlo, borrá tu clave del encabezado/)).toBeInTheDocument()
-  expect(screen.getByText(/"Recibir .* de Hoja para compartir"/)).toBeInTheDocument()
+  expect(screen.getByText(/"Recibir … de …"/)).toBeInTheDocument()
+})
+
+test('the guide also names the iOS actions in English', async () => {
+  renderSettings(2)
+  await screen.findByRole('button', { name: 'Crear mi clave' })
+  for (const name of ['Show in Share Sheet', 'Ask for Input', 'Get Contents of URL', 'Show Notification', 'Shortcut Input', 'Provided Input', 'Contents of URL'])
+    expect(screen.getAllByText(new RegExp(name)).length).toBeGreaterThan(0)
 })

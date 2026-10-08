@@ -49,10 +49,11 @@ test('it shows how many there are and each item with its name, source, who and l
   expect(screen.getAllByRole('link')).toHaveLength(1)
 })
 
-test('Buscar hands the item over', () => {
+test('Agregar hands the item over', () => {
   renderInbox([reel])
-  fireEvent.click(screen.getByRole('button', { name: 'Buscar' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Agregar lo compartido' }))
   expect(onSearch).toHaveBeenCalledWith(reel)
+  expect(screen.getByRole('button', { name: 'Agregar lo compartido' })).toHaveTextContent('Agregar')
 })
 
 test('Descartar removes it, and says so if it fails', async () => {
