@@ -11,6 +11,7 @@ import { GameTop } from './GameTop'
 import { finishReveal, RevealError, startReveal, submitReveal, type RevealSession } from './revealApi'
 import { PICKS, revealResult } from './revealLogic'
 import { TieBreak } from './TieBreak'
+import { TitlePicker } from './TitlePicker'
 import { useReveal } from './useReveal'
 
 type Props = { filters: Filters; onFiltersChange: (f: Filters) => void; onBack: () => void }
@@ -167,7 +168,7 @@ function TwoPhones({ session, me, partner, titles, matching, reload, onBack }: G
       {!mine || editing ? (
         <>
           {session.ready.includes(partner) && <p className="reveal-ready">{`${nameOf(partner)} ya eligió`}</p>}
-          <Picker heading="Elegí tus 3" titles={titles} matching={matching} initial={mine ?? []} onDone={send} />
+          <TitlePicker need={PICKS} heading="Elegí tus 3" titles={titles} matching={matching} initial={mine ?? []} onDone={send} />
         </>
       ) : (
         <>
@@ -199,7 +200,7 @@ function OnePhone({ game, titles, matching, onChange, onBack }: GameProps & { ga
 
   let content
   if (!first) {
-    content = <Picker heading={`Turno de ${name(0)}: elegí tus 3`} titles={titles} matching={matching} initial={[]} onDone={(ids) => onChange({ ...game, picks: [ids, null] })} />
+    content = <TitlePicker need={PICKS} heading={`Turno de ${name(0)}: elegí tus 3`} titles={titles} matching={matching} initial={[]} onDone={(ids) => onChange({ ...game, picks: [ids, null] })} />
   } else if (game.active === 0) {
     // El primero ya eligió: se pasa el celular sin mostrar lo que eligió.
     content = (
@@ -209,7 +210,7 @@ function OnePhone({ game, titles, matching, onChange, onBack }: GameProps & { ga
       </>
     )
   } else if (!second) {
-    content = <Picker heading={`Turno de ${name(1)}: elegí tus 3`} titles={titles} matching={matching} initial={[]} onDone={(ids) => onChange({ ...game, picks: [first, ids] })} />
+    content = <TitlePicker need={PICKS} heading={`Turno de ${name(1)}: elegí tus 3`} titles={titles} matching={matching} initial={[]} onDone={(ids) => onChange({ ...game, picks: [first, ids] })} />
   } else {
     content = (
       <>
@@ -223,42 +224,6 @@ function OnePhone({ game, titles, matching, onChange, onBack }: GameProps & { ga
     <>
       <GameTop onBack={onBack} onEnd={end} />
       {content}
-    </>
-  )
-}
-
-// Marcar hasta 3 de "Por ver" (con los filtros); "Listo" queda a la vista aunque la lista scrollee.
-function Picker({ heading, titles, matching, initial, onDone }: { heading: string; titles: Title[]; matching: Title[]; initial: string[]; onDone: (ids: string[]) => void }) {
-  const [chosen, setChosen] = useState<string[]>(initial)
-  // Lo ya elegido sigue a la vista aunque los filtros hayan cambiado.
-  const options = [...matching, ...titles.filter((t) => initial.includes(t.id) && !matching.includes(t))]
-  const picked = chosen.filter((id) => options.some((t) => t.id === id))
-  const need = Math.min(PICKS, options.length)
-
-  // Sobre la selección más nueva: dos toques seguidos no se pisan.
-  function toggle(id: string) {
-    setChosen((prev) => {
-      const current = prev.filter((x) => options.some((t) => t.id === x))
-      if (current.includes(id)) return current.filter((x) => x !== id)
-      return current.length < need ? [...current, id] : current
-    })
-  }
-
-  return (
-    <>
-      <h3>{heading}</h3>
-      <ul className="title-list reveal-options">
-        {options.map((t) => (
-          <li key={t.id}>
-            <button className="result" aria-pressed={picked.includes(t.id)} onClick={() => toggle(t.id)}>
-              <TitleCard title={t.title} originalTitle={t.originalTitle} year={t.year} mediaType={t.mediaType} posterPath={t.posterPath} />
-            </button>
-          </li>
-        ))}
-      </ul>
-      <button className="reveal-done" disabled={picked.length !== need} onClick={() => onDone(picked)}>
-        {`Listo (${picked.length} de ${need})`}
-      </button>
     </>
   )
 }

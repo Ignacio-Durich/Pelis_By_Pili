@@ -142,8 +142,11 @@ test('without matches the roulette decides among the six, the same on both phone
 
 test('the reveal counts 3, 2, 1 first', async () => {
   reducedMotion(false)
-  vi.useFakeTimers({ shouldAdvanceTime: true })
-  await renderGame(game({ ready: ['u1', 'u2'], revealed: true, picks: [{ userId: 'u1', titleIds: ['a'] }, { userId: 'u2', titleIds: ['a'] }] }))
+  // El reloj falso recién cuando la partida cargó (para que la carga no dependa de él), y sin
+  // avanzar con el reloj real: así la cuenta solo se mueve cuando el test lo dice.
+  await renderGame(game({ ready: ['u1'], picks: [{ userId: 'u1', titleIds: ['a'] }] }))
+  vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+  await changeGame(game({ ready: ['u1', 'u2'], revealed: true, picks: [{ userId: 'u1', titleIds: ['a'] }, { userId: 'u2', titleIds: ['a'] }] }))
   expect(screen.getByText('3')).toBeInTheDocument()
   expect(screen.queryByText('¡Ganó Peli A!')).not.toBeInTheDocument()
   for (const next of ['2', '1']) {
