@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { loadOpenBumble, subscribeBumble, type BumbleSession } from './bumbleApi'
 
 // La partida de dos celulares, siempre al día, como useTitles: se carga al montar, ante cada
@@ -7,14 +7,20 @@ export function useBumble(coupleId: string): { session: BumbleSession | null | u
   // undefined = cargando; null = no hay partida abierta
   const [session, setSession] = useState<BumbleSession | null | undefined>(undefined)
   const [offline, setOffline] = useState(false)
+  // Solo cuenta la respuesta del último pedido: una vieja que llega tarde no pisa a la nueva.
+  const latest = useRef(0)
 
   const load = useCallback(() => {
+    const request = ++latest.current
     loadOpenBumble(coupleId).then(
       (s) => {
+        if (request !== latest.current) return
         setSession(s)
         setOffline(false)
       },
-      () => setOffline(true),
+      () => {
+        if (request === latest.current) setOffline(true)
+      },
     )
   }, [coupleId])
 

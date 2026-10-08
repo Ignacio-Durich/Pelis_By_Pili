@@ -260,3 +260,34 @@ test('one phone: several matches announce a second round', async () => {
   expect(screen.getByText('Vuelta 2')).toBeInTheDocument()
   expect(screen.getByText('Turno de Nacho · 0 de 3')).toBeInTheDocument()
 })
+
+test('a voted title removed from the list does not hide Deshacer', async () => {
+  let notifyTitles = () => {}
+  api.subscribeTitles.mockImplementation((_id: string, onChange: () => void) => {
+    notifyTitles = onChange
+    return () => {}
+  })
+  await renderGame([])
+  api.loadOpenBumble.mockResolvedValue(game([v('u1', 'a', true)]))
+  await act(async () => press('👍 Sí'))
+  // Se borra A: el voto se va con ella (cascade).
+  api.listTitles.mockResolvedValue([b, c])
+  api.loadOpenBumble.mockResolvedValue(game([]))
+  await act(async () => {
+    notifyTitles()
+    notifyBumble()
+  })
+  api.loadOpenBumble.mockResolvedValue(game([v('u1', 'b', true)]))
+  await act(async () => press('👍 Sí'))
+  expect(cardTitle()).toBe('Peli C')
+  expect(screen.getByRole('button', { name: '↩️ Deshacer' })).toBeInTheDocument()
+})
+
+test('Deshacer cannot be tapped twice while it is on its way', async () => {
+  api.bumbleUndo.mockReturnValue(new Promise(() => {}))
+  await renderGame([v('u1', 'a', true), v('u1', 'b', true)])
+  press('↩️ Deshacer')
+  expect(screen.getByRole('button', { name: '↩️ Deshacer' })).toBeDisabled()
+  press('↩️ Deshacer')
+  expect(api.bumbleUndo).toHaveBeenCalledTimes(1)
+})
