@@ -128,3 +128,13 @@ Impacto en el plan: afecta ya a la Etapa 1, no solo a las siguientes. La novia d
 - Prueba de aceptación (Nacho, iPhone en inglés con iOS 26): armó el Atajo con la guía (en iOS 26 el menú del nombre no tiene "Detalles": se usa el bloque "Receive … from Nowhere"), "Pedir entrada" se puede mandar vacío, un reel real llegó a la bandeja. Pedidos después de probarla: el botón dice "Agregar", la guía nombra las acciones también en inglés y explica qué cambiar en un Atajo recibido ya armado (solo la clave). Nacho: "todo anda".
 - La etapa queda terminada: desde un reel real, Compartir → Pelis By Pili → Listo, y en la app "Agregar" abre la búsqueda con el reel como "de dónde vino".
 
+## Cierre de la Etapa 9 (2026-10-08)
+
+- "Top 3 secreto" (nombre elegido por Nacho): cada uno elige 3 de "Por ver" sin orden; una coincidencia gana, varias van a la ruleta entre ellas, ninguna a la ruleta entre todas. Con dos celulares el secreto lo cuida la base: RLS sobre `reveal_picks` (la propia, o las dos cuando se reveló), revelación automática dentro de `submit_reveal` (con `for update`) y las elecciones fuera de Realtime; con uno se pasan el celular sin mostrar lo elegido.
+- Antes de publicar: `npm test` 353/353, `npm run test:security` 86/86 contra el Supabase local, typecheck y lint sin errores.
+- Revisión final (opus): 2 críticos arreglados antes del `db push` (con test que falla primero): `finish_reveal` dejaba averiguar la elección del otro antes de revelar (ahora `not_revealed`; la migración se corrigió en el mismo archivo porque todavía no estaba en el proyecto real), y sin coincidencias cada celular mostraba otra ganadora (la ruleta ahora va ordenada). También: lo marcado como visto antes de revelar ya no cuenta, y un "Listo" tardío no muestra un error falso. Un menor va a la Etapa 12.
+- Nacho subió `20261014000000_reveal.sql` con `db push`. `npm run test:security:remote`: el archivo de la revelación pasó entero; 5 de otros archivos cortaron por el límite de pedidos de Auth y, a los 7 minutos, couples, names y shared pasaron 29/29.
+- Revisión visual en local (iPhone 13 y una altura chica para el botón fijo): un celular entero y dos con una Pili local por script (la revelación llegó sola y se guardó). Publicado en https://pelis-by-pili.con-amor-nacho.workers.dev.
+- Prueba de aceptación (Nacho y la cuenta de prueba en el celular de su hermana): "Anduvo perfecto".
+- La etapa queda terminada: ninguno ve la elección del otro antes de la revelación.
+
