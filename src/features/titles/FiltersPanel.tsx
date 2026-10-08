@@ -25,6 +25,11 @@ const types = [
   ['tv', 'Series'],
 ] as const
 
+// Lo elegido se muestra siempre, aunque ya no quede ningún título con eso: si no, sería un
+// filtro activo sin botón para apagarlo.
+const withChosen = (options: string[], chosen: string[]) =>
+  [...new Set([...options, ...chosen])].sort((a, b) => a.localeCompare(b, 'es'))
+
 const toggle = (list: string[], item: string) => (list.includes(item) ? list.filter((x) => x !== item) : [...list, item])
 
 export function FiltersPanel({ value, options, count: { matching, total }, onChange }: Props) {
@@ -68,10 +73,10 @@ export function FiltersPanel({ value, options, count: { matching, total }, onCha
             format={String}
             onChange={(imdb) => set({ imdb })}
           />
-          <Chips label="Géneros" options={options.genres} chosen={value.genres} onToggle={(g) => set({ genres: toggle(value.genres, g) })} />
+          <Chips label="Géneros" options={withChosen(options.genres, value.genres)} chosen={value.genres} onToggle={(g) => set({ genres: toggle(value.genres, g) })} />
           <Chips
             label="Plataformas"
-            options={options.platforms}
+            options={withChosen(options.platforms, value.platforms)}
             chosen={value.platforms}
             onToggle={(p) => set({ platforms: toggle(value.platforms, p) })}
           />
