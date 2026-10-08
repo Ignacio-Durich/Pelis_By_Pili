@@ -13,6 +13,11 @@ vi.mock('./bumbleApi', async (importOriginal) => ({
   loadOpenBumble: () => Promise.resolve(null),
   subscribeBumble: () => () => {},
 }))
+vi.mock('./revealApi', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./revealApi')>()),
+  loadOpenReveal: () => Promise.resolve(null),
+  subscribeReveal: () => () => {},
+}))
 vi.mock('../../lib/supabase', () => ({ supabase: {} }))
 
 import { withCouple } from '../../test/providers'
@@ -37,6 +42,8 @@ test('shows the three modes with their help texts, Bumble first', () => {
   const modes = screen.getAllByRole('button')
   expect(modes[0]).toHaveTextContent('Bumble')
   expect(modes[0]).toHaveTextContent('Deslicen y gana la que les guste a los dos')
+  expect(modes[1]).toHaveTextContent('Top 3 secreto')
+  expect(modes[1]).toHaveTextContent('Cada uno elige 3 en secreto y se muestran a la vez')
   expect(screen.getByRole('button', { name: /Ruleta/ })).toHaveTextContent('Gira entre los títulos que cumplen los filtros')
   expect(screen.getByRole('button', { name: /Preguntas rápidas/ })).toHaveTextContent('Respondan tres preguntas y les sugerimos 5')
 })
@@ -45,6 +52,9 @@ test('each mode opens and Volver a los modos returns to the menu', async () => {
   renderMenu()
   fireEvent.click(screen.getByRole('button', { name: /Bumble/ }))
   expect(await screen.findByRole('heading', { name: 'Bumble' })).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: 'Volver a los modos' }))
+  fireEvent.click(screen.getByRole('button', { name: /Top 3 secreto/ }))
+  expect(await screen.findByRole('heading', { name: 'Top 3 secreto' })).toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: 'Volver a los modos' }))
   fireEvent.click(screen.getByRole('button', { name: /Ruleta/ }))
   expect(await screen.findByRole('heading', { name: 'Ruleta' })).toBeInTheDocument()

@@ -7,6 +7,7 @@ import { TitleCard } from '../titles/TitleCard'
 import type { Title } from '../titles/titlesApi'
 import { useTitles } from '../titles/useTitles'
 import { BumbleCard } from './BumbleCard'
+import { GameTop as Top } from './GameTop'
 import { bumbleUndo, bumbleVote, finishBumble, startBumble, type BumbleSession } from './bumbleApi'
 import { bumbleState, buildDeck, lastUndoable, seededIndex, type BumbleState, type Vote } from './bumbleLogic'
 import { TieBreak } from './TieBreak'
@@ -285,21 +286,6 @@ function OnePhone({ game, titles, onChange, onBack }: GameProps & { game: LocalG
       </p>
       <div className="bumble-stage">{card && <BumbleCard title={card} onVote={vote} undo={undo ? { onClick: undo, disabled: false } : undefined} />}</div>
     </>
-  )
-}
-
-function Top({ onBack, onEnd }: { onBack: () => void; onEnd?: () => void }) {
-  return (
-    <div className="bumble-top">
-      <button className="back" onClick={onBack}>
-        Volver a los modos
-      </button>
-      {onEnd && (
-        <button className="back" onClick={onEnd}>
-          Terminar
-        </button>
-      )}
-    </div>
   )
 }
 
