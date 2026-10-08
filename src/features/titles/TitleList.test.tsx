@@ -295,13 +295,13 @@ test('the list says how many titles match the filters', async () => {
   expect(await screen.findByText('1 de 2 títulos cumple los filtros')).toBeInTheDocument()
 })
 
-test('Buscar in the inbox opens Agregar with the shared search', async () => {
+test('Agregar in the inbox opens Agregar with the shared search', async () => {
   api.listShared.mockResolvedValue([
     { id: 'i1', url: 'https://www.instagram.com/reel/abc/', body: null, query: 'Parásitos', source: 'Instagram', sharedBy: 'u2', createdAt: '2026-10-08T12:00:00Z' },
   ])
   renderList()
   expect(await screen.findByText('📥 Compartidos (1)')).toBeInTheDocument()
-  fireEvent.click(screen.getByRole('button', { name: 'Buscar' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Agregar lo compartido' }))
   expect(screen.getByRole('heading', { name: 'Agregar' })).toBeInTheDocument()
   expect(screen.getByLabelText('Buscar película o serie')).toHaveValue('Parásitos')
 })

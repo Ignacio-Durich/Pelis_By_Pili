@@ -61,26 +61,29 @@ export function ShareShortcut() {
       {error && <p role="alert">No se pudo crear la clave. Probá de nuevo.</p>}
       <details>
         <summary>Cómo armar el Atajo</summary>
+        {/* Entre paréntesis, los nombres de iOS en inglés. */}
         <ol>
-          <li>Abrí la app Atajos y tocá "+".</li>
+          <li>Abrí la app Atajos (Shortcuts) y tocá "+".</li>
           <li>Arriba, tocá el nombre y poné "Pelis By Pili".</li>
+          <li>Agregá la acción "Pedir entrada" (Ask for Input): tipo Texto, pregunta "¿Qué peli o serie es? (opcional)".</li>
           <li>
-            Tocá ⓘ (abajo, o "Detalles") y activá "Mostrar en la hoja para compartir". Arriba del Atajo aparece "Recibir … de Hoja para
-            compartir": tocá lo que recibe y dejá solo "URL" y "Texto".
-          </li>
-          <li>Agregá la acción "Pedir entrada": tipo Texto, pregunta "¿Qué peli o serie es? (opcional)".</li>
-          <li>
-            Agregá "Obtener contenido de URL" con esta dirección:
+            Agregá "Obtener contenido de URL" (Get Contents of URL) con esta dirección:
             <code>{SHARE_URL}</code>
             <button className="secondary" onClick={() => copy(SHARE_URL, 'url')}>
               Copiar dirección
             </button>
             {copied === 'url' && <span> ¡Copiada!</span>}
-            Tocá "Mostrar más": Método POST; en Encabezados agregá <code>x-share-key</code> con tu clave; en Cuerpo de la solicitud elegí
-            JSON y agregá <code>shared</code> = "Entrada del atajo" y <code>name</code> = "Entrada proporcionada".
+            Tocá la flechita de la acción: Método (Method) POST; en Encabezados (Headers) agregá <code>x-share-key</code> con tu clave; en
+            Cuerpo de la solicitud (Request Body) elegí JSON y agregá <code>shared</code> con la variable "Entrada del atajo" (Shortcut Input)
+            y <code>name</code> con "Entrada proporcionada" (Provided Input).
           </li>
-          <li>Agregá "Mostrar notificación" con "Contenido de URL" (así ves si se guardó o qué falló).</li>
-          <li>Probalo: en Instagram tocá Compartir → Pelis By Pili.</li>
+          <li>
+            Arriba aparece el bloque "Recibir … de …" (Receive … from Nowhere): donde dice "Ningún lado" (Nowhere) elegí "Hoja para
+            compartir" (Share Sheet), y en los tipos dejá solo URL y Texto (URLs and Text). Si no aparece, tocá ⓘ abajo y activá "Mostrar en la
+            hoja para compartir" (Show in Share Sheet).
+          </li>
+          <li>Agregá "Mostrar notificación" (Show Notification) con la variable "Contenido de URL" (Contents of URL), así ves si se guardó o qué falló.</li>
+          <li>Probalo: en Instagram tocá Compartir → Pelis By Pili. El nombre se puede dejar vacío.</li>
           <li>
             Para el otro iPhone: podés pasarle el Atajo por iCloud, pero antes de compartirlo, borrá tu clave del encabezado (el link de
             iCloud lo puede abrir cualquiera que lo tenga). En el otro celular se pone su propia clave.

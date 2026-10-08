@@ -144,3 +144,6 @@ Cada línea: decisión — motivo — costo si está mal.
 
 - La función `share` contesta en texto y el Atajo termina con "Mostrar notificación" de "Contenido de URL" (en vez del texto fijo "Guardado en Pelis By Pili" del plan): si la clave no sirve o la bandeja está llena, se ve el motivo y no se pierde lo compartido sin aviso (hallazgo de la revisión final).
 - La guía avisa que, antes de pasar el Atajo por iCloud, hay que borrar la clave del encabezado (el link de iCloud lo abre cualquiera que lo tenga), y el paso de los tipos apunta al bloque "Recibir … de Hoja para compartir" de iOS actual.
+- Después de la primera prueba en el iPhone (pedido de Nacho): el botón de cada ítem de la bandeja dice "Agregar" en vez de "Buscar" (lleva a Agregar con la nota del reel); para lectores de pantalla se llama "Agregar lo compartido", porque el "+" de la lista ya es "Agregar".
+- La guía del Atajo nombra las acciones también en inglés (el iPhone de Nacho está en inglés) y el paso del menú Compartir usa el bloque "Recibir … de …" (Receive … from Nowhere) que aparece al usar "Entrada del atajo": en iOS 26 el menú del nombre ya no tiene "Detalles". Confirmado en el iPhone: "Pedir entrada" se puede mandar vacío.
+
