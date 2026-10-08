@@ -5,6 +5,7 @@ import { useUserId } from '../auth/sessionContext'
 import { useCouple } from '../couple/coupleContext'
 import { buildInviteLink } from '../couple/invite'
 import { coupleMessages } from '../couple/messages'
+import { ShareShortcut } from '../shared/ShareShortcut'
 
 export function Settings() {
   const { memberCount, members } = useCouple()
@@ -55,6 +56,7 @@ export function Settings() {
       ) : (
         <p>{`Son dos personas en este espacio${together}`}</p>
       )}
+      <ShareShortcut />
       <button onClick={() => signOut()}>Cerrar sesión</button>
       <section className="attribution">
         <img src="/tmdb-logo.svg" alt="TMDB" />
