@@ -9,6 +9,7 @@ import type { Title } from '../titles/titlesApi'
 import { useTitles } from '../titles/useTitles'
 import { seededIndex } from './bumbleLogic'
 import { GameTop } from './GameTop'
+import { PhonesChoice } from './PhonesChoice'
 import { NO_PARTNER, playerName } from './players'
 import { finishReveal, RevealError, startReveal, submitReveal, type RevealSession } from './revealApi'
 import { PICKS, revealResult } from './revealLogic'
@@ -60,21 +61,13 @@ export function Reveal({ filters, onFiltersChange, onBack }: Props) {
       <>
         <p>Cada uno elige 3 en secreto y se muestran a la vez.</p>
         <FiltersPanel value={filters} options={filterOptions(toWatch)} count={{ matching: matching.length, total: toWatch.length }} onChange={onFiltersChange} />
-        <h3>¿Cuántos celulares van a usar?</h3>
-        {matching.length < 1 && <p>Hace falta al menos 1 título</p>}
-        <div className="bumble-votes">
-          <button
-            disabled={matching.length < 1}
-            onClick={() => setLocal({ id: crypto.randomUUID(), players: [me, partner ?? NO_PARTNER], picks: [null, null], active: 0, revealed: false })}
-          >
-            📱 Uno
-          </button>
-          <button disabled={matching.length < 1 || !partner} onClick={startTwo}>
-            📱📱 Dos
-          </button>
-        </div>
-        {!partner && <small>Para usar dos celulares, tu pareja tiene que unirse</small>}
-        {error && <p role="alert">{error}</p>}
+        <PhonesChoice
+          missing={matching.length < 1 ? 'Hace falta al menos 1 título' : null}
+          hasPartner={!!partner}
+          error={error}
+          onOne={() => setLocal({ id: crypto.randomUUID(), players: [me, partner ?? NO_PARTNER], picks: [null, null], active: 0, revealed: false })}
+          onTwo={startTwo}
+        />
       </>
     )
   }

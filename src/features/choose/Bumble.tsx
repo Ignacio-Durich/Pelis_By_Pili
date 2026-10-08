@@ -9,6 +9,7 @@ import type { Title } from '../titles/titlesApi'
 import { useTitles } from '../titles/useTitles'
 import { BumbleCard } from './BumbleCard'
 import { GameTop as Top } from './GameTop'
+import { PhonesChoice } from './PhonesChoice'
 import { NO_PARTNER, playerName } from './players'
 import { bumbleUndo, bumbleVote, finishBumble, startBumble, type BumbleSession } from './bumbleApi'
 import { bumbleState, buildDeck, lastUndoable, seededIndex, type BumbleState, type Vote } from './bumbleLogic'
@@ -66,18 +67,13 @@ export function Bumble({ filters, onFiltersChange, onBack, random = Math.random 
       <>
         <p>Deslicen las cartas. Hay match cuando a los dos les gusta la misma.</p>
         <FiltersPanel value={filters} options={filterOptions(toWatch)} count={{ matching: matching.length, total: toWatch.length }} onChange={onFiltersChange} />
-        <h3>¿Cuántos celulares van a usar?</h3>
-        {matching.length < 2 && <p>Hacen falta al menos 2 títulos</p>}
-        <div className="bumble-votes">
-          <button disabled={matching.length < 2} onClick={startOne}>
-            📱 Uno
-          </button>
-          <button disabled={matching.length < 2 || !partner} onClick={startTwo}>
-            📱📱 Dos
-          </button>
-        </div>
-        {!partner && <small>Para usar dos celulares, tu pareja tiene que unirse</small>}
-        {error && <p role="alert">{error}</p>}
+        <PhonesChoice
+          missing={matching.length < 2 ? 'Hacen falta al menos 2 títulos' : null}
+          hasPartner={!!partner}
+          error={error}
+          onOne={startOne}
+          onTwo={startTwo}
+        />
       </>
     )
   }
