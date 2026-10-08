@@ -20,7 +20,7 @@
 - Cada duelo entra en una pantalla de iPhone 13 (390×844) y 15 (393×852) sin scroll (spec, sección 12).
 - Alcance estricto. **No entra:** modo sin internet; tampoco torneo con dos celulares ni guardar el torneo en la base.
 - Cada decisión fuera del plan va a `docs/superpowers/notes/2026-10-decisiones.md`; los menores de la revisión final, a la Etapa 12.
-- **Decisiones** (1, 2 y 3 confirmadas por Nacho el 2026-10-08; el resto, a confirmar):
+- **Decisiones confirmadas por Nacho el 2026-10-08:**
   1. **4 cada uno** de "Por ver" (con los filtros de la lista).
   2. **Cada duelo se decide juntos** con un toque, en un solo celular; sin desempates.
   3. **Dos cartas grandes por duelo** con póster, año, tipo, duración, géneros, `IMDb · RT` y plataformas.
