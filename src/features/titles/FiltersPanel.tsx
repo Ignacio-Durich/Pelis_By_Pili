@@ -11,7 +11,13 @@ import {
 } from './filters'
 import { RangeSlider } from './RangeSlider'
 
-type Props = { value: Filters; options: { genres: string[]; platforms: string[] }; onChange: (f: Filters) => void }
+type Props = {
+  value: Filters
+  options: { genres: string[]; platforms: string[] }
+  // Títulos "Por ver" que cumplen los filtros, de todos los "Por ver".
+  count: { matching: number; total: number }
+  onChange: (f: Filters) => void
+}
 
 const types = [
   ['all', 'Todo'],
@@ -21,16 +27,21 @@ const types = [
 
 const toggle = (list: string[], item: string) => (list.includes(item) ? list.filter((x) => x !== item) : [...list, item])
 
-export function FiltersPanel({ value, options, onChange }: Props) {
+export function FiltersPanel({ value, options, count: { matching, total }, onChange }: Props) {
   const [open, setOpen] = useState(false)
-  const count = activeCount(value)
+  const active = activeCount(value)
   const set = (patch: Partial<Filters>) => onChange({ ...value, ...patch })
 
   return (
     <div className="filters">
       <button className="secondary" aria-expanded={open} onClick={() => setOpen(!open)}>
-        {count ? `Filtros (${count})` : 'Filtros'}
+        {active ? `Filtros (${active})` : 'Filtros'}
       </button>
+      {active > 0 && (
+        <small className="filters-count" aria-live="polite">
+          {`${matching} de ${total} títulos ${matching === 1 ? 'cumple' : 'cumplen'} los filtros`}
+        </small>
+      )}
       {open && (
         <div className="filters-panel">
           <span>Tipo</span>

@@ -275,3 +275,13 @@ test('Vistas ignores the filters and has no panel', async () => {
   expect(await screen.findByText('Vista sin plataforma')).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: /^Filtros/ })).not.toBeInTheDocument()
 })
+
+test('the list says how many titles match the filters', async () => {
+  api.listTitles.mockResolvedValue([
+    makeTitle({ id: 'n', tmdbId: 10, title: 'En Netflix', streaming: ['Netflix'] }),
+    makeTitle({ id: 'p', tmdbId: 11, title: 'En Prime', streaming: ['Prime Video'] }),
+    makeTitle({ id: 'v', tmdbId: 12, title: 'Vista', streaming: ['Netflix'], status: 'watched', watchedAt: '2026-10-07T20:00:00Z' }),
+  ])
+  renderList({ ...NO_FILTERS, platforms: ['Netflix'] })
+  expect(await screen.findByText('1 de 2 títulos cumple los filtros')).toBeInTheDocument()
+})

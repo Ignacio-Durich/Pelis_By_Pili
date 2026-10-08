@@ -379,3 +379,11 @@ Se hacen antes de la prueba de aceptación (Task 5, paso 3), que se repite al fi
 - [ ] **Step 4: Commit.**
 
 Después de las Tasks 6 y 7 se repiten los pasos 2 y 3 de la Task 5 (publicar y probar en los celulares).
+
+### Task 8: Cuántos títulos cumplen los filtros (pedido de Nacho, 2026-10-07)
+
+**Files:** Modify `src/features/titles/FiltersPanel.tsx`, `src/features/titles/TitleList.tsx`, `src/features/choose/Roulette.tsx`. Test: `FiltersPanel.test.tsx`, `TitleList.test.tsx`, `Roulette.test.tsx`.
+
+**Interfaces:** `FiltersPanel` suma `count: { matching: number; total: number }` (títulos "Por ver" que cumplen / todos los "Por ver"). Con al menos un filtro activo, debajo del botón "Filtros" (panel abierto o cerrado) muestra "3 de 12 títulos cumplen los filtros", "1 de 12 títulos cumple los filtros" o "0 de 12 títulos cumplen los filtros". Sin filtros activos no muestra nada.
+
+- [ ] Tests que fallan (panel: textos y oculto sin filtros; lista y ruleta: pasan los números correctos) → implementar → `npm test && npm run typecheck && npx oxlint` → commit.

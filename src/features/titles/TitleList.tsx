@@ -92,7 +92,12 @@ export function TitleList({ filters, onFiltersChange }: { filters: Filters; onFi
       )}
       {titles === null && !offline && <p>Cargando…</p>}
       {tab === 'to_watch' && (
-        <FiltersPanel value={filters} options={filterOptions(inTab ?? [])} onChange={onFiltersChange} />
+        <FiltersPanel
+          value={filters}
+          options={filterOptions(inTab ?? [])}
+          count={{ matching: shown?.length ?? 0, total: inTab?.length ?? 0 }}
+          onChange={onFiltersChange}
+        />
       )}
       {shown?.length === 0 &&
         (inTab?.length ? (
