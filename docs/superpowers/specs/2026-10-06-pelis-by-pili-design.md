@@ -231,7 +231,7 @@ Puntos menores que dejaron las revisiones de las etapas anteriores. Se arreglan 
   - En "Cambiar mi elección", un título ya elegido que se marcó como visto sigue marcado y "Listo" termina en un error genérico; y si se entra directo a una partida con filtros que no dejan ningún título, aparece "Listo (0 de 0)" habilitado.
 - Entra, de la etapa 10:
   - La carta de la ganadora del torneo es un botón deshabilitado (VoiceOver dice "botón atenuado"); mejor un elemento que no sea botón.
-  - Las partidas de un celular (Bumble, Top 3 secreto, Torneo) se guardan en el celular sin fijarse de qué cuenta son: si en ese celular entra otra cuenta, ve la partida ajena.
+  - Las partidas de un celular (Bumble, Top 3 secreto, Torneo) se guardan en el celular sin fijarse de qué cuenta son: si en ese celular entra otra cuenta, ve la partida ajena. (Resuelto en la limpieza del 2026-10-08: ahora se guardan con su dueño.)
 - Entra, de la etapa 11:
   - Al volver la conexión, la tarjeta vuelve un momento a como estaba (sin ⏳) hasta que llega la lista nueva.
   - Un pendiente que falla siempre con un error que no se reconoce queda trabado y frena los de atrás ("Guardando 1 cambio…" sin fin).

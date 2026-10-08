@@ -147,3 +147,9 @@ Cada línea: decisión — motivo — costo si está mal.
 - Después de la primera prueba en el iPhone (pedido de Nacho): el botón de cada ítem de la bandeja dice "Agregar" en vez de "Buscar" (lleva a Agregar con la nota del reel); para lectores de pantalla se llama "Agregar lo compartido", porque el "+" de la lista ya es "Agregar".
 - La guía del Atajo nombra las acciones también en inglés (el iPhone de Nacho está en inglés) y el paso del menú Compartir usa el bloque "Recibir … de …" (Receive … from Nowhere) que aparece al usar "Entrada del atajo": en iOS 26 el menú del nombre ya no tiene "Detalles". Confirmado en el iPhone: "Pedir entrada" se puede mandar vacío.
 - En Ajustes, debajo de la guía, "¿Te pasaron el Atajo ya armado?": solo hay que cambiar el valor de `x-share-key` por la clave propia (pedido de Nacho, que le pasa el Atajo armado a Pili).
+
+# Limpieza (2026-10-08)
+
+- Auditoría pedida por Nacho ("que todo funcione igual"): un solo hook para lo que se actualiza en vivo (`src/lib/useLive.ts`), un solo armado de escuchas de Realtime (`src/lib/realtime.ts`), un solo error con código y llamado a funciones SQL (`src/lib/rpc.ts`), las partidas de un celular guardadas con `readCache`/`saveCache` (ahora con dueño, así otra cuenta no ve la partida ajena; las partidas a medio jugar del momento de publicar se pierden una vez), y componentes compartidos `TitleFacts`, `PhonesChoice` y `players.ts`. Bumble y Top 3 secreto ahora también recargan al volver la conexión (como la bandeja).
+- Se sacó `@vite-pwa/assets-generator` (y `pwa-assets.config.ts` y el script `generate-pwa-assets`): los íconos ya están en `public/`. Si cambia el logo: `npx @vite-pwa/assets-generator@2 --preset minimal-2023 public/icon.svg`.
+
