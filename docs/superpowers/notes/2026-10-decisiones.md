@@ -139,3 +139,8 @@ Cada línea: decisión — motivo — costo si está mal.
 # Etapa 7
 
 - Después de la primera prueba en los iPhones (pedido de Nacho): la sinopsis ya no tiene scroll propio (en iOS se quedaba con el gesto y no dejaba deslizar; con una sinopsis larga la carta se alarga y scrollea la página), y la partida entra en una pantalla de iPhone 13/15: fila única "Volver a los modos" / "Terminar", una línea chica de estado (vuelta, avance, matches), la carta con el alto que sobra, "↩️" entre 👎 y 👍, y el "¡Match!" flotando sobre la carta. Se sacó el texto "Vuelven a deslizar los matches" de la vuelta 2 (queda "Vuelta 2") — el plan no fijaba el diseño de la pantalla.
+
+# Etapa 8
+
+- La función `share` contesta en texto y el Atajo termina con "Mostrar notificación" de "Contenido de URL" (en vez del texto fijo "Guardado en Pelis By Pili" del plan): si la clave no sirve o la bandeja está llena, se ve el motivo y no se pierde lo compartido sin aviso (hallazgo de la revisión final).
+- La guía avisa que, antes de pasar el Atajo por iCloud, hay que borrar la clave del encabezado (el link de iCloud lo abre cualquiera que lo tenga), y el paso de los tipos apunta al bloque "Recibir … de Hoja para compartir" de iOS actual.

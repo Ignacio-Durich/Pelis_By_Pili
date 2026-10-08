@@ -117,3 +117,11 @@ test('the guide shows the address to copy', async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Copiar dirección' }))
   expect(api.writeText).toHaveBeenCalledWith(SHARE_URL)
 })
+
+test('the guide shows the server answer, warns about the key in iCloud and points to the share sheet block', async () => {
+  renderSettings(2)
+  await screen.findByRole('button', { name: 'Crear mi clave' })
+  expect(screen.getByText(/Agregá "Mostrar notificación" con "Contenido de URL"/)).toBeInTheDocument()
+  expect(screen.getByText(/antes de compartirlo, borrá tu clave del encabezado/)).toBeInTheDocument()
+  expect(screen.getByText(/"Recibir .* de Hoja para compartir"/)).toBeInTheDocument()
+})

@@ -128,6 +128,7 @@ test('the share function saves what was shared with the right key', async () => 
   const key = (await A.client.rpc('create_share_key')).data as string
   const res = await share(key, { shared: 'https://www.instagram.com/reel/Zz9/?igsh=abc', name: 'Relatos salvajes' })
   expect(res.status).toBe(200)
+  expect(await res.text()).toBe('Guardado en Pelis By Pili')
   const { data } = await adminClient().from('shared_items').select('couple_id, shared_by, url, query, source').eq('query', 'Relatos salvajes').single()
   expect(data).toEqual({ couple_id: coupleA, shared_by: A.id, url: 'https://www.instagram.com/reel/Zz9/', query: 'Relatos salvajes', source: 'Instagram' })
 })
@@ -135,7 +136,9 @@ test('the share function saves what was shared with the right key', async () => 
 test('old, made-up or missing keys are rejected and empty shares too', async () => {
   const old = (await B.client.rpc('create_share_key')).data as string
   const current = (await B.client.rpc('create_share_key')).data as string
-  expect((await share(old, { shared: 'https://x.com/a' })).status).toBe(401)
+  const rejected = await share(old, { shared: 'https://x.com/a' })
+  expect(rejected.status).toBe(401)
+  expect(await rejected.text()).toBe('No se guardó: la clave no sirve. Creá una nueva en Ajustes y ponela en el Atajo.')
   expect((await share('f'.repeat(48), { shared: 'https://x.com/a' })).status).toBe(401)
   expect((await share(null, { shared: 'https://x.com/a' })).status).toBe(401)
   expect((await share(current, { shared: ' ', name: '' })).status).toBe(400)
@@ -153,5 +156,7 @@ test('the inbox holds at most 100 items', async () => {
   const key = (await C.client.rpc('create_share_key')).data as string
   const rows = Array.from({ length: 100 }, (_, i) => ({ couple_id: coupleC, shared_by: C.id, query: `Peli ${i}` }))
   expect((await adminClient().from('shared_items').insert(rows)).error).toBeNull()
-  expect((await share(key, { name: 'Una más' })).status).toBe(429)
+  const full = await share(key, { name: 'Una más' })
+  expect(full.status).toBe(429)
+  expect(await full.text()).toBe('No se guardó: la bandeja de Compartidos está llena. Descartá algunos en la app.')
 })
