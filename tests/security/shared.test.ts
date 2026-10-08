@@ -160,3 +160,21 @@ test('the inbox holds at most 100 items', async () => {
   expect(full.status).toBe(429)
   expect(await full.text()).toBe('No se guardó: la bandeja de Compartidos está llena. Descartá algunos en la app.')
 })
+
+test('a member adds to the inbox with their session, and the partner sees it', async () => {
+  const { data: id, error } = await B.client.rpc('add_shared_item', { p_query: '  Dark  ', p_body: 'la dijo Juan' })
+  expect(error).toBeNull()
+  const { data } = await A.client.from('shared_items').select('query, body, url, source, shared_by').eq('id', id).single()
+  expect(data).toEqual({ query: 'Dark', body: 'la dijo Juan', url: null, source: null, shared_by: B.id })
+})
+
+test('adding with a session checks the texts, the couple and the cap', async () => {
+  expect((await A.client.rpc('add_shared_item', { p_query: '  ', p_body: '' })).error?.message).toBe('invalid_item')
+  expect((await A.client.rpc('add_shared_item', { p_query: 'x'.repeat(101), p_body: null })).error?.message).toBe('invalid_item')
+  expect((await A.client.rpc('add_shared_item', { p_query: null, p_body: 'y'.repeat(501) })).error?.message).toBe('invalid_item')
+  const lonely = await createTestUser()
+  expect((await lonely.client.rpc('add_shared_item', { p_query: 'Dark', p_body: null })).error?.message).toBe('no_couple')
+  expect((await anonClient().rpc('add_shared_item', { p_query: 'Dark', p_body: null })).error).not.toBeNull()
+  // La bandeja de C ya tiene 100 (test del tope de la función share).
+  expect((await C.client.rpc('add_shared_item', { p_query: 'Otra', p_body: null })).error?.message).toBe('inbox_full')
+})
