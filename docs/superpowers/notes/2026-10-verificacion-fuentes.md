@@ -98,3 +98,12 @@ Impacto en el plan: afecta ya a la Etapa 1, no solo a las siguientes. La novia d
 - Publicar: `npm run deploy` (compila, corre `scripts/check-dist.ts`, que frena si `dist/` tiene nombres o valores de claves o la URL local, y publica con Wrangler). Wrangler quedó como dependencia de desarrollo; su script de instalación (`workerd`) no se aprobó y no hace falta para publicar.
 - Verificado con curl: `/`, el manifest (`"display":"standalone"`, `"short_name":"Pelis"`), `/sw.js`, el apple-touch-icon, el logo de TMDB y las rutas de la app responden 200; la página carga sin errores en el navegador. Las funciones de Supabase responden al preflight CORS desde la dirección nueva.
 - Pendiente: reinstalar la app en los celulares desde la dirección nueva; actualizar la URL en la configuración de la API de TMDB (opcional); borrar el sitio de Netlify cuando se confirme que todo anda.
+
+## Cierre de la Etapa 6 (2026-10-08)
+
+- Antes de publicar: `npm test` 256/256, `npm run test:security` 57/57 contra el Supabase local (con `supabase functions serve` levantado; sin él fallan 11 con 503), typecheck y lint sin errores. No hubo cambios en la base ni en las funciones, así que no hizo falta `db push` ni `test:security:remote`.
+- Revisión visual en local (390 px): menú "¿Qué vemos?", ánimos que reordenan (Intriga trae Dark; Relax lo deja afuera), tiempo y plataforma que filtran, aviso de relleno, mensaje sin resultados y "Ver detalle" ida y vuelta.
+- Publicado con `npm run deploy` en https://pelis-by-pili.con-amor-nacho.workers.dev; el bundle publicado es el mismo que el local y `dist/` no tiene claves ni la URL local.
+- Cambios pedidos por Nacho después de la primera prueba: elegir varias plataformas en "¿Dónde lo ven?" y sugerir 5 títulos en vez de 3 (257/257 después de los dos).
+- Prueba de aceptación (Nacho, con la cuenta de prueba en el celular de su hermana): "salio todo bien" en la primera prueba y "todo bien" después de los cambios.
+- La etapa queda terminada: devuelve 5 opciones coherentes con las respuestas.
