@@ -89,7 +89,9 @@ El mazo de candidatas sale de la lista "Por ver", no de un catálogo general.
 4. Preguntas rápidas del momento: tiempo disponible, ánimo (uno o varios) y plataforma (una o varias); devuelve las 5 mejores de la lista según esas respuestas y los puntajes.
 5. Revelación simultánea: cada uno elige su top 3 en secreto y se muestra a la vez; las coincidencias van primero.
 
-A definir al armar el plan: cuántos vetos permite la ruleta, cómo se traduce "ánimo" a géneros y cómo se arma el mazo del swipe.
+Ánimos de las preguntas rápidas (etapa 6, confirmados por Nacho) y los géneros de TMDB que cuentan para cada uno: 😂 Reírnos (Comedia, Animación, Familia, Kids), 💕 Algo romántico (Romance, Comedia, Música), 😢 Emocionarnos (Drama, Romance, Historia, Música), 💥 Adrenalina (Acción, Aventura, Action & Adventure, Bélica, War & Politics, Western), 🕵️ Intriga (Misterio, Crimen, Suspense), 🚀 Volar la cabeza (Ciencia ficción, Fantasía, Sci-Fi & Fantasy), 👻 Miedo (Terror, Suspense), 🧠 Aprender algo (Documental, Historia) y 😌 Relax (Animación, Comedia, Familia, Documental, Música, Kids, Reality), para antes de dormir o de fondo mientras estudian o trabajan. Tiempos: hasta 1 h 30, 2 h, 2 h 30 o sin apuro. Orden: más ánimos en común, mejor puntaje (IMDb, o TMDB si no hay) y más nuevo; si no llegan a 5 con el ánimo, se completa con el resto y se avisa.
+
+A definir al armar el plan: cómo se arma el mazo del swipe.
 
 ## 9. Errores
 
