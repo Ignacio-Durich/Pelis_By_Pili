@@ -61,6 +61,14 @@ export function matchesFilters(t: Title, f: Filters): boolean {
 
 const sorted = (values: string[]) => [...new Set(values)].sort((a, b) => a.localeCompare(b, 'es'))
 
+const plain = (s: string) => s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()
+
+// Buscador de la lista: cada palabra tiene que estar en el nombre, el original o el director, sin importar tildes ni mayúsculas.
+export function matchesQuery(t: Pick<Title, 'title' | 'originalTitle' | 'director'>, query: string): boolean {
+  const haystack = plain([t.title, t.originalTitle, t.director ?? ''].join(' '))
+  return plain(query).split(/\s+/).every((word) => haystack.includes(word))
+}
+
 export function filterOptions(titles: Title[]): { genres: string[]; platforms: string[] } {
   return { genres: sorted(titles.flatMap((t) => t.genres)), platforms: sorted(titles.flatMap((t) => t.streaming)) }
 }

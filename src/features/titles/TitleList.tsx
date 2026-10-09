@@ -4,7 +4,7 @@ import type { SharedItem } from '../shared/sharedApi'
 import { SharedInbox } from '../shared/SharedInbox'
 import { useShared } from '../shared/useShared'
 import { AddTitle } from './AddTitle'
-import { filterOptions, matchesFilters, NO_FILTERS, type Filters } from './filters'
+import { filterOptions, matchesFilters, matchesQuery, NO_FILTERS, type Filters } from './filters'
 import { FiltersPanel } from './FiltersPanel'
 import { formatScore, imdbScore, ratingsDate, rtScore } from './ratings'
 import { TitleDetail } from './TitleDetail'
@@ -24,6 +24,7 @@ export function TitleList({ filters, onFiltersChange }: { filters: Filters; onFi
   // Por id: el detalle abierto toma siempre la versión más nueva del título (Realtime recarga la lista).
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [tab, setTab] = useState<'to_watch' | 'watched'>('to_watch')
+  const [query, setQuery] = useState('')
   // La ventana es la que scrollea: al abrir una pantalla se sube al principio y al volver
   // se recupera el lugar de la lista.
   const listScroll = useRef(0)
@@ -59,8 +60,9 @@ export function TitleList({ filters, onFiltersChange }: { filters: Filters; onFi
   // "Por ver": del más nuevo al más viejo (como llega). "Vistas": la vista más reciente primero.
   const inTab = titles?.filter((t) => t.status === tab)
   // Los filtros valen para "Por ver" (y la ruleta); "Vistas" se ve entera.
-  const shown = inTab
-    ?.filter((t) => tab === 'watched' || matchesFilters(t, filters))
+  const filtered = inTab?.filter((t) => tab === 'watched' || matchesFilters(t, filters))
+  const shown = filtered
+    ?.filter((t) => matchesQuery(t, query))
     .sort((a, b) => (tab === 'watched' ? (b.watchedAt ?? '').localeCompare(a.watchedAt ?? '') : 0))
 
   const emptyText =
@@ -82,6 +84,14 @@ export function TitleList({ filters, onFiltersChange }: { filters: Filters; onFi
   return (
     <section className="titles">
       {shared && <SharedInbox items={shared} onSearch={(item) => openScreen(() => setAdding({ shared: item }))} />}
+      <input
+        type="search"
+        className="list-search"
+        aria-label="Buscar en la lista"
+        placeholder="Buscar por nombre o director"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+      />
       <div className="segmented">
         <button aria-pressed={tab === 'to_watch'} onClick={() => setTab('to_watch')}>
           Por ver
@@ -126,7 +136,9 @@ export function TitleList({ filters, onFiltersChange }: { filters: Filters; onFi
         />
       )}
       {shown?.length === 0 &&
-        (inTab?.length ? (
+        (filtered?.length ? (
+          <p>{`Ningún título coincide con «${query.trim()}»`}</p>
+        ) : inTab?.length ? (
           <>
             <p>Ningún título cumple estos filtros</p>
             <button className="secondary" onClick={() => onFiltersChange(NO_FILTERS)}>

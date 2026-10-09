@@ -452,3 +452,50 @@ test('going offline with the app open says so at once', async () => {
     Object.defineProperty(navigator, 'onLine', { value: true, configurable: true })
   }
 })
+
+const nolanPorVer = makeTitle({ id: 'n1', tmdbId: 21, title: 'Interestelar', director: 'Christopher Nolan', streaming: ['Prime Video'] })
+const nolanVista = makeTitle({ id: 'n2', tmdbId: 22, title: 'El origen', director: 'Christopher Nolan', status: 'watched', watchedAt: '2026-10-07T20:00:00Z' })
+const otra = makeTitle({ id: 'o', tmdbId: 23, title: 'Amélie', director: 'Jean-Pierre Jeunet' })
+
+test('the list search looks only in the open tab', async () => {
+  api.listTitles.mockResolvedValue([nolanPorVer, nolanVista, otra])
+  renderList()
+  await screen.findByText('Interestelar')
+  fireEvent.change(screen.getByRole('searchbox', { name: 'Buscar en la lista' }), { target: { value: 'nolan' } })
+  expect(screen.getByText('Interestelar')).toBeInTheDocument()
+  expect(screen.queryByText('Amélie')).not.toBeInTheDocument()
+  expect(screen.queryByText('El origen')).not.toBeInTheDocument()
+
+  fireEvent.click(screen.getByRole('button', { name: 'Vistas' }))
+  expect(screen.getByText('El origen')).toBeInTheDocument()
+  expect(screen.queryByText('Interestelar')).not.toBeInTheDocument()
+  expect(screen.getByRole('searchbox', { name: 'Buscar en la lista' })).toHaveValue('nolan')
+})
+
+test('in Por ver the list search adds to the filters', async () => {
+  api.listTitles.mockResolvedValue([nolanPorVer, otra])
+  renderList({ ...NO_FILTERS, platforms: ['Netflix'] })
+  await screen.findByRole('searchbox', { name: 'Buscar en la lista' })
+  fireEvent.change(screen.getByRole('searchbox', { name: 'Buscar en la lista' }), { target: { value: 'nolan' } })
+  expect(screen.queryByText('Interestelar')).not.toBeInTheDocument()
+})
+
+test('a list search with no match says so', async () => {
+  api.listTitles.mockResolvedValue([nolanPorVer, otra])
+  renderList()
+  await screen.findByText('Interestelar')
+  fireEvent.change(screen.getByRole('searchbox', { name: 'Buscar en la lista' }), { target: { value: 'zzz' } })
+  expect(screen.getByText('Ningún título coincide con «zzz»')).toBeInTheDocument()
+  expect(screen.queryByText('Ningún título cumple estos filtros')).not.toBeInTheDocument()
+})
+
+test('opening a result and coming back keeps the list search', async () => {
+  api.listTitles.mockResolvedValue([nolanPorVer, otra])
+  renderList()
+  await screen.findByText('Interestelar')
+  fireEvent.change(screen.getByRole('searchbox', { name: 'Buscar en la lista' }), { target: { value: 'nolan' } })
+  fireEvent.click(screen.getByRole('button', { name: /Ver Interestelar/ }))
+  fireEvent.click(screen.getByRole('button', { name: 'Volver' }))
+  expect(await screen.findByRole('searchbox', { name: 'Buscar en la lista' })).toHaveValue('nolan')
+  expect(screen.queryByText('Amélie')).not.toBeInTheDocument()
+})

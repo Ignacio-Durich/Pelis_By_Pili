@@ -190,6 +190,13 @@ button.remove {
   padding-bottom: 76px;
 }
 
+.list-search {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 12px;
+}
+
 button.add {
   position: fixed;
   right: calc(16px + env(safe-area-inset-right));
