@@ -390,15 +390,6 @@ button.secondary {
   background: var(--surface-2);
 }
 
-.filters-panel select {
-  font: inherit;
-  font-size: 17px;
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: inherit;
-}
 
 .chips-group {
   display: flex;
@@ -428,18 +419,7 @@ button.chip[aria-pressed='true'] {
   border-color: var(--accent);
 }
 
-.roulette-spin {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: center;
-  padding: 24px 0;
-}
 
-.roulette-spin strong {
-  font-size: 24px;
-  text-align: center;
-}
 
 .roulette-result h3 {
   margin: 0;

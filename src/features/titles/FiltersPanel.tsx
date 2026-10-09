@@ -42,11 +42,10 @@ export function FiltersPanel({ value, options, count: { matching, total }, onCha
       <button className="secondary" aria-expanded={open} onClick={() => setOpen(!open)}>
         {active ? `Filtros (${active})` : 'Filtros'}
       </button>
-      {active > 0 && (
-        <small className="filters-count" aria-live="polite">
-          {`${matching} de ${total} títulos ${matching === 1 ? 'cumple' : 'cumplen'} los filtros`}
-        </small>
-      )}
+      {/* La región existe siempre: si se crea junto con el texto, el lector de pantalla no la anuncia. */}
+      <small className="filters-count" aria-live="polite">
+        {active > 0 && `${matching} de ${total} títulos ${matching === 1 ? 'cumple' : 'cumplen'} los filtros`}
+      </small>
       {open && (
         <div className="filters-panel">
           <span>Tipo</span>
@@ -99,8 +98,8 @@ export function FiltersPanel({ value, options, count: { matching, total }, onCha
 
 function Chips({ label, options, chosen, onToggle }: { label: string; options: string[]; chosen: string[]; onToggle: (o: string) => void }) {
   return (
-    <div className="chips-group">
-      <span>{label}</span>
+    <div className="chips-group" role="group" aria-label={label}>
+      <span aria-hidden="true">{label}</span>
       {options.length === 0 ? (
         <small>Todavía no hay datos</small>
       ) : (

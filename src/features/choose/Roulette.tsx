@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useCouple, useMemberName } from '../couple/coupleContext'
-import { filterOptions, matchesFilters, type Filters } from '../titles/filters'
+import { activeCount, filterOptions, matchesFilters, type Filters } from '../titles/filters'
 import { FiltersPanel } from '../titles/FiltersPanel'
 import { TitleCard } from '../titles/TitleCard'
 import { TitleDetail } from '../titles/TitleDetail'
@@ -57,7 +57,7 @@ export function Roulette({ filters, onFiltersChange, random = Math.random, onBac
           <p>Cargando…</p>
         ) : (
           // Una sesión por combinación de filtros: cambiar un filtro renueva el resultado y los vetos.
-          <Session key={JSON.stringify(filters)} matching={matching} random={random} onOpenDetail={openDetail} />
+          <Session key={JSON.stringify(filters)} matching={matching} filtered={activeCount(filters) > 0} random={random} onOpenDetail={openDetail} />
         )}
       </section>
       {detail && <TitleDetail title={detail} onClose={closeDetail} onChanged={load} />}
@@ -69,13 +69,15 @@ export function Roulette({ filters, onFiltersChange, random = Math.random, onBac
 // resultado aparece igual.
 const SPIN_FALLBACK_MS = 4500
 
-function Session({ matching, random, onOpenDetail }: { matching: Title[]; random: () => number; onOpenDetail: (id: string) => void }) {
+type SessionProps = { matching: Title[]; filtered: boolean; random: () => number; onOpenDetail: (id: string) => void }
+
+function Session({ matching, filtered, random, onOpenDetail }: SessionProps) {
   const { members } = useCouple()
   const nameOf = useMemberName()
   const [vetoed, setVetoed] = useState<string[]>([])
   const [usedBy, setUsedBy] = useState<string[]>([])
   const [resultId, setResultId] = useState<string | null>(null)
-  const [noneLeft, setNoneLeft] = useState(false)
+  const [vetoedAll, setVetoedAll] = useState(false)
   const [rotation, setRotation] = useState(0)
   const [spinning, setSpinning] = useState(false)
   // Los títulos de la rueda en el último giro: así el gajo elegido queda bajo la flecha.
@@ -87,6 +89,8 @@ function Session({ matching, random, onOpenDetail }: { matching: Title[]; random
 
   const candidates = matching.filter((t) => !vetoed.includes(t.id))
   const result = candidates.find((t) => t.id === resultId)
+  // Si la pareja agrega uno después de vetar todo, se puede volver a girar.
+  const noneLeft = vetoedAll && candidates.length === 0
   // La pareja quitó o marcó vista el título que había salido.
   const lost = resultId !== null && !result
 
@@ -122,7 +126,7 @@ function Session({ matching, random, onOpenDetail }: { matching: Title[]; random
     setUsedBy((u) => [...u, userId])
     if (remaining.length === 0) {
       setResultId(null)
-      setNoneLeft(true)
+      setVetoedAll(true)
       return
     }
     spin(remaining)
@@ -135,21 +139,20 @@ function Session({ matching, random, onOpenDetail }: { matching: Title[]; random
 
   // La rueda va siempre en el mismo lugar: si cambiara de contenedor, React la recrearía ya en su
   // posición final y el giro (por ejemplo, después de un veto) no se vería.
+  // La región que se lee en voz alta existe siempre (si nace con el texto, no se anuncia):
+  // "Girando…" a la vista y, al parar, el resultado solo para el lector de pantalla.
   return (
     <>
       {wheel}
+      <p className={spinning ? 'spinning' : 'visually-hidden'} aria-live="polite">
+        {spinning ? 'Girando…' : result ? `Les tocó ${result.title}` : ''}
+      </p>
       {content()}
     </>
   )
 
   function content() {
-    if (spinning) {
-      return (
-        <p className="spinning" aria-live="polite">
-          Girando…
-        </p>
-      )
-    }
+    if (spinning) return null
 
     if (noneLeft) return <p>No quedan títulos con estos filtros</p>
 
@@ -184,9 +187,12 @@ function Session({ matching, random, onOpenDetail }: { matching: Title[]; random
         {candidates.length === 0 ? (
           <p>Ningún título cumple estos filtros</p>
         ) : (
+          // Con un filtro activo ya cuenta el panel de filtros.
+          !filtered && (
           <p>
             {candidates.length === 1 ? 'Hay 1 título que cumple los filtros' : `Hay ${candidates.length} títulos que cumplen los filtros`}
           </p>
+          )
         )}
         <button disabled={candidates.length === 0} onClick={() => spin(candidates)}>
           Girar

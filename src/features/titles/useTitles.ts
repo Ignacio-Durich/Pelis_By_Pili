@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useBackfillDetails } from './useBackfillDetails'
 import { applyPending, clearDropped, droppedFor, flushPending, pendingFor, readCache, saveCache, subscribePending, type FlushResult, type Pending } from '../../lib/offline'
 import { useUserId } from '../auth/sessionContext'
 import { useCouple } from '../couple/coupleContext'
@@ -123,6 +124,8 @@ export function useTitles(coupleId: string): {
     const timer = window.setInterval(load, RETRY_MS)
     return () => clearInterval(timer)
   }, [waiting, load])
+
+  useBackfillDetails(titles)
 
   return {
     titles: titles && applyPending(titles, [...sent, ...pending], userId),

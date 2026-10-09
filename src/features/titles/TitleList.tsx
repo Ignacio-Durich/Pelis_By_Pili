@@ -8,7 +8,6 @@ import { filterOptions, matchesFilters, matchesQuery, NO_FILTERS, type Filters }
 import { FiltersPanel } from './FiltersPanel'
 import { formatScore, imdbScore, ratingsDate, rtScore } from './ratings'
 import { TitleDetail } from './TitleDetail'
-import { useBackfillDetails } from './useBackfillDetails'
 import { droppedMessage, useTitles } from './useTitles'
 import { TitleCard } from './TitleCard'
 import { removeTitle, type Title } from './titlesApi'
@@ -43,8 +42,6 @@ export function TitleList({ filters, onFiltersChange }: { filters: Filters; onFi
     hide()
     requestAnimationFrame(() => window.scrollTo(0, listScroll.current))
   }
-
-  useBackfillDetails(titles)
 
   const selected = titles?.find((t) => t.id === selectedId)
   useEffect(() => {
