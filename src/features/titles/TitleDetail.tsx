@@ -5,6 +5,7 @@ import { fetchTitleDetail, type Provider, type TitleDetail as Detail } from './d
 import { MyScore } from './MyScore'
 import { formatScore, imdbScore, metacriticScore, ratingsDate, rtScore, tmdbScore } from './ratings'
 import { enqueue, pendingFor } from '../../lib/offline'
+import { kindLine, peopleLine } from './titleText'
 import { removeTitle, setWatched, type Title } from './titlesApi'
 import { isNetworkError, usePendingOwner } from './useTitles'
 
@@ -46,7 +47,7 @@ export function TitleDetail({ title, onClose }: { title: Title; onClose: () => v
     tmdb: title.tmdbRating,
     updatedAt: title.ratingsUpdatedAt,
   }
-  const kind = title.mediaType === 'movie' ? 'Película' : 'Serie'
+  const people = peopleLine(title.mediaType, title.director)
   const showOriginal = title.originalTitle && title.originalTitle.toLowerCase() !== title.title.toLowerCase()
 
   async function toggleWatched(watched: boolean) {
@@ -93,7 +94,8 @@ export function TitleDetail({ title, onClose }: { title: Title; onClose: () => v
       )}
       <h2>{title.title}</h2>
       {showOriginal && <small>{`Original: ${title.originalTitle}`}</small>}
-      <small>{title.year ? `${title.year} · ${kind}` : kind}</small>
+      <small>{kindLine(title.year, title.mediaType, title.seasons)}</small>
+      {people && <small>{people}</small>}
       <small>{`La agregó ${nameOf(title.addedBy)}`}</small>
       {title.originNote && <small>{`De dónde vino: ${title.originNote}`}</small>}
 

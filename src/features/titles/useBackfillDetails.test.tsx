@@ -31,12 +31,12 @@ test('goes one at a time', async () => {
   await waitFor(() => expect(api.fetchTitleDetail).toHaveBeenCalledTimes(2))
 })
 
-test('asks for at most 10 per mount', async () => {
-  const titles = Array.from({ length: 15 }, (_, i) => title(`t${i}`, null))
+test('asks for at most 30 per mount', async () => {
+  const titles = Array.from({ length: 35 }, (_, i) => title(`t${i}`, null))
   renderHook(() => useBackfillDetails(titles))
-  await waitFor(() => expect(api.fetchTitleDetail).toHaveBeenCalledTimes(10))
+  await waitFor(() => expect(api.fetchTitleDetail).toHaveBeenCalledTimes(30))
   await new Promise((r) => setTimeout(r, 20))
-  expect(api.fetchTitleDetail).toHaveBeenCalledTimes(10)
+  expect(api.fetchTitleDetail).toHaveBeenCalledTimes(30)
 })
 
 test('does not repeat ids on rerender, and a failure does not stop the rest', async () => {

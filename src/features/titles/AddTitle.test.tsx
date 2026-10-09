@@ -180,6 +180,8 @@ test('a result already in the list says who added it and cannot be added', async
     genres: [],
     streaming: [],
     detailsUpdatedAt: null,
+    director: null,
+    seasons: null,
   }
   renderAdd([existing])
   await typeQuery('mi pobre')

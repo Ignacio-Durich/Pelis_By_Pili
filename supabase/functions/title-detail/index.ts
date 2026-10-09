@@ -5,10 +5,12 @@ import {
   mergeRatings,
   needsRefresh,
   parseTitleId,
+  pickDirector,
   pickGenres,
   pickImdbId,
   pickOverview,
   pickRuntime,
+  pickSeasons,
   streamingNames,
   tmdbScoreOf,
   toProviders,
@@ -58,7 +60,7 @@ Deno.serve(async (req) => {
   let details
   try {
     details = await getJson(
-      `https://api.themoviedb.org/3/${title.media_type}/${title.tmdb_id}?language=es-AR&append_to_response=external_ids,watch/providers,translations&api_key=${Deno.env.get('TMDB_API_KEY')}`,
+      `https://api.themoviedb.org/3/${title.media_type}/${title.tmdb_id}?language=es-AR&append_to_response=external_ids,watch/providers,translations,credits&api_key=${Deno.env.get('TMDB_API_KEY')}`,
     )
   } catch {
     return json(502, { error: 'upstream' })
@@ -83,12 +85,14 @@ Deno.serve(async (req) => {
   }
   const { ratings, stale, save } = mergeRatings(stored, omdb, tmdbScoreOf(details), now)
   const providers = toProviders(details['watch/providers']?.results?.AR)
-  // Datos para los filtros: se guardan en cada apertura (TMDB ya se consultó).
+  // Datos para los filtros y la tarjeta: se guardan en cada apertura (TMDB ya se consultó).
   await service
     .from('titles')
     .update({
       runtime: pickRuntime(details),
       genres: pickGenres(details),
+      director: pickDirector(details),
+      seasons: pickSeasons(details),
       streaming: streamingNames(providers),
       details_updated_at: now.toISOString(),
       ...(save && {

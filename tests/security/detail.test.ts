@@ -81,6 +81,20 @@ test('the detail saves runtime, genres and streaming on the title', async () => 
   expect(data?.details_updated_at).not.toBeNull()
 })
 
+test('the detail saves who directed it, and for a series its seasons', async () => {
+  await detail(B.client, parasite)
+  await detail(A.client, aew)
+  const { data } = await A.client.from('titles').select('id, director, seasons').in('id', [parasite, aew])
+  const byId = Object.fromEntries((data ?? []).map((r) => [r.id, r]))
+  expect(byId[parasite]).toMatchObject({ director: 'Bong Joon-ho', seasons: null })
+  expect(byId[aew].seasons).toBeGreaterThan(0)
+})
+
+test('members cannot write the director or the seasons', async () => {
+  const { error } = await A.client.from('titles').update({ director: 'x', seasons: 1 }).eq('id', parasite)
+  expect(error).not.toBeNull()
+})
+
 test('members cannot write the filter data', async () => {
   const { error } = await A.client.from('titles').update({ runtime: 1 }).eq('id', parasite)
   expect(error).not.toBeNull()
