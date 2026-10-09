@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useId, useState, type FormEvent } from 'react'
 import { formatScore, parseScore } from './ratings'
 import { enqueue, pendingFor } from '../../lib/offline'
 import { setMyScore, TitleError, type Score, type TitleErrorKind } from './titlesApi'
@@ -10,7 +10,7 @@ const messages: Partial<Record<TitleErrorKind, string>> = {
 }
 const SAVE_FAILED = 'No se pudo guardar. Probá de nuevo.'
 
-export function MyScore({ titleId, current }: { titleId: string; current: Score | null }) {
+export function MyScore({ titleId, current, onSaved }: { titleId: string; current: Score | null; onSaved?: () => void }) {
   const [text, setText] = useState(current ? formatScore(current.score) : '')
   const [note, setNote] = useState(current?.note ?? '')
   const [busy, setBusy] = useState(false)
@@ -19,6 +19,8 @@ export function MyScore({ titleId, current }: { titleId: string; current: Score 
   const owner = usePendingOwner()
   const [error, setError] = useState<string | null>(null)
   const score = parseScore(text)
+  const hintId = useId()
+  const invalid = text.trim() !== '' && score === null
 
   async function save(event: FormEvent) {
     event.preventDefault()
@@ -37,6 +39,7 @@ export function MyScore({ titleId, current }: { titleId: string; current: Score 
     try {
       await setMyScore(titleId, score, note)
       setSaved(true)
+      onSaved?.()
     } catch (e) {
       // Sin red queda pendiente en el celular y se manda al volver la conexión.
       if (isNetworkError(e)) {
@@ -55,17 +58,34 @@ export function MyScore({ titleId, current }: { titleId: string; current: Score 
       <h3>Tu puntaje</h3>
       <label>
         Del 1 al 10
-        <input inputMode="decimal" placeholder="Ej.: 8,75" value={text} onChange={(e) => setText(e.target.value)} />
+        <input
+          inputMode="decimal"
+          placeholder="Ej.: 8,75"
+          value={text}
+          aria-describedby={invalid ? hintId : undefined}
+          onChange={(e) => {
+            setText(e.target.value)
+            setSaved(false)
+          }}
+        />
       </label>
-      {text.trim() !== '' && score === null && <small>Poné un número del 1 al 10, con hasta 2 decimales</small>}
+      {invalid && <small id={hintId}>Poné un número del 1 al 10, con hasta 2 decimales</small>}
       <label>
         Una nota (opcional)
-        <textarea rows={4} maxLength={200} value={note} onChange={(e) => setNote(e.target.value)} />
+        <textarea
+          rows={4}
+          maxLength={200}
+          value={note}
+          onChange={(e) => {
+            setNote(e.target.value)
+            setSaved(false)
+          }}
+        />
       </label>
       <button type="submit" disabled={score === null || busy}>
         Guardar
       </button>
-      {saved && <p>Guardado</p>}
+      <p role="status">{saved && 'Guardado'}</p>
       {queued && <p>⏳ Se guarda cuando vuelva la conexión</p>}
       {error && <p role="alert">{error}</p>}
     </form>

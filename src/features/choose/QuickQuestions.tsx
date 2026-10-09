@@ -95,7 +95,7 @@ export function QuickQuestions({ onBack }: { onBack: () => void }) {
           </>
         )}
       </section>
-      {detail && <TitleDetail title={detail} onClose={closeDetail} />}
+      {detail && <TitleDetail title={detail} onClose={closeDetail} onChanged={load} />}
     </>
   )
 }

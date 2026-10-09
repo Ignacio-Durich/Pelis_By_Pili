@@ -89,3 +89,27 @@ test('with something already waiting, a new score waits behind it (so the order 
   expect(api.setMyScore).not.toHaveBeenCalled()
   expect(pendingFor('u1:c1').map((p) => p.kind)).toEqual(['watched', 'score'])
 })
+
+test('Guardado goes away when the score or the note is edited again, and is announced', async () => {
+  api.setMyScore.mockResolvedValue(undefined)
+  render(withCouple(<MyScore titleId="t1" current={null} />))
+  fireEvent.change(scoreField(), { target: { value: '8' } })
+  fireEvent.click(save())
+  expect(await screen.findByText('Guardado')).toHaveAttribute('role', 'status')
+  fireEvent.change(screen.getByLabelText('Una nota (opcional)'), { target: { value: 'linda' } })
+  expect(screen.queryByText('Guardado')).not.toBeInTheDocument()
+})
+
+test('what is being typed stays when the partner changes theirs', () => {
+  const { rerender } = render(withCouple(<MyScore titleId="t1" current={null} />))
+  fireEvent.change(scoreField(), { target: { value: '7,5' } })
+  rerender(withCouple(<MyScore titleId="t1" current={{ userId: 'u1', score: 9, note: 'otra', updatedAt: '' }} />))
+  expect(scoreField()).toHaveValue('7,5')
+})
+
+test('the invalid score hint is tied to the field', () => {
+  render(withCouple(<MyScore titleId="t1" current={null} />))
+  fireEvent.change(scoreField(), { target: { value: '11' } })
+  const hint = screen.getByText('Poné un número del 1 al 10, con hasta 2 decimales')
+  expect(scoreField().getAttribute('aria-describedby')).toBe(hint.id)
+})
