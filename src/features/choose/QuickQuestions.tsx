@@ -5,7 +5,7 @@ import { imdbScore, rtScore } from '../titles/ratings'
 import { TitleCard } from '../titles/TitleCard'
 import { TitleDetail } from '../titles/TitleDetail'
 import { useTitles } from '../titles/useTitles'
-import { MOODS, NO_ANSWERS, quickPick, TIME_OPTIONS, type Answers } from './quickPick'
+import { NO_ANSWERS, quickPick, TIME_OPTIONS, type Answers } from './quickPick'
 
 export function QuickQuestions({ onBack }: { onBack: () => void }) {
   const { coupleId } = useCouple()
@@ -15,6 +15,7 @@ export function QuickQuestions({ onBack }: { onBack: () => void }) {
   const scroll = useRef(0)
 
   const toWatch = titles?.filter((t) => t.status === 'to_watch') ?? []
+  const options = filterOptions(toWatch)
   const { picks, filled } = quickPick(titles ?? [], answers)
   const detail = titles?.find((t) => t.id === detailId)
   const set = (patch: Partial<Answers>) => setAnswers({ ...answers, ...patch })
@@ -47,11 +48,11 @@ export function QuickQuestions({ onBack }: { onBack: () => void }) {
             </button>
           ))}
         </div>
-        <span>¿Qué ánimo tienen?</span>
+        <span>¿Qué género?</span>
         <div className="chips">
-          {MOODS.map((m) => (
-            <button key={m.id} className="chip" aria-pressed={answers.moods.includes(m.id)} onClick={() => set({ moods: toggle(answers.moods, m.id) })}>
-              {m.label}
+          {withChosen(options.genres, answers.genres).map((g) => (
+            <button key={g} className="chip" aria-pressed={answers.genres.includes(g)} onClick={() => set({ genres: toggle(answers.genres, g) })}>
+              {g}
             </button>
           ))}
         </div>
@@ -60,7 +61,7 @@ export function QuickQuestions({ onBack }: { onBack: () => void }) {
           <button className="chip" aria-pressed={answers.platforms.length === 0} onClick={() => set({ platforms: [] })}>
             Cualquiera
           </button>
-          {withChosen(filterOptions(toWatch).platforms, answers.platforms).map((p) => (
+          {withChosen(options.platforms, answers.platforms).map((p) => (
             <button key={p} className="chip" aria-pressed={answers.platforms.includes(p)} onClick={() => set({ platforms: toggle(answers.platforms, p) })}>
               {p}
             </button>
@@ -77,7 +78,7 @@ export function QuickQuestions({ onBack }: { onBack: () => void }) {
         {titles !== null && (
           <>
             <h3>Les sugerimos</h3>
-            {filled && <p>No encontramos 5 con ese ánimo; sumamos estas</p>}
+            {filled && <p>No encontramos 5 de esos géneros; sumamos estas</p>}
             {picks.length === 0 && <p>Ningún título entra en ese tiempo y plataforma</p>}
             <ul className="title-list">
               {picks.map((t) => (
