@@ -162,3 +162,21 @@ Cada línea: decisión — motivo — costo si está mal.
 # Invitación en iPhone (2026-10-09)
 
 - Pili abrió el enlace y le creó un espacio propio. En la base real: su cuenta y su espacio (vacío) se crearon con 23 s de diferencia, y la invitación de Nacho quedó sin usar. Causa: el enlace se abre en Safari, pero la app de la pantalla de inicio arranca en `/` y no comparte nada con Safari, así que el `?invite=` no llega. Arreglo: en la bienvenida, primero "¿Te mandaron un enlace de invitación? Pegalo acá" + "Unirme", y abajo "Crear nuestro espacio". `parseInviteToken` encuentra el enlace aunque venga con texto alrededor. No se sumó una forma de pasarse de un espacio propio al de la pareja: el espacio de Pili lo borra Nacho en el dashboard y ella vuelve a la bienvenida. Hecho directo en main.
+
+# Mejoras de uso (2026-10-09)
+
+Pedidos de Nacho después de usar la app, hechos directo en main:
+
+- **Reseña:** la nota de "Tu puntaje" es un campo de 4 renglones (sigue el tope de 200 letras).
+- **Agregar:** lo agregado desde esa pantalla se saca tocándolo de nuevo ("✓ Agregada · tocala de nuevo para sacarla"). Lo que ya estaba en la lista antes sigue sin poder tocarse.
+- **Lista:** tocar "Lista" estando en la lista cierra Agregar o el detalle (la lista se vuelve a montar).
+- **Volver:** es una pastilla con flecha (‹) arriba a la izquierda en todas las pantallas, y en Agregar también. "Terminar" de las partidas queda como texto.
+- **Filtro por año de estreno:** barra 1950 → año actual; las puntas no cortan ("Hasta 1980" incluye lo anterior, "Desde 2020" los estrenos que vienen).
+- **Preguntas rápidas:** preguntan "¿Qué género?" con los géneros de lo que tienen por ver (los mismos de los filtros), en vez de los 9 ánimos.
+- **Director y temporadas:** columnas `director` y `seasons` en `titles` (migración `20261016000000_title_people.sql`). Las guarda title-detail: en películas, quién la dirigió; en series, quién la creó (hasta 3 nombres). La migración pone `details_updated_at` en null para que la lista los complete sola, y ahora completa hasta 30 títulos por vez (OMDb ya está cuidado por la semana de vigencia de los puntajes). Se ven en la tarjeta, el detalle, las cartas (temporadas) y los resultados de Agregar.
+- **Búsqueda:**
+  - Ordena por parecido con lo escrito (de a décimos) y, a igual parecido, por el orden de TMDB. Lo que casi nadie votó (menos de 5 votos) baja un escalón: así un registro duplicado que se llama igual no tapa a la película real.
+  - Por si hay errores de tipeo, junto con la búsqueda principal corren hasta 4 búsquedas de repuesto (la palabra más larga cortada en dos largos, porque TMDB solo completa la última palabra, y cada otra palabra sola). De ahí entra solo lo que se parece a lo escrito.
+  - Si lo escrito es un director o actor (todas las palabras en su nombre; con una parte del nombre, solo si es conocido), arriba aparece "De …" o "Con …" con lo suyo: películas dirigidas y series creadas, o donde actuó (sin entrevistas ni cameos de un capítulo), lo más votado primero.
+  - Director y temporadas de los resultados llegan en un segundo pedido a la misma función, para no demorar la búsqueda.
+  - La búsqueda espera 300 ms después de la última tecla (eran 400), y lo ya buscado queda en memoria mientras la app está abierta.
