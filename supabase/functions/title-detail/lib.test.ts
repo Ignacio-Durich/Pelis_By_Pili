@@ -1,5 +1,6 @@
 import { expect, test } from 'vitest'
 import {
+  clampDetails,
   mergeRatings,
   needsRefresh,
   parseTitleId,
@@ -88,9 +89,26 @@ test('mergeRatings leaves Metacritic missing for a series', () => {
   expect(mergeRatings(empty, bb, 8.954, now).ratings).toMatchObject({ imdb: '9.5/10', rottenTomatoes: '96%', metacritic: null, tmdb: 9 })
 })
 
-test('mergeRatings keeps the saved ratings when the OMDb limit is reached', () => {
+test('mergeRatings keeps the saved ratings when the OMDb limit is reached, and saves the fresh TMDB score', () => {
   const stored: StoredRatings = { imdb: '8.5/10', rottenTomatoes: '99%', metacritic: null, tmdb: 8.5, updatedAt: '2026-09-01T00:00:00Z' }
-  expect(mergeRatings(stored, { Response: 'False', Error: 'Request limit reached!' }, 8.6, now)).toEqual({ ratings: stored, stale: true, save: false })
+  expect(mergeRatings(stored, { Response: 'False', Error: 'Request limit reached!' }, 7.94, now)).toEqual({
+    ratings: { ...stored, tmdb: 7.9 },
+    stale: true,
+    save: true,
+  })
+})
+
+test('mergeRatings treats any other OMDb error like the limit when there are saved ratings', () => {
+  const stored: StoredRatings = { imdb: '8.5/10', rottenTomatoes: '99%', metacritic: null, tmdb: 8.5, updatedAt: '2026-09-01T00:00:00Z' }
+  expect(mergeRatings(stored, { Response: 'False', Error: 'Something went wrong.' }, 8.5, now)).toEqual({ ratings: stored, stale: true, save: true })
+})
+
+test('mergeRatings with an OMDb error and nothing saved saves what there is', () => {
+  expect(mergeRatings(empty, { Response: 'False', Error: 'Movie not found!' }, 6.1, now)).toEqual({
+    ratings: { imdb: null, rottenTomatoes: null, metacritic: null, tmdb: 6.1, updatedAt: now.toISOString() },
+    stale: false,
+    save: true,
+  })
 })
 
 test('mergeRatings without an OMDb call keeps ratings that are still valid', () => {
@@ -159,4 +177,15 @@ test('pickSeasons: only series with seasons', () => {
   expect(pickSeasons({ number_of_seasons: 5 })).toBe(5)
   expect(pickSeasons({ number_of_seasons: 0 })).toBeNull()
   expect(pickSeasons({})).toBeNull()
+})
+
+test('clampDetails drops impossible runtimes and seasons and cuts long lists', () => {
+  const base = { runtime: 120, genres: ['Drama'], streaming: ['Netflix'], director: 'Bong Joon-ho', seasons: null }
+  expect(clampDetails(base)).toEqual(base)
+  expect(clampDetails({ ...base, runtime: 0 }).runtime).toBeNull()
+  expect(clampDetails({ ...base, runtime: 1001 }).runtime).toBeNull()
+  expect(clampDetails({ ...base, seasons: 501 }).seasons).toBeNull()
+  expect(clampDetails({ ...base, genres: Array.from({ length: 25 }, (_, i) => `g${i}`) }).genres).toHaveLength(20)
+  expect(clampDetails({ ...base, streaming: Array.from({ length: 60 }, (_, i) => `p${i}`) }).streaming).toHaveLength(50)
+  expect(clampDetails({ ...base, director: 'x'.repeat(400) }).director).toHaveLength(300)
 })

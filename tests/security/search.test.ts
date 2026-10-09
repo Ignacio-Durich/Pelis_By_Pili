@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { afterAll, beforeAll, expect, test } from 'vitest'
 import type { SearchResult } from '../../supabase/functions/tmdb-search/lib.ts'
-import { anonClient, cleanup, createTestUser } from './helpers.ts'
+import { anonClient, cleanup, createCouple, createTestUser } from './helpers.ts'
 
 let client: SupabaseClient
 
@@ -13,7 +13,9 @@ async function search(c: SupabaseClient, query: string) {
 }
 
 beforeAll(async () => {
-  ;({ client } = await createTestUser())
+  const user = await createTestUser()
+  await createCouple(user)
+  client = user.client
 })
 afterAll(cleanup)
 
@@ -76,4 +78,11 @@ test('details gives who directed or created each result and the seasons of a ser
 test('anonymous callers cannot ask for details', async () => {
   const { error } = await anonClient().functions.invoke('tmdb-search', { body: { details: [{ mediaType: 'tv', tmdbId: 1396 }] } })
   expect((error?.context as Response | undefined)?.status).toBe(401)
+})
+
+test('an account without a couple cannot search', async () => {
+  const { client: lonely } = await createTestUser()
+  expect((await search(lonely, 'parasite')).status).toBe(403)
+  const { error } = await lonely.functions.invoke('tmdb-search', { body: { details: [{ mediaType: 'tv', tmdbId: 1396 }] } })
+  expect((error?.context as Response | undefined)?.status).toBe(403)
 })

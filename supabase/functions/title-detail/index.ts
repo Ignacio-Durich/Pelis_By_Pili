@@ -1,7 +1,8 @@
 // Edge Function (Deno): detalle de un título de la lista (sinopsis, puntajes y plataformas en AR).
 // Los puntajes se guardan en el título y se renuevan como mucho una vez por semana.
-import { createClient } from 'npm:@supabase/supabase-js@2'
+import { createClient } from 'npm:@supabase/supabase-js@2.117.2'
 import {
+  clampDetails,
   mergeRatings,
   needsRefresh,
   parseTitleId,
@@ -86,14 +87,16 @@ Deno.serve(async (req) => {
   const { ratings, stale, save } = mergeRatings(stored, omdb, tmdbScoreOf(details), now)
   const providers = toProviders(details['watch/providers']?.results?.AR)
   // Datos para los filtros y la tarjeta: se guardan en cada apertura (TMDB ya se consultó).
-  await service
+  const { error: updateError } = await service
     .from('titles')
     .update({
-      runtime: pickRuntime(details),
-      genres: pickGenres(details),
-      director: pickDirector(details),
-      seasons: pickSeasons(details),
-      streaming: streamingNames(providers),
+      ...clampDetails({
+        runtime: pickRuntime(details),
+        genres: pickGenres(details),
+        director: pickDirector(details),
+        seasons: pickSeasons(details),
+        streaming: streamingNames(providers),
+      }),
       details_updated_at: now.toISOString(),
       ...(save && {
         imdb_rating: ratings.imdb,
@@ -104,6 +107,7 @@ Deno.serve(async (req) => {
       }),
     })
     .eq('id', titleId)
+  if (updateError) console.error('title-detail update', updateError.message)
 
   const body: TitleDetail = {
     overview: pickOverview(details),

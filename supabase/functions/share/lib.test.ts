@@ -49,3 +49,19 @@ test('nothing shared gives null, and long fields are cut', () => {
   expect(parseShare({ shared: 'a'.repeat(600) })?.body).toHaveLength(500)
   expect(parseShare({ name: 'b'.repeat(150) })?.query).toHaveLength(100)
 })
+
+test('TikTok and YouTube trackers are removed', () => {
+  expect(parseShare({ shared: 'https://vm.tiktok.com/x?_t=1&_r=2&is_from_webapp=1&sender_device=pc' })?.url).toBe('https://vm.tiktok.com/x')
+  expect(parseShare({ shared: 'https://www.youtube.com/watch?v=abc&pp=x&feature=share' })?.url).toBe('https://www.youtube.com/watch?v=abc')
+})
+
+test('punctuation stuck at the end stays out of the link, unless it closes a parenthesis of the link', () => {
+  expect(parseShare({ shared: 'mirá (https://a.com/x).' })?.url).toBe('https://a.com/x')
+  expect(parseShare({ shared: 'https://a.com/x, buenísima' })?.url).toBe('https://a.com/x')
+  expect(parseShare({ shared: 'https://es.wikipedia.org/wiki/Foo_(bar)' })?.url).toBe('https://es.wikipedia.org/wiki/Foo_(bar)')
+})
+
+test('a text that repeats the link does not show it raw', () => {
+  const item = parseShare({ shared: 'https://www.instagram.com/reel/abc/?igsh=1 Mirá esto https://www.instagram.com/reel/abc/?igsh=1' })
+  expect(item?.body).toBe('Mirá esto')
+})

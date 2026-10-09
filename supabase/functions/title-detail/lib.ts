@@ -65,11 +65,15 @@ export function mergeRatings(
   now: Date,
 ): { ratings: StoredRatings; stale: boolean; save: boolean } {
   if (omdb === null && !needsRefresh(stored.updatedAt, now)) return { ratings: stored, stale: false, save: false }
-  if (omdb !== null && isOmdbLimit(omdb as { Response?: string; Error?: string })) {
-    return { ratings: stored, stale: true, save: false }
+  const tmdb = tmdbScore === null ? null : Math.round(tmdbScore * 10) / 10
+  // El límite diario, o cualquier otro error de OMDb con puntajes guardados: se muestran los guardados
+  // con el aviso y se guarda solo el de TMDB (sin tocar la fecha, así se vuelve a probar OMDb).
+  const answer = omdb as { Response?: string; Error?: string } | null
+  const hasStored = stored.imdb !== null || stored.rottenTomatoes !== null || stored.metacritic !== null
+  if (answer !== null && (isOmdbLimit(answer) || (answer.Response === 'False' && hasStored))) {
+    return { ratings: { ...stored, tmdb }, stale: true, save: true }
   }
   const fromOmdb = omdb === null ? { imdb: null, rottenTomatoes: null, metacritic: null } : summarizeOmdb(omdb as never)
-  const tmdb = tmdbScore === null ? null : Math.round(tmdbScore * 10) / 10
   return { ratings: { ...fromOmdb, tmdb, updatedAt: now.toISOString() }, stale: false, save: true }
 }
 
@@ -115,3 +119,17 @@ export function streamingNames(providers: Providers | null): string[] {
 
 // Las usa también la búsqueda (director y temporadas de los resultados).
 export { pickDirector, pickSeasons } from '../_shared/people.ts'
+
+type SavedDetails = { runtime: number | null; genres: string[]; streaming: string[]; director: string | null; seasons: number | null }
+
+// Lo que la base acepta (checks de `titles`): TMDB a veces trae duraciones imposibles o listas enormes,
+// y un dato fuera de rango hacía fallar todo el guardado.
+export function clampDetails(d: SavedDetails): SavedDetails {
+  return {
+    runtime: d.runtime !== null && d.runtime >= 1 && d.runtime <= 1000 ? d.runtime : null,
+    genres: d.genres.slice(0, 20),
+    streaming: d.streaming.slice(0, 50),
+    director: d.director === null ? null : d.director.slice(0, 300),
+    seasons: d.seasons !== null && d.seasons >= 1 && d.seasons <= 500 ? d.seasons : null,
+  }
+}
