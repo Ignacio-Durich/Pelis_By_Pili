@@ -4,7 +4,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { parseShare } from './lib.ts'
 
-const MAX_ITEMS = 100
 
 // Respuestas en texto: el Atajo muestra la respuesta tal cual en la notificación, así un error
 // (clave vieja, bandeja llena) no pasa por "Guardado".
@@ -38,11 +37,9 @@ Deno.serve(async (req) => {
   const item = parseShare(await req.json().catch(() => null))
   if (!item) return reply(400, 'No se guardó: no llegó ningún link ni texto.')
 
-  // Tope: una clave filtrada no puede llenar la bandeja.
-  const { count } = await admin.from('shared_items').select('id', { count: 'exact', head: true }).eq('couple_id', owner.couple_id)
-  if ((count ?? 0) >= MAX_ITEMS) return reply(429, 'No se guardó: la bandeja de Compartidos está llena. Descartá algunos en la app.')
-
+  // Tope de 100 (una clave filtrada no puede llenar la bandeja): lo controla un trigger de la base.
   const { error } = await admin.from('shared_items').insert({ ...item, couple_id: owner.couple_id, shared_by: owner.user_id })
+  if (error?.message === 'inbox_full') return reply(429, 'No se guardó: la bandeja de Compartidos está llena. Descartá algunos en la app.')
   if (error) return reply(500, 'No se guardó. Probá de nuevo.')
   return reply(200, 'Guardado en Pelis By Pili')
 })

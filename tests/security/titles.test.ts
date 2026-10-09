@@ -126,3 +126,12 @@ test('anonymous clients cannot read titles', async () => {
   const { data } = await anonClient().from('titles').select('*')
   expect(data ?? []).toEqual([])
 })
+
+test('a member cannot insert a title already watched, with a date or made-up ratings', async () => {
+  for (const extra of [{ status: 'watched' }, { watched_at: '2020-01-01T00:00:00Z' }, { imdb_rating: '9.9/10' }]) {
+    const { error } = await insertTitle(A, { ...parasite, tmdb_id: 900001, ...extra })
+    expect(error?.code, JSON.stringify(extra)).toBe('42501')
+  }
+  const { error } = await insertTitle(A, { ...parasite, tmdb_id: 900002, origin_note: 'un reel' })
+  expect(error).toBeNull()
+})

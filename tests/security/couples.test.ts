@@ -117,10 +117,33 @@ test('anonymous clients cannot call the functions', async () => {
   const anon = anonClient()
   for (const [name, args] of [['create_couple'], ['create_invite'], ['accept_invite', { p_token: tokenA }]] as const) {
     const { error } = await anon.rpc(name, args)
-    expect(error).not.toBeNull()
+    expect(error?.code, name).toBe('42501')
   }
   for (const table of ['couples', 'couple_members', 'invites']) {
-    const { data } = await anon.from(table).select('*')
-    expect(data ?? []).toEqual([])
+    const { data, error } = await anon.from(table).select('*')
+    expect(error?.code, table).toBe('42501')
+    expect(data).toBeNull()
   }
+})
+
+test('members cannot delete members or invites directly', async () => {
+  const D = await createTestUser()
+  const { data: couple } = await rpc(D, 'create_couple')
+  const { data: token } = await rpc(D, 'create_invite')
+  await D.client.from('couple_members').delete().eq('user_id', D.id)
+  await D.client.from('invites').delete().eq('token', token)
+  const admin = adminClient()
+  expect((await admin.from('couple_members').select('user_id').eq('couple_id', couple)).data).toEqual([{ user_id: D.id }])
+  expect((await admin.from('invites').select('token').eq('token', token)).data).toHaveLength(1)
+})
+
+test('two people joining with the same invite at once: only one gets in', async () => {
+  const [D, E, F] = await Promise.all([createTestUser(), createTestUser(), createTestUser()])
+  const { data: couple } = await rpc(D, 'create_couple')
+  const { data: token } = await rpc(D, 'create_invite')
+  const results = await Promise.all([rpc(E, 'accept_invite', { p_token: token }), rpc(F, 'accept_invite', { p_token: token })])
+  expect(results.filter((r) => r.error === null)).toHaveLength(1)
+  expect(['invite_invalid', 'couple_full']).toContain(results.find((r) => r.error)?.error?.message)
+  const { data } = await adminClient().from('couple_members').select('user_id').eq('couple_id', couple)
+  expect(data).toHaveLength(2)
 })
