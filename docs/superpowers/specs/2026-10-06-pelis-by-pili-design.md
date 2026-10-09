@@ -241,9 +241,10 @@ Puntos menores que dejaron las revisiones de las etapas anteriores. Se arreglan 
   - Los pósters guardados son respuestas "opacas" (sin CORS), que ocupan más lugar: sumar `purgeOnQuotaError` o `crossOrigin`.
 - Antes del regalo: borrar la cuenta y el miembro "Pili" de prueba para que la verdadera entre con la invitación. (Hecho el 2026-10-08: Nacho la borró desde el panel; el espacio quedó con Nacho solo y sin partidas abiertas.)
 - Entra, pedido de Nacho (2026-10-08): que todos los modos se puedan jugar con un solo celular, porque a veces usan uno solo de los dos. Bumble ya lo trae desde la etapa 7; la revelación simultánea y el torneo (etapas 9 y 10) conviene diseñarlos con esa opción desde el principio.
-- Entra, pedido de Nacho (2026-10-08): un botón para mandar comentarios sobre la app o reportar errores.
+- Entra, pedido de Nacho (2026-10-08): un botón para mandar comentarios sobre la app o reportar errores. Los comentarios quedan guardados en la app (decisión de Nacho, 2026-10-09).
+- Entra, pedido de Nacho (2026-10-09): un buscador dentro de la lista, para los títulos ya agregados, que busca por nombre, nombre original y director.
 - Terminada cuando: cada punto tiene su test y está arreglado, o hay una decisión anotada de por qué se deja.
-- No entra: funciones nuevas, salvo jugar con un solo celular y el botón de comentarios.
+- No entra: funciones nuevas, salvo jugar con un solo celular, el botón de comentarios y el buscador de la lista.
 
 Decisiones de orden: las etapas 0 a 4 son lo imprescindible para usar la app de verdad; los modos de un solo celular (ruleta y preguntas) van antes que los de a dos; el Atajo de iOS va después del swipe y match por decisión de Nacho, aunque técnicamente solo depende del buscador de la etapa 2.
 
