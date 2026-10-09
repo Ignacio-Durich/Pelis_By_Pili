@@ -154,7 +154,9 @@ test('a key of someone who left the space stops working', async () => {
 
 test('the inbox holds at most 100 items', async () => {
   const key = (await C.client.rpc('create_share_key')).data as string
-  const rows = Array.from({ length: 100 }, (_, i) => ({ couple_id: coupleC, shared_by: C.id, query: `Peli ${i}` }))
+  // La base no deja pasar de 100 ni al admin: se completa lo que falta.
+  const { count } = await adminClient().from('shared_items').select('id', { count: 'exact', head: true }).eq('couple_id', coupleC)
+  const rows = Array.from({ length: 100 - (count ?? 0) }, (_, i) => ({ couple_id: coupleC, shared_by: C.id, query: `Peli ${i}` }))
   expect((await adminClient().from('shared_items').insert(rows)).error).toBeNull()
   const full = await share(key, { name: 'Una más' })
   expect(full.status).toBe(429)
@@ -177,4 +179,30 @@ test('adding with a session checks the texts, the couple and the cap', async () 
   expect((await anonClient().rpc('add_shared_item', { p_query: 'Dark', p_body: null })).error).not.toBeNull()
   // La bandeja de C ya tiene 100 (test del tope de la función share).
   expect((await C.client.rpc('add_shared_item', { p_query: 'Otra', p_body: null })).error?.message).toBe('inbox_full')
+})
+
+test('two adds at once with 99 in the inbox leave exactly 100', async () => {
+  const [D, E] = await Promise.all([createTestUser(), createTestUser()])
+  const couple = await createCouple(D, E)
+  const rows = Array.from({ length: 99 }, (_, i) => ({ couple_id: couple, shared_by: D.id, query: `Peli ${i}` }))
+  expect((await adminClient().from('shared_items').insert(rows)).error).toBeNull()
+  const results = await Promise.all([
+    D.client.rpc('add_shared_item', { p_query: 'Una', p_body: null }),
+    E.client.rpc('add_shared_item', { p_query: 'Otra', p_body: null }),
+  ])
+  expect(results.map((r) => r.error?.message ?? 'ok').sort()).toEqual(['inbox_full', 'ok'])
+  const { count } = await adminClient().from('shared_items').select('id', { count: 'exact', head: true }).eq('couple_id', couple)
+  expect(count).toBe(100)
+})
+
+test('two shares at once with 99 in the inbox: one is saved and the other is refused as full', async () => {
+  const [D, E] = await Promise.all([createTestUser(), createTestUser()])
+  const couple = await createCouple(D, E)
+  const rows = Array.from({ length: 99 }, (_, i) => ({ couple_id: couple, shared_by: D.id, query: `Peli ${i}` }))
+  expect((await adminClient().from('shared_items').insert(rows)).error).toBeNull()
+  const key = (await D.client.rpc('create_share_key')).data as string
+  const results = await Promise.all([share(key, { name: 'Una' }), share(key, { name: 'Otra' })])
+  expect(results.map((r) => r.status).sort()).toEqual([200, 429])
+  const { count } = await adminClient().from('shared_items').select('id', { count: 'exact', head: true }).eq('couple_id', couple)
+  expect(count).toBe(100)
 })

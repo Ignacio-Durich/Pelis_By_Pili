@@ -57,3 +57,8 @@ test('anonymous clients cannot call set_display_name', async () => {
   const { error } = await anonClient().rpc('set_display_name', { p_name: 'Anon' })
   expect(error).not.toBeNull()
 })
+
+test('tabs and line breaks around a name are trimmed too', async () => {
+  expect((await A.client.rpc('set_display_name', { p_name: '\tNacho\n' })).error).toBeNull()
+  expect(await nameOf(B, A)).toBe('Nacho')
+})
