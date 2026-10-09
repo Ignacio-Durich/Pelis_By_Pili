@@ -5,10 +5,12 @@ const auth = vi.hoisted(() => ({
   verifyOtp: vi.fn(),
   getSession: vi.fn(),
   onAuthStateChange: vi.fn(),
+  signOut: vi.fn(),
 }))
 vi.mock('../../lib/supabase', () => ({ supabase: { auth } }))
 
-import { AuthError, getSession, onAuthChange, requestCode, verifyCode } from './authApi'
+import { readCache, saveCache } from '../../lib/offline'
+import { AuthError, getSession, onAuthChange, requestCode, signOut, verifyCode } from './authApi'
 
 const rateLimit = { name: 'AuthApiError', status: 429, code: 'over_email_send_rate_limit', message: 'rate' }
 const network = { name: 'AuthRetryableFetchError', status: 0, code: undefined, message: 'Failed to fetch' }
@@ -85,4 +87,12 @@ test('onAuthChange ignores INITIAL_SESSION so an offline start is decided by get
   expect(cb).not.toHaveBeenCalled()
   emit('SIGNED_IN', { user: { id: 'u1' } })
   expect(cb).toHaveBeenCalledWith({ user: { id: 'u1' } })
+})
+
+test('signOut closes only this phone and forgets the saved lists, even without connection', async () => {
+  saveCache('titles', 'c1', [])
+  auth.signOut.mockResolvedValue({ error: network })
+  await signOut()
+  expect(auth.signOut).toHaveBeenCalledWith({ scope: 'local' })
+  expect(readCache('titles', 'c1')).toBeNull()
 })

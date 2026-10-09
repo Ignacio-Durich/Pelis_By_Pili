@@ -15,7 +15,7 @@ export default defineConfig({
           {
             urlPattern: ({ url }) => url.origin === 'https://image.tmdb.org',
             handler: 'CacheFirst',
-            options: { cacheName: 'tmdb-posters', expiration: { maxEntries: 300 }, cacheableResponse: { statuses: [0, 200] } },
+            options: { cacheName: 'tmdb-posters', expiration: { maxEntries: 300, purgeOnQuotaError: true }, cacheableResponse: { statuses: [0, 200] } },
           },
         ],
       },

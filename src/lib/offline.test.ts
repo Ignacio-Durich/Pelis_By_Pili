@@ -1,6 +1,6 @@
 import { beforeEach, expect, test, vi } from 'vitest'
 import { makeTitle } from '../test/titles'
-import { applyPending, clearDropped, droppedFor, enqueue, flushPending, pendingFor, readCache, saveCache, subscribePending, type Pending } from './offline'
+import { applyPending, clearCaches, clearDropped, droppedFor, enqueue, flushPending, pendingFor, readCache, saveCache, subscribePending, type Pending } from './offline'
 
 beforeEach(() => {
   localStorage.clear()
@@ -96,4 +96,30 @@ test('dropped changes are kept for their owner until cleared, and subscribers he
   expect(droppedFor('o')).toEqual([])
   expect(heard).toHaveBeenCalled()
   stop()
+})
+
+test('a change that keeps failing as if there were no connection is dropped after 20 tries, and the next one goes', async () => {
+  enqueue('o', { kind: 'watched', titleId: 'stuck', watched: true })
+  enqueue('o', { kind: 'watched', titleId: 'next', watched: true })
+  const sent: string[] = []
+  const send = async (p: Pending) => {
+    if (p.kind === 'watched' && p.titleId === 'stuck') throw network
+    sent.push(p.kind === 'watched' ? p.titleId : '')
+  }
+  for (let i = 0; i < 19; i++) await flushPending('o', send, isNetwork)
+  expect(pendingFor('o')).toHaveLength(2)
+  const last = await flushPending('o', send, isNetwork)
+  expect(last.dropped.map((d) => d.item.kind === 'watched' && d.item.titleId)).toEqual(['stuck'])
+  expect(sent).toEqual(['next'])
+  expect(pendingFor('o')).toEqual([])
+})
+
+test('clearCaches forgets what was saved but keeps what is waiting to be sent', () => {
+  saveCache('titles', 'c1', [makeTitle()])
+  saveCache('couple', 'u1', { coupleId: 'c1' })
+  enqueue('u1:c1', { kind: 'later', query: 'Dark', note: '' })
+  clearCaches()
+  expect(readCache('titles', 'c1')).toBeNull()
+  expect(readCache('couple', 'u1')).toBeNull()
+  expect(pendingFor('u1:c1')).toHaveLength(1)
 })

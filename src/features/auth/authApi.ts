@@ -1,6 +1,7 @@
 import type { Session } from '@supabase/supabase-js'
 import { isPlausibleEmail, normalizeEmail } from '../../lib/email'
 import { supabase } from '../../lib/supabase'
+import { clearCaches } from '../../lib/offline'
 import { CodedError } from '../../lib/rpc'
 
 export type AuthErrorKind = 'invalid_email' | 'rate_limited' | 'wrong_code' | 'network'
@@ -50,6 +51,8 @@ export function onAuthChange(cb: (session: Session | null) => void): () => void 
   return () => data.subscription.unsubscribe()
 }
 
+// Solo este celular. Sin red, supabase-js igual borra la sesión guardada (y avisa con el error).
 export async function signOut(): Promise<void> {
-  await supabase.auth.signOut()
+  clearCaches()
+  await supabase.auth.signOut({ scope: 'local' })
 }

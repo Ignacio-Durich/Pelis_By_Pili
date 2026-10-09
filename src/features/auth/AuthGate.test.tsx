@@ -187,3 +187,21 @@ test('with an account saved on this phone it opens at once, before the session a
   )
   expect(screen.getByText('cuenta u1')).toBeInTheDocument()
 })
+
+test('with an account saved on this phone but a session that expired, it asks to sign in and forgets the account', async () => {
+  api.getSession.mockResolvedValueOnce(session)
+  const first = render(
+    <AuthGate>
+      <WhoAmI />
+    </AuthGate>,
+  )
+  await screen.findByText('cuenta u1')
+  first.unmount()
+  api.getSession.mockResolvedValueOnce(null)
+  renderGate()
+  expect(await screen.findByLabelText('Email')).toBeInTheDocument()
+  expect(screen.queryByText('cuenta u1')).not.toBeInTheDocument()
+  api.getSession.mockRejectedValueOnce(new AuthError('network'))
+  renderGate()
+  expect(await screen.findByText('Sin conexión. Probá de nuevo.')).toBeInTheDocument()
+})

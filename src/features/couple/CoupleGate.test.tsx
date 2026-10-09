@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 
 const api = vi.hoisted(() => ({ getMyCouple: vi.fn(), acceptInvite: vi.fn(), createCouple: vi.fn(), setDisplayName: vi.fn() }))
@@ -123,4 +123,16 @@ test('with a couple saved for this account it opens at once, before the server a
   api.getMyCouple.mockReturnValue(new Promise(() => {}))
   renderGate()
   expect(screen.getByText('espacio c1 con 2')).toBeInTheDocument()
+})
+
+test('coming back to the app reads the couple again, so a new partner name shows', async () => {
+  api.getMyCouple.mockResolvedValue({ coupleId: 'c1', memberCount: 1, members: [nacho] })
+  renderGate()
+  expect(await screen.findByText('espacio c1 con 1')).toBeInTheDocument()
+  api.getMyCouple.mockResolvedValue({ coupleId: 'c1', memberCount: 2, members: [nacho, pili] })
+  await act(async () => document.dispatchEvent(new Event('visibilitychange')))
+  expect(await screen.findByText('espacio c1 con 2')).toBeInTheDocument()
+  api.getMyCouple.mockResolvedValue({ coupleId: 'c1', memberCount: 1, members: [nacho] })
+  await act(async () => window.dispatchEvent(new Event('online')))
+  expect(await screen.findByText('espacio c1 con 1')).toBeInTheDocument()
 })

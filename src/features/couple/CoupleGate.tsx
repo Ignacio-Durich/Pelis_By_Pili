@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { readCache, saveCache } from '../../lib/offline'
 import { useUserId } from '../auth/sessionContext'
 import { CoupleError, getMyCouple } from './coupleApi'
@@ -14,7 +14,7 @@ export function CoupleGate({ children }: { children: ReactNode }) {
   const [couple, setCouple] = useState<Couple | null | undefined>(() => readCache<Couple | null>('couple', userId) ?? undefined)
   const [offline, setOffline] = useState(false)
 
-  function fetchCouple() {
+  const fetchCouple = useCallback(() => {
     // La pareja queda guardada con la cuenta como dueña: sin red se usa esa.
     getMyCouple().then(
       (c) => {
@@ -27,7 +27,7 @@ export function CoupleGate({ children }: { children: ReactNode }) {
         else setOffline(true)
       },
     )
-  }
+  }, [userId])
 
   function reload() {
     setOffline(false)
@@ -35,7 +35,19 @@ export function CoupleGate({ children }: { children: ReactNode }) {
     fetchCouple()
   }
 
-  useEffect(fetchCouple, [userId])
+  // Al volver a la app o a la conexión se lee de nuevo (por ejemplo, el nombre nuevo de la pareja).
+  useEffect(() => {
+    fetchCouple()
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') fetchCouple()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    window.addEventListener('online', fetchCouple)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible)
+      window.removeEventListener('online', fetchCouple)
+    }
+  }, [fetchCouple])
 
   if (offline) {
     return (
