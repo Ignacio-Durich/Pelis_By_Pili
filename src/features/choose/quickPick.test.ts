@@ -1,28 +1,11 @@
 import { expect, test } from 'vitest'
 import { makeTitle } from '../../test/titles'
-import { MOODS, NO_ANSWERS, quickPick, type Answers } from './quickPick'
+import { NO_ANSWERS, quickPick, type Answers } from './quickPick'
 
 const a = (over: Partial<Answers>): Answers => ({ ...NO_ANSWERS, ...over })
 const ids = (r: ReturnType<typeof quickPick>) => r.picks.map((t) => t.id)
 let n = 0
 const t = (over: Parameters<typeof makeTitle>[0]) => makeTitle({ id: `t${++n}`, tmdbId: n, ...over })
-
-test('MOODS has the nine moods with their exact genres', () => {
-  expect(MOODS.map((m) => m.id)).toEqual(['laugh', 'romantic', 'moved', 'adrenaline', 'intrigue', 'mindbending', 'scary', 'learn', 'relax'])
-  expect(MOODS.find((m) => m.id === 'relax')).toEqual({
-    id: 'relax',
-    label: '😌 Relax',
-    genres: ['Animación', 'Comedia', 'Familia', 'Documental', 'Música', 'Kids', 'Reality'],
-  })
-  expect(MOODS.find((m) => m.id === 'adrenaline')?.genres).toEqual([
-    'Acción',
-    'Aventura',
-    'Action & Adventure',
-    'Bélica',
-    'War & Politics',
-    'Western',
-  ])
-})
 
 test('time: only titles that fit, and without runtime they do not', () => {
   const fits = t({ id: 'fits', runtime: 119 })
@@ -40,17 +23,16 @@ test('platforms: only titles on any of the chosen ones', () => {
   expect(ids(quickPick([netflix, prime, hbo], a({ platforms: ['Netflix', 'HBO Max'] }))).sort()).toEqual(['hbo', 'nf'])
 })
 
-test('a mood match beats a better score', () => {
+test('a genre match beats a better score', () => {
   const horror = t({ id: 'horror', genres: ['Terror'], imdbRating: '6.0/10' })
   const comedy = t({ id: 'comedy', genres: ['Comedia'], imdbRating: '9.0/10' })
-  expect(ids(quickPick([comedy, horror], a({ moods: ['scary'] })))[0]).toBe('horror')
+  expect(ids(quickPick([comedy, horror], a({ genres: ['Terror'] })))[0]).toBe('horror')
 })
 
-test('matching more of the chosen moods goes first', () => {
-  // "Reírnos" y "Miedo" no comparten géneros: "both" coincide con los dos, "one" con uno.
+test('matching more of the chosen genres goes first', () => {
   const both = t({ id: 'both', genres: ['Comedia', 'Terror'], imdbRating: '6.0/10' })
   const one = t({ id: 'one', genres: ['Comedia'], imdbRating: '9.0/10' })
-  expect(ids(quickPick([one, both], a({ moods: ['laugh', 'scary'] })))).toEqual(['both', 'one'])
+  expect(ids(quickPick([one, both], a({ genres: ['Comedia', 'Terror'] })))).toEqual(['both', 'one'])
 })
 
 test('ties: IMDb, then TMDB, then no score last, then the newest', () => {
@@ -63,22 +45,22 @@ test('ties: IMDb, then TMDB, then no score last, then the newest', () => {
   expect(ids(quickPick([none, older, newer], NO_ANSWERS))).toEqual(['newer', 'older', 'none'])
 })
 
-test('with fewer than 5 mood matches it fills with the rest and says so', () => {
+test('with fewer than 5 genre matches it fills with the rest and says so', () => {
   const match = t({ id: 'match', genres: ['Terror'] })
   const others = ['5.0/10', '9.0/10', '7.0/10', '8.0/10', '6.0/10'].map((imdbRating) => t({ imdbRating }))
-  const r = quickPick([...others, t({}), match], a({ moods: ['scary'] }))
+  const r = quickPick([...others, t({}), match], a({ genres: ['Terror'] }))
   expect(r.picks).toHaveLength(5)
   expect(r.picks[0].id).toBe('match')
   expect(r.picks.slice(1).map((p) => p.imdbRating)).toEqual(['9.0/10', '8.0/10', '7.0/10', '6.0/10'])
   expect(r.filled).toBe(true)
 })
 
-test('with 5 or more mood matches nothing is filled', () => {
+test('with 5 or more genre matches nothing is filled', () => {
   const scary = [1, 2, 3, 4, 5].map(() => t({ genres: ['Terror'] }))
-  expect(quickPick([...scary, t({})], a({ moods: ['scary'] })).filled).toBe(false)
+  expect(quickPick([...scary, t({})], a({ genres: ['Terror'] })).filled).toBe(false)
 })
 
-test('without moods the best 5 by score, not filled', () => {
+test('without genres the best 5 by score, not filled', () => {
   const titles = ['5.0/10', '9.0/10', '7.0/10', '8.0/10', '4.0/10', '6.0/10'].map((imdbRating) => t({ imdbRating }))
   const r = quickPick(titles, NO_ANSWERS)
   expect(r.picks.map((p) => p.imdbRating)).toEqual(['9.0/10', '8.0/10', '7.0/10', '6.0/10', '5.0/10'])
@@ -92,5 +74,5 @@ test('watched titles are never suggested', () => {
 
 test('nothing that fits gives no picks', () => {
   expect(quickPick([], NO_ANSWERS)).toEqual({ picks: [], filled: false })
-  expect(quickPick([t({ runtime: 200 })], a({ maxMinutes: 90, moods: ['laugh'] }))).toEqual({ picks: [], filled: false })
+  expect(quickPick([t({ runtime: 200 })], a({ maxMinutes: 90, genres: ['Comedia'] }))).toEqual({ picks: [], filled: false })
 })

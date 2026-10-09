@@ -43,10 +43,12 @@ async function renderQuick() {
 
 test('shows the three questions with Sin apuro and Cualquiera chosen', async () => {
   await renderQuick()
-  for (const q of ['¿Cuánto tiempo tienen?', '¿Qué ánimo tienen?', '¿Dónde lo ven?']) expect(screen.getByText(q)).toBeInTheDocument()
+  for (const q of ['¿Cuánto tiempo tienen?', '¿Qué género?', '¿Dónde lo ven?']) expect(screen.getByText(q)).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Sin apuro' })).toHaveAttribute('aria-pressed', 'true')
   expect(screen.getByRole('button', { name: 'Cualquiera' })).toHaveAttribute('aria-pressed', 'true')
-  expect(screen.getByRole('button', { name: '😌 Relax' })).toHaveAttribute('aria-pressed', 'false')
+  // Solo los géneros de lo que tienen por ver, por su nombre.
+  for (const g of ['Comedia', 'Documental', 'Drama', 'Terror']) expect(screen.getByRole('button', { name: g })).toHaveAttribute('aria-pressed', 'false')
+  expect(screen.queryByRole('button', { name: 'Western' })).not.toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Prime Video' })).toBeInTheDocument()
 })
 
@@ -56,15 +58,15 @@ test('without answers it suggests up to 5 by score', async () => {
   expect(screen.getAllByText(/^IMDb /)[0]).toHaveTextContent('IMDb 9.0 · RT —')
 })
 
-test('choosing a mood reorders, and moods toggle', async () => {
+test('choosing a genre reorders, and genres toggle', async () => {
   await renderQuick()
-  press('👻 Miedo')
+  press('Terror')
   expect(suggested()[0]).toBe('De terror')
-  press('🧠 Aprender algo')
-  expect(screen.getByRole('button', { name: '👻 Miedo' })).toHaveAttribute('aria-pressed', 'true')
-  expect(screen.getByRole('button', { name: '🧠 Aprender algo' })).toHaveAttribute('aria-pressed', 'true')
-  press('👻 Miedo')
-  expect(screen.getByRole('button', { name: '👻 Miedo' })).toHaveAttribute('aria-pressed', 'false')
+  press('Documental')
+  expect(screen.getByRole('button', { name: 'Terror' })).toHaveAttribute('aria-pressed', 'true')
+  expect(screen.getByRole('button', { name: 'Documental' })).toHaveAttribute('aria-pressed', 'true')
+  press('Terror')
+  expect(screen.getByRole('button', { name: 'Terror' })).toHaveAttribute('aria-pressed', 'false')
   expect(suggested()[0]).toBe('Documental')
 })
 
@@ -93,10 +95,10 @@ test('several platforms can be chosen, and Cualquiera clears them', async () => 
   expect(suggested()).toEqual(['Un drama', 'Documental'])
 })
 
-test('with a single mood match it fills and says so', async () => {
+test('with a single genre match it fills and says so', async () => {
   await renderQuick()
-  press('👻 Miedo')
-  expect(screen.getByText('No encontramos 5 con ese ánimo; sumamos estas')).toBeInTheDocument()
+  press('Terror')
+  expect(screen.getByText('No encontramos 5 de esos géneros; sumamos estas')).toBeInTheDocument()
   expect(suggested()).toHaveLength(4)
 })
 
@@ -114,12 +116,12 @@ test('Ver detalle opens the detail at the top and Volver comes back to the same 
     return 0
   })
   await renderQuick()
-  press('👻 Miedo')
+  press('Terror')
   press('Ver detalle de De terror')
   expect(screen.getByRole('heading', { name: 'De terror' })).toBeInTheDocument()
   expect(scrollTo).toHaveBeenLastCalledWith(0, 0)
   press('Volver')
-  expect(screen.getByRole('button', { name: '👻 Miedo' })).toHaveAttribute('aria-pressed', 'true')
+  expect(screen.getByRole('button', { name: 'Terror' })).toHaveAttribute('aria-pressed', 'true')
   expect(suggested()[0]).toBe('De terror')
   vi.restoreAllMocks()
 })
