@@ -35,11 +35,11 @@ test('duration and IMDb are range bars with their texts', () => {
   expect(screen.getByText('Entre 1 h y 2 h 30')).toBeInTheDocument()
   expect(screen.getByText('Cualquier puntaje')).toBeInTheDocument()
   expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
-  const maxRuntime = screen.getByRole('slider', { name: 'Duración máximo' })
+  const maxRuntime = screen.getByRole('slider', { name: 'Duración hasta' })
   expect(maxRuntime).toHaveAttribute('step', '30')
   fireEvent.change(maxRuntime, { target: { value: '120' } })
   expect(onChange).toHaveBeenLastCalledWith({ ...NO_FILTERS, runtime: [60, 120] })
-  const minImdb = screen.getByRole('slider', { name: 'IMDb mínimo' })
+  const minImdb = screen.getByRole('slider', { name: 'IMDb desde' })
   expect(minImdb).toHaveAttribute('step', '1')
   fireEvent.change(minImdb, { target: { value: '7' } })
   expect(onChange).toHaveBeenLastCalledWith({ ...NO_FILTERS, runtime: [60, 150], imdb: [7, 10] })
@@ -48,7 +48,7 @@ test('duration and IMDb are range bars with their texts', () => {
 test('release year is a range bar with its text', () => {
   open()
   expect(screen.getByText('Cualquier año')).toBeInTheDocument()
-  fireEvent.change(screen.getByRole('slider', { name: 'Año de estreno mínimo' }), { target: { value: '2010' } })
+  fireEvent.change(screen.getByRole('slider', { name: 'Año de estreno desde' }), { target: { value: '2010' } })
   expect(onChange).toHaveBeenLastCalledWith({ ...NO_FILTERS, year: [2010, NO_FILTERS.year[1]] })
 })
 
@@ -90,4 +90,16 @@ test('a chosen genre or platform that no longer has titles can still be turned o
   fireEvent.click(platform)
   expect(onChange).toHaveBeenLastCalledWith({ ...NO_FILTERS, platforms: [], genres: ['Western'] })
   expect(screen.getByRole('button', { name: 'Western' })).toHaveAttribute('aria-pressed', 'true')
+})
+
+test('genre and platform chips are grouped under their name', () => {
+  render(<FiltersPanel value={NO_FILTERS} options={{ genres: ['Drama'], platforms: ['Netflix'] }} count={{ matching: 1, total: 1 }} onChange={() => {}} />)
+  fireEvent.click(screen.getByRole('button', { name: 'Filtros' }))
+  expect(screen.getByRole('group', { name: 'Géneros' })).toBeInTheDocument()
+  expect(screen.getByRole('group', { name: 'Plataformas' })).toBeInTheDocument()
+})
+
+test('the filters counter region exists before any filter is on', () => {
+  render(<FiltersPanel value={NO_FILTERS} options={{ genres: [], platforms: [] }} count={{ matching: 1, total: 1 }} onChange={() => {}} />)
+  expect(document.querySelector('.filters [aria-live]')).not.toBeNull()
 })

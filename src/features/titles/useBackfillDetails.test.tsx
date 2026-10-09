@@ -48,3 +48,12 @@ test('does not repeat ids on rerender, and a failure does not stop the rest', as
   await new Promise((r) => setTimeout(r, 20))
   expect(api.fetchTitleDetail).toHaveBeenCalledTimes(2)
 })
+
+test('two screens open at once ask for each title once', async () => {
+  const list = [title('x1', null), title('x2', null)]
+  renderHook(() => useBackfillDetails(list))
+  renderHook(() => useBackfillDetails(list))
+  await waitFor(() => expect(api.fetchTitleDetail).toHaveBeenCalledTimes(2))
+  await new Promise((r) => setTimeout(r, 20))
+  expect(api.fetchTitleDetail.mock.calls.map(([id]) => id)).toEqual(['x1', 'x2'])
+})

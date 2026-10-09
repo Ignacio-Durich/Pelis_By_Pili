@@ -16,6 +16,7 @@ export function QuickQuestions({ onBack }: { onBack: () => void }) {
 
   const toWatch = titles?.filter((t) => t.status === 'to_watch') ?? []
   const options = filterOptions(toWatch)
+  const toWatchEmpty = titles !== null && toWatch.length === 0
   const { picks, filled } = quickPick(titles ?? [], answers)
   const detail = titles?.find((t) => t.id === detailId)
   const set = (patch: Partial<Answers>) => setAnswers({ ...answers, ...patch })
@@ -40,24 +41,24 @@ export function QuickQuestions({ onBack }: { onBack: () => void }) {
           Volver a los modos
         </button>
         <h2>Preguntas rápidas</h2>
-        <span>¿Cuánto tiempo tienen?</span>
-        <div className="chips">
+        <span aria-hidden="true">¿Cuánto tiempo tienen?</span>
+        <div className="chips" role="group" aria-label="¿Cuánto tiempo tienen?">
           {TIME_OPTIONS.map((o) => (
             <button key={o.label} className="chip" aria-pressed={answers.maxMinutes === o.minutes} onClick={() => set({ maxMinutes: o.minutes })}>
               {o.label}
             </button>
           ))}
         </div>
-        <span>¿Qué género?</span>
-        <div className="chips">
+        <span aria-hidden="true">¿Qué género?</span>
+        <div className="chips" role="group" aria-label="¿Qué género?">
           {withChosen(options.genres, answers.genres).map((g) => (
             <button key={g} className="chip" aria-pressed={answers.genres.includes(g)} onClick={() => set({ genres: toggle(answers.genres, g) })}>
               {g}
             </button>
           ))}
         </div>
-        <span>¿Dónde lo ven?</span>
-        <div className="chips">
+        <span aria-hidden="true">¿Dónde lo ven?</span>
+        <div className="chips" role="group" aria-label="¿Dónde lo ven?">
           <button className="chip" aria-pressed={answers.platforms.length === 0} onClick={() => set({ platforms: [] })}>
             Cualquiera
           </button>
@@ -79,7 +80,11 @@ export function QuickQuestions({ onBack }: { onBack: () => void }) {
           <>
             <h3>Les sugerimos</h3>
             {filled && <p>No encontramos 5 de esos géneros; sumamos estas</p>}
-            {picks.length === 0 && <p>Ningún título entra en ese tiempo y plataforma</p>}
+            {toWatchEmpty ? (
+              <p>No hay títulos en "Por ver". Agreguen alguno desde la lista.</p>
+            ) : (
+              picks.length === 0 && <p>Ningún título entra en ese tiempo y plataforma</p>
+            )}
             <ul className="title-list">
               {picks.map((t) => (
                 <li key={t.id} data-testid="suggestion">

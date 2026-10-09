@@ -63,7 +63,7 @@ test('shows how many titles match and lets you spin', async () => {
 
 test('one match is said in singular, and no match disables Girar', async () => {
   const { unmount } = renderRoulette({ ...NO_FILTERS, platforms: ['Prime Video'] })
-  expect(await screen.findByText('Hay 1 título que cumple los filtros')).toBeInTheDocument()
+  expect(await screen.findByText('1 de 3 títulos cumple los filtros')).toBeInTheDocument()
   unmount()
   renderRoulette({ ...NO_FILTERS, platforms: ['Disney Plus'] })
   expect(await screen.findByText('Ningún título cumple estos filtros')).toBeInTheDocument()
@@ -72,7 +72,7 @@ test('one match is said in singular, and no match disables Girar', async () => {
 
 test('spinning shows a result that matches the filters, with a veto button per person', async () => {
   renderRoulette({ ...NO_FILTERS, platforms: ['Netflix'] })
-  await screen.findByText('Hay 2 títulos que cumplen los filtros')
+  await screen.findByText('2 de 3 títulos cumplen los filtros')
   spin()
   expect(screen.getByRole('heading', { name: 'Les tocó' })).toBeInTheDocument()
   expect(resultName()).toBe('Primera')
@@ -104,7 +104,7 @@ test('each person vetoes once, the vetoed title never returns, and then the resu
 
 test('a veto that leaves no candidates says so', async () => {
   renderRoulette({ ...NO_FILTERS, platforms: ['Prime Video'] })
-  await screen.findByText('Hay 1 título que cumple los filtros')
+  await screen.findByText('1 de 3 títulos cumple los filtros')
   spin()
   fireEvent.click(screen.getByRole('button', { name: 'Veto de Nacho' }))
   expect(screen.getByText('No quedan títulos con estos filtros')).toBeInTheDocument()
@@ -228,4 +228,32 @@ test('without connection but with the saved list it works, without the Sin conex
   expect(await screen.findByText('Hay 3 títulos que cumplen los filtros')).toBeInTheDocument()
   await act(async () => {})
   expect(screen.queryByText('Sin conexión. Probá de nuevo.')).not.toBeInTheDocument()
+})
+
+test('with a filter on there is a single counter', async () => {
+  renderRoulette({ ...NO_FILTERS, platforms: ['Netflix'] })
+  expect(await screen.findByText('2 de 3 títulos cumplen los filtros')).toBeInTheDocument()
+  expect(screen.queryByText(/^Hay /)).not.toBeInTheDocument()
+})
+
+test('the spoken region is there before spinning and says the result', async () => {
+  reducedMotion(true)
+  renderRoulette()
+  await screen.findByRole('button', { name: 'Girar' })
+  const live = document.querySelector('.roulette p[aria-live]')
+  expect(live).not.toBeNull()
+  spin()
+  expect(live).toHaveTextContent(`Les tocó ${resultName()}`)
+})
+
+test('after running out, a title added by the partner can be spun', async () => {
+  renderRoulette({ ...NO_FILTERS, platforms: ['Prime Video'] })
+  await screen.findByText('1 de 3 títulos cumple los filtros')
+  spin()
+  fireEvent.click(screen.getByRole('button', { name: 'Veto de Nacho' }))
+  expect(screen.getByText('No quedan títulos con estos filtros')).toBeInTheDocument()
+  api.listTitles.mockResolvedValue([a, b, c, makeTitle({ id: 'n', tmdbId: 9, title: 'Nueva', streaming: ['Prime Video'] })])
+  await act(async () => notify())
+  expect(screen.queryByText('No quedan títulos con estos filtros')).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Girar' })).toBeEnabled()
 })

@@ -1,4 +1,4 @@
-import { shortLabel } from './wheelMath'
+import { labelTransform, shortLabel, sliceColor } from './wheelMath'
 
 type Props = { items: { id: string; label: string }[]; rotation: number; animate: boolean; onEnd: () => void }
 
@@ -11,10 +11,6 @@ const point = (deg: number) => {
   const rad = ((deg - 90) * Math.PI) / 180
   return `${(R * Math.cos(rad)).toFixed(2)} ${(R * Math.sin(rad)).toFixed(2)}`
 }
-
-// El nombre va a lo largo del radio; en la mitad izquierda se da vuelta para no quedar cabeza abajo.
-const labelTransform = (center: number) =>
-  center > 180 ? `rotate(${center + 90}) translate(-58 0)` : `rotate(${center - 90}) translate(58 0)`
 
 export function Wheel({ items, rotation, animate, onEnd }: Props) {
   const seg = 360 / items.length
@@ -30,7 +26,7 @@ export function Wheel({ items, rotation, animate, onEnd }: Props) {
           onTransitionEnd={onEnd}
         >
           {items.map((item, i) => {
-            const color = COLORS[i % COLORS.length]
+            const color = sliceColor(i, items.length, COLORS)
             return (
               <g key={item.id}>
                 {items.length === 1 ? (
@@ -45,7 +41,7 @@ export function Wheel({ items, rotation, animate, onEnd }: Props) {
                   />
                 )}
                 {items.length <= MAX_LABELS && (
-                  <text transform={labelTransform((i + 0.5) * seg)} textAnchor="middle" dominantBaseline="middle">
+                  <text transform={labelTransform((i + 0.5) * seg, rotation)} textAnchor="middle" dominantBaseline="middle">
                     {shortLabel(item.label)}
                   </text>
                 )}

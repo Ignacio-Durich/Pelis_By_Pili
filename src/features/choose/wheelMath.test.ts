@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { shortLabel, targetRotation } from './wheelMath'
+import { labelTransform, shortLabel, sliceColor, targetRotation } from './wheelMath'
 
 test('targetRotation puts the chosen slice under the top pointer after at least 5 turns', () => {
   for (const [current, index, count] of [
@@ -26,4 +26,18 @@ test('with 0 turns it only moves the slice under the pointer', () => {
 test('shortLabel cuts long titles', () => {
   expect(shortLabel('Dark')).toBe('Dark')
   expect(shortLabel('Mi pobre angelito 2: Perdido en Nueva York')).toBe('Mi pobre angel…')
+})
+
+test('a label is flipped by where it ends after spinning, so it never reads upside down', () => {
+  expect(labelTransform(90, 0)).toBe('rotate(0) translate(58 0)')
+  expect(labelTransform(90, 180)).toBe('rotate(180) translate(-58 0)')
+  expect(labelTransform(270, 180)).toBe('rotate(180) translate(58 0)')
+})
+
+test('no two neighbouring slices share a color, the last and the first included', () => {
+  const colors = ['1', '2', '3', '4', '5', '6']
+  for (let n = 2; n <= 13; n++) {
+    const all = Array.from({ length: n }, (_, i) => sliceColor(i, n, colors))
+    for (let i = 0; i < n; i++) expect(all[i], `n=${n} i=${i}`).not.toBe(all[(i + 1) % n])
+  }
 })

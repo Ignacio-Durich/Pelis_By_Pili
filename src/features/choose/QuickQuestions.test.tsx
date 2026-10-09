@@ -144,3 +144,15 @@ test('a chosen platform whose titles are gone keeps its chip pressed', async () 
   expect(screen.queryByRole('button', { name: 'Prime Video' })).not.toBeInTheDocument()
   expect(suggested()).toEqual(['Comedia buena', 'De terror'])
 })
+
+test('with Por ver empty it says so, not that nothing fits', async () => {
+  api.listTitles.mockResolvedValue([])
+  await renderQuick()
+  expect(screen.getByText('No hay títulos en "Por ver". Agreguen alguno desde la lista.')).toBeInTheDocument()
+  expect(screen.queryByText('Ningún título entra en ese tiempo y plataforma')).not.toBeInTheDocument()
+})
+
+test('each question groups its chips under its name', async () => {
+  await renderQuick()
+  for (const name of ['¿Cuánto tiempo tienen?', '¿Qué género?', '¿Dónde lo ven?']) expect(screen.getByRole('group', { name })).toBeInTheDocument()
+})
