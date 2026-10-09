@@ -6,7 +6,7 @@ export function GameTop({ onBack, onEnd }: { onBack: () => void; onEnd?: () => v
         Volver a los modos
       </button>
       {onEnd && (
-        <button className="back" onClick={onEnd}>
+        <button className="end" onClick={onEnd}>
           Terminar
         </button>
       )}

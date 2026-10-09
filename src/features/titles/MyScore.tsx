@@ -60,7 +60,7 @@ export function MyScore({ titleId, current }: { titleId: string; current: Score 
       {text.trim() !== '' && score === null && <small>Poné un número del 1 al 10, con hasta 2 decimales</small>}
       <label>
         Una nota (opcional)
-        <input maxLength={200} value={note} onChange={(e) => setNote(e.target.value)} />
+        <textarea rows={4} maxLength={200} value={note} onChange={(e) => setNote(e.target.value)} />
       </label>
       <button type="submit" disabled={score === null || busy}>
         Guardar
