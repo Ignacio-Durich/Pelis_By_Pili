@@ -64,6 +64,8 @@ const angelito: Title = {
   genres: [],
   streaming: [],
   detailsUpdatedAt: null,
+  director: null,
+  seasons: null,
 }
 const sinDatos: Title = { ...angelito, id: 't2', tmdbId: 5, mediaType: 'tv', title: 'Serie rara', originalTitle: 'Serie rara', year: null, posterPath: null, originNote: null, addedBy: 'u1', imdbRating: null, rottenTomatoes: null }
 
@@ -110,6 +112,19 @@ test('shows each title with who added it, the note and the original name', async
   expect(screen.getByText('Serie')).toBeInTheDocument()
   expect(screen.queryByText('Original: Serie rara')).not.toBeInTheDocument()
   expect(document.body.textContent).not.toMatch(/null|undefined/)
+})
+
+test('the card shows who directed it, and for a series how many seasons', async () => {
+  api.listTitles.mockResolvedValue([
+    { ...angelito, director: 'Chris Columbus' },
+    { ...sinDatos, year: 2008, director: 'Vince Gilligan', seasons: 5 },
+    { ...sinDatos, id: 't3', tmdbId: 6, title: 'Miniserie', year: 2020, seasons: 1 },
+  ])
+  renderList()
+  expect(await screen.findByText('Dirigida por Chris Columbus')).toBeInTheDocument()
+  expect(screen.getByText('2008 · Serie · 5 temporadas')).toBeInTheDocument()
+  expect(screen.getByText('Creada por Vince Gilligan')).toBeInTheDocument()
+  expect(screen.getByText('2020 · Serie · 1 temporada')).toBeInTheDocument()
 })
 
 test('Quitar asks for confirmation before removing', async () => {

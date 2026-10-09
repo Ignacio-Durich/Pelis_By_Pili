@@ -25,6 +25,9 @@ export type Title = {
   runtime: number | null
   genres: string[]
   streaming: string[]
+  // Quién la dirigió (o creó, si es serie) y cuántas temporadas tiene: los guarda title-detail.
+  director: string | null
+  seasons: number | null
   detailsUpdatedAt: string | null
 }
 
@@ -57,6 +60,8 @@ type Row = {
   genres: string[] | null
   streaming: string[] | null
   details_updated_at: string | null
+  director: string | null
+  seasons: number | null
 }
 
 export async function listTitles(coupleId: string): Promise<Title[]> {
@@ -95,6 +100,8 @@ export async function listTitles(coupleId: string): Promise<Title[]> {
     genres: r.genres ?? [],
     streaming: r.streaming ?? [],
     detailsUpdatedAt: r.details_updated_at,
+    director: r.director,
+    seasons: r.seasons,
   }))
 }
 

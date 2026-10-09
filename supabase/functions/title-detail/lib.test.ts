@@ -5,8 +5,10 @@ import {
   parseTitleId,
   pickGenres,
   pickImdbId,
+  pickDirector,
   pickOverview,
   pickRuntime,
+  pickSeasons,
   streamingNames,
   tmdbScoreOf,
   toProviders,
@@ -138,4 +140,23 @@ test('streamingNames keeps subscription and free platforms', () => {
     streamingNames({ link: null, subscription: [p('Netflix'), p('Prime Video')], rent: [p('Apple TV')], buy: [], free: [p('Pluto TV'), p('Netflix')] }),
   ).toEqual(['Netflix', 'Prime Video', 'Pluto TV'])
   expect(streamingNames(null)).toEqual([])
+})
+
+test('pickDirector: the movie directors, or who created the series, at most 3', () => {
+  const crew = [
+    { job: 'Director', name: 'Bong Joon-ho' },
+    { job: 'Writer', name: 'Han Jin-won' },
+  ]
+  expect(pickDirector({ credits: { crew } })).toBe('Bong Joon-ho')
+  const many = ['A', 'B', 'C', 'D', 'A'].map((name) => ({ job: 'Director', name }))
+  expect(pickDirector({ credits: { crew: many } })).toBe('A, B, C')
+  expect(pickDirector({ created_by: [{ name: 'Vince Gilligan' }, { name: 'Peter Gould' }], credits: { crew } })).toBe('Vince Gilligan, Peter Gould')
+  expect(pickDirector({ created_by: [], credits: { crew: [] } })).toBeNull()
+  expect(pickDirector({})).toBeNull()
+})
+
+test('pickSeasons: only series with seasons', () => {
+  expect(pickSeasons({ number_of_seasons: 5 })).toBe(5)
+  expect(pickSeasons({ number_of_seasons: 0 })).toBeNull()
+  expect(pickSeasons({})).toBeNull()
 })

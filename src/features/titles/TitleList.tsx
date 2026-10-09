@@ -141,7 +141,15 @@ export function TitleList({ filters, onFiltersChange }: { filters: Filters; onFi
         {shown?.map((t) => (
           <li key={t.id}>
             <button className="open" aria-label={`Ver ${t.title}`} onClick={() => openScreen(() => setSelectedId(t.id))}>
-              <TitleCard title={t.title} originalTitle={t.originalTitle} year={t.year} mediaType={t.mediaType} posterPath={t.posterPath}>
+              <TitleCard
+                title={t.title}
+                originalTitle={t.originalTitle}
+                year={t.year}
+                mediaType={t.mediaType}
+                posterPath={t.posterPath}
+                director={t.director}
+                seasons={t.seasons}
+              >
                 <small>{`IMDb ${imdbScore(t.imdbRating)} · RT ${rtScore(t.rottenTomatoes)}`}</small>
                 {t.pending && <small>⏳ Se guarda cuando vuelva la conexión</small>}
                 {t.status === 'watched' && t.watchedAt ? (

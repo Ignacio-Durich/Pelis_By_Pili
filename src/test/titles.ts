@@ -25,6 +25,8 @@ export function makeTitle(overrides: Partial<Title> = {}): Title {
     genres: [],
     streaming: [],
     detailsUpdatedAt: null,
+    director: null,
+    seasons: null,
     ...overrides,
   }
 }

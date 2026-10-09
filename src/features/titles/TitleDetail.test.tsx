@@ -40,6 +40,8 @@ const parasitos: Title = {
   genres: [],
   streaming: [],
   detailsUpdatedAt: null,
+  director: null,
+  seasons: null,
 }
 const fresh: Detail = {
   overview: 'Una familia pobre se infiltra en una casa rica.',
@@ -76,6 +78,13 @@ test('shows what is saved right away, while the detail loads', () => {
   expect(screen.getByText('Actualizados el 30/9/2026')).toBeInTheDocument()
   expect(screen.getByText('Cargando el detalle…')).toBeInTheDocument()
   expect(document.querySelector('img.poster-large')?.getAttribute('src')).toBe('https://image.tmdb.org/t/p/w342/p.jpg')
+})
+
+test('shows who directed it, and for a series how many seasons', () => {
+  api.fetchTitleDetail.mockReturnValue(new Promise(() => {}))
+  renderDetail({ ...parasitos, mediaType: 'tv', director: 'Vince Gilligan', seasons: 5 })
+  expect(screen.getByText('2019 · Serie · 5 temporadas')).toBeInTheDocument()
+  expect(screen.getByText('Creada por Vince Gilligan')).toBeInTheDocument()
 })
 
 test('shows the synopsis, the four scores and their date', async () => {
