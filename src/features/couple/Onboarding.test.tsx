@@ -27,6 +27,32 @@ test('without a token offers Crear nuestro espacio', async () => {
   await vi.waitFor(() => expect(onDone).toHaveBeenCalled())
 })
 
+test('without a token the link can be pasted to join (the home-screen app never sees the link)', async () => {
+  api.acceptInvite.mockResolvedValue('c1')
+  render(<Onboarding onDone={onDone} />)
+  const join = screen.getByRole('button', { name: 'Unirme' })
+  expect(join).toBeDisabled()
+  fireEvent.change(screen.getByLabelText('¿Te mandaron un enlace de invitación? Pegalo acá'), {
+    target: { value: 'https://pelis.example/?invite=abc' },
+  })
+  fireEvent.click(join)
+  expect(api.acceptInvite).toHaveBeenCalledWith('abc')
+  expect(api.createCouple).not.toHaveBeenCalled()
+  await vi.waitFor(() => expect(onDone).toHaveBeenCalled())
+})
+
+test('a pasted invalid invite shows its message and keeps the form', async () => {
+  api.acceptInvite.mockRejectedValue(new CoupleError('invite_invalid'))
+  render(<Onboarding onDone={onDone} />)
+  fireEvent.change(screen.getByLabelText('¿Te mandaron un enlace de invitación? Pegalo acá'), {
+    target: { value: 'https://pelis.example/?invite=abc' },
+  })
+  fireEvent.click(screen.getByRole('button', { name: 'Unirme' }))
+  expect(await screen.findByText('Esta invitación no es válida o ya se usó')).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Crear nuestro espacio' })).toBeEnabled()
+  expect(onDone).not.toHaveBeenCalled()
+})
+
 test('two quick taps create a single couple', () => {
   api.createCouple.mockReturnValue(new Promise(() => {}))
   render(<Onboarding onDone={onDone} />)

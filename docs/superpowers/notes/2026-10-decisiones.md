@@ -158,3 +158,7 @@ Cada línea: decisión — motivo — costo si está mal.
 
 - Pedido de Nacho: 15 temas de color para elegir en Ajustes ("Tema"), cada celular el suyo, guardado en el celular (`pelis-theme`; al reinstalar vuelve a "Azul noche", el de siempre). El ícono de inicio no cambia. Los colores viven en `src/lib/theme.ts` y se aplican como variables CSS antes de dibujar la app; los temas claros cambian `color-scheme` y usan un rojo más oscuro para los avisos. Lo que va sobre los pósters (la carta de Bumble) y el texto de las porciones de la rueda quedan fijos. Hecho directo en main y sin plan, a pedido de Nacho.
 
+
+# Invitación en iPhone (2026-10-09)
+
+- Pili abrió el enlace y le creó un espacio propio. En la base real: su cuenta y su espacio (vacío) se crearon con 23 s de diferencia, y la invitación de Nacho quedó sin usar. Causa: el enlace se abre en Safari, pero la app de la pantalla de inicio arranca en `/` y no comparte nada con Safari, así que el `?invite=` no llega. Arreglo: en la bienvenida, primero "¿Te mandaron un enlace de invitación? Pegalo acá" + "Unirme", y abajo "Crear nuestro espacio". `parseInviteToken` encuentra el enlace aunque venga con texto alrededor. No se sumó una forma de pasarse de un espacio propio al de la pareja: el espacio de Pili lo borra Nacho en el dashboard y ella vuelve a la bienvenida. Hecho directo en main.
