@@ -16,7 +16,8 @@ const groups = [
   ['free', 'Gratis'],
 ] as const
 
-export function TitleDetail({ title, onClose }: { title: Title; onClose: () => void }) {
+// onChanged: después de cada cambio la lista se vuelve a pedir, sin esperar a Realtime.
+export function TitleDetail({ title, onClose, onChanged }: { title: Title; onClose: () => void; onChanged: () => void }) {
   const nameOf = useMemberName()
   const { members } = useCouple()
   const userId = useUserId()
@@ -26,6 +27,7 @@ export function TitleDetail({ title, onClose }: { title: Title; onClose: () => v
   const [detail, setDetail] = useState<Detail | null>(null)
   const [failed, setFailed] = useState(false)
   const [removeFailed, setRemoveFailed] = useState(false)
+  const [busy, setBusy] = useState(false)
 
   const load = useCallback(() => {
     fetchTitleDetail(title.id).then(
@@ -51,6 +53,7 @@ export function TitleDetail({ title, onClose }: { title: Title; onClose: () => v
   const showOriginal = title.originalTitle && title.originalTitle.toLowerCase() !== title.title.toLowerCase()
 
   async function toggleWatched(watched: boolean) {
+    if (busy) return
     setWatchFailed(false)
     setWatchQueued(false)
     // Si ya hay algo esperando, esto va detrás (así se manda en orden).
@@ -59,26 +62,33 @@ export function TitleDetail({ title, onClose }: { title: Title; onClose: () => v
       setWatchQueued(true)
       return
     }
+    setBusy(true)
     try {
-      // La pantalla se actualiza sola: Realtime recarga la lista y el detalle recibe el título nuevo.
       await setWatched(title.id, watched)
+      onChanged()
     } catch (e) {
       // Sin red queda pendiente en el celular: la lista ya lo muestra cambiado.
       if (isNetworkError(e)) {
         enqueue(owner, { kind: 'watched', titleId: title.id, watched })
         setWatchQueued(true)
       } else setWatchFailed(true)
+    } finally {
+      setBusy(false)
     }
   }
 
   async function remove() {
     if (!window.confirm(`¿Quitar «${title.title}» de la lista?`)) return
     setRemoveFailed(false)
+    setBusy(true)
     try {
       await removeTitle(title.id)
       onClose()
+      onChanged()
     } catch {
       setRemoveFailed(true)
+    } finally {
+      setBusy(false)
     }
   }
 
@@ -102,7 +112,7 @@ export function TitleDetail({ title, onClose }: { title: Title; onClose: () => v
       {title.status === 'watched' && title.watchedAt ? (
         <>
           <small>{`Vista el ${ratingsDate(title.watchedAt)}`}</small>
-          <button className="secondary" onClick={() => toggleWatched(false)}>
+          <button className="secondary" disabled={busy} onClick={() => toggleWatched(false)}>
             Volver a Por ver
           </button>
           <h3>Nuestros puntajes</h3>
@@ -117,11 +127,18 @@ export function TitleDetail({ title, onClose }: { title: Title; onClose: () => v
               )
             })}
           </ul>
-          <MyScore key={title.id} titleId={title.id} current={title.scores.find((sc) => sc.userId === userId) ?? null} />
+          <MyScore
+            key={title.id}
+            titleId={title.id}
+            current={title.scores.find((sc) => sc.userId === userId) ?? null}
+            onSaved={onChanged}
+          />
         </>
       ) : (
         <>
-          <button onClick={() => toggleWatched(true)}>Marcar como vista</button>
+          <button disabled={busy} onClick={() => toggleWatched(true)}>
+            Marcar como vista
+          </button>
           <p>Márquenla como vista para puntuarla.</p>
         </>
       )}
@@ -131,7 +148,14 @@ export function TitleDetail({ title, onClose }: { title: Title; onClose: () => v
       {failed && (
         <>
           <p role="alert">No se pudo cargar el detalle. Probá de nuevo.</p>
-          <button onClick={load}>Reintentar</button>
+          <button
+            onClick={() => {
+              setFailed(false)
+              load()
+            }}
+          >
+            Reintentar
+          </button>
         </>
       )}
       {!detail && !failed && <p>Cargando el detalle…</p>}
@@ -173,7 +197,7 @@ export function TitleDetail({ title, onClose }: { title: Title; onClose: () => v
       )}
 
       {removeFailed && <p role="alert">No se pudo quitar. Probá de nuevo.</p>}
-      <button className="remove" onClick={remove}>
+      <button className="remove" disabled={busy} onClick={remove}>
         Quitar
       </button>
     </section>

@@ -60,7 +60,7 @@ export function Roulette({ filters, onFiltersChange, random = Math.random, onBac
           <Session key={JSON.stringify(filters)} matching={matching} random={random} onOpenDetail={openDetail} />
         )}
       </section>
-      {detail && <TitleDetail title={detail} onClose={closeDetail} />}
+      {detail && <TitleDetail title={detail} onClose={closeDetail} onChanged={load} />}
     </>
   )
 }

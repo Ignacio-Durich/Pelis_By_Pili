@@ -53,10 +53,14 @@ export function useTitles(coupleId: string): {
   const [dropped, setDropped] = useState<Dropped[]>(() => droppedFor(owner))
   // Para volver a cargar después de mandar lo pendiente (load no se puede llamar a sí mismo).
   const reload = useRef<() => void>(() => {})
+  // Solo cuenta la respuesta del último pedido: una carga vieja que llega tarde no pisa la nueva.
+  const lastRequest = useRef(0)
 
   const load = useCallback(() => {
+    const request = ++lastRequest.current
     listTitles(coupleId).then(
       (list) => {
+        if (request !== lastRequest.current) return
         saveCache('titles', coupleId, list)
         setTitles(list)
         setOffline(false)
@@ -65,6 +69,7 @@ export function useTitles(coupleId: string): {
         })
       },
       () => {
+        if (request !== lastRequest.current) return
         setOffline(true)
         setTitles((current) => current ?? readCache<Title[]>('titles', coupleId))
       },

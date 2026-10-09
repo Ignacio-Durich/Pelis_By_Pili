@@ -199,7 +199,7 @@ test('each card shows the IMDb and Rotten Tomatoes scores, or — when missing',
 test('tapping a card opens its detail and Volver returns', async () => {
   api.listTitles.mockResolvedValue([angelito])
   renderList()
-  fireEvent.click(await screen.findByRole('button', { name: 'Ver Mi pobre angelito' }))
+  fireEvent.click(await screen.findByRole('button', { name: /^Ver Mi pobre angelito/ }))
   expect(screen.getByRole('heading', { name: 'Mi pobre angelito' })).toBeInTheDocument()
   expect(screen.getByText('Cargando el detalle…')).toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: 'Volver' }))
@@ -214,7 +214,7 @@ test('the detail opens at the top and Volver returns to the same place in the li
     return 0
   })
   renderList()
-  const open = await screen.findByRole('button', { name: 'Ver Mi pobre angelito' })
+  const open = await screen.findByRole('button', { name: /^Ver Mi pobre angelito/ })
   Object.defineProperty(window, 'scrollY', { value: 640, configurable: true })
   fireEvent.click(open)
   expect(scrollTo).toHaveBeenLastCalledWith(0, 0)
@@ -250,8 +250,8 @@ test('Por ver and Vistas tabs split the list, newest watched first', async () =>
   expect(screen.getByRole('heading', { name: 'Vistas' })).toBeInTheDocument()
   expect(screen.queryByText('Mi pobre angelito')).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Agregar' })).not.toBeInTheDocument()
-  const names = screen.getAllByRole('button', { name: /^Ver / }).map((b) => b.getAttribute('aria-label'))
-  expect(names).toEqual(['Ver Vista después', 'Ver Vista antes'])
+  const names = [...document.querySelectorAll('.title-list strong')].map((n) => n.textContent)
+  expect(names).toEqual(['Vista después', 'Vista antes'])
   expect(screen.getByText('Vista el 7/10/2026')).toBeInTheDocument()
   expect(screen.getByText('Nacho 8,75 · Pili —')).toBeInTheDocument()
 })
@@ -266,7 +266,7 @@ test('an empty Vistas says so', async () => {
 test('the open detail follows the list when it reloads', async () => {
   api.listTitles.mockResolvedValue([angelito])
   renderList()
-  fireEvent.click(await screen.findByRole('button', { name: 'Ver Mi pobre angelito' }))
+  fireEvent.click(await screen.findByRole('button', { name: /^Ver Mi pobre angelito/ }))
   expect(screen.getByRole('button', { name: 'Marcar como vista' })).toBeInTheDocument()
   api.listTitles.mockResolvedValue([{ ...angelito, status: 'watched', watchedAt: '2026-10-07T20:00:00Z' }])
   await act(async () => notify())
@@ -359,13 +359,13 @@ test('a list saved for another couple is not shown', async () => {
 test('marking as watched offline moves it to Vistas with ⏳, and it is sent when the connection is back', async () => {
   await goOffline()
   api.setWatched.mockRejectedValue(new TitleError('network'))
-  fireEvent.click(screen.getByRole('button', { name: 'Ver Una por ver' }))
+  fireEvent.click(screen.getByRole('button', { name: /^Ver Una por ver/ }))
   await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Marcar como vista' })))
   expect(screen.getByText('⏳ Se guarda cuando vuelva la conexión')).toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: 'Volver' }))
   expect(screen.getByText(/1 pendiente/)).toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: 'Vistas' }))
-  expect(screen.getByRole('button', { name: 'Ver Una por ver' })).toHaveTextContent('⏳')
+  expect(screen.getByRole('button', { name: /^Ver Una por ver/ })).toHaveTextContent('⏳')
 
   api.setWatched.mockResolvedValue(undefined)
   api.listTitles.mockResolvedValue([angelito, { ...toWatch, status: 'watched', watchedAt: '2026-10-08T21:00:00Z' }])
@@ -498,4 +498,44 @@ test('opening a result and coming back keeps the list search', async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Volver' }))
   expect(await screen.findByRole('searchbox', { name: 'Buscar en la lista' })).toHaveValue('nolan')
   expect(screen.queryByText('Amélie')).not.toBeInTheDocument()
+})
+
+test('Quitar reloads the list by itself, without waiting for realtime', async () => {
+  api.listTitles.mockResolvedValue([angelito])
+  api.removeTitle.mockResolvedValue(undefined)
+  vi.spyOn(window, 'confirm').mockReturnValue(true)
+  renderList()
+  await screen.findByText('Mi pobre angelito')
+  api.listTitles.mockResolvedValue([])
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Quitar Mi pobre angelito' })))
+  expect(screen.queryByText('Mi pobre angelito')).not.toBeInTheDocument()
+})
+
+test('an older load that answers last does not bring back a removed title', async () => {
+  let answerOld!: (list: Title[]) => void
+  api.listTitles.mockReturnValueOnce(new Promise((r) => (answerOld = r))).mockResolvedValue([])
+  renderList()
+  await act(async () => notify())
+  await act(async () => answerOld([angelito]))
+  expect(screen.queryByText('Mi pobre angelito')).not.toBeInTheDocument()
+  expect(screen.getByText('Nuestra lista está vacía')).toBeInTheDocument()
+})
+
+test('if the open title is removed elsewhere, the list comes back with a notice', async () => {
+  api.listTitles.mockResolvedValue([angelito])
+  renderList()
+  fireEvent.click(await screen.findByRole('button', { name: /^Ver Mi pobre angelito/ }))
+  api.listTitles.mockResolvedValue([])
+  await act(async () => notify())
+  expect(screen.getByRole('alert')).toHaveTextContent('«Mi pobre angelito» ya no está en la lista')
+  expect(screen.getByRole('button', { name: 'Por ver' })).toBeInTheDocument()
+})
+
+test('the card is announced with its scores and who added it', async () => {
+  api.listTitles.mockResolvedValue([angelito])
+  renderList()
+  const card = await screen.findByRole('button', { name: /^Ver Mi pobre angelito/ })
+  expect(card).not.toHaveAttribute('aria-label')
+  expect(card).toHaveAccessibleName(expect.stringContaining('IMDb 7.7'))
+  expect(card).toHaveAccessibleName(expect.stringContaining('La agregó Pili'))
 })

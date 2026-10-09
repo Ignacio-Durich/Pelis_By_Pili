@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useCouple, useMemberName } from '../couple/coupleContext'
 import type { SharedItem } from '../shared/sharedApi'
 import { SharedInbox } from '../shared/SharedInbox'
@@ -28,8 +28,12 @@ export function TitleList({ filters, onFiltersChange }: { filters: Filters; onFi
   // La ventana es la que scrollea: al abrir una pantalla se sube al principio y al volver
   // se recupera el lugar de la lista.
   const listScroll = useRef(0)
+  // El último título abierto, para avisar si desaparece mientras se lo mira (lo quitó la pareja).
+  const opened = useRef<Title | null>(null)
+  const [gone, setGone] = useState<string | null>(null)
 
   function openScreen(show: () => void) {
+    setGone(null)
     listScroll.current = window.scrollY
     show()
     window.scrollTo(0, 0)
@@ -42,18 +46,25 @@ export function TitleList({ filters, onFiltersChange }: { filters: Filters; onFi
 
   useBackfillDetails(titles)
 
+  const selected = titles?.find((t) => t.id === selectedId)
+  useEffect(() => {
+    if (!selectedId || !titles || titles.some((t) => t.id === selectedId)) return
+    setGone(opened.current?.title ?? null)
+    backToList(() => setSelectedId(null))
+  }, [selectedId, titles])
+
   async function remove(title: Title) {
     if (!window.confirm(`¿Quitar «${title.title}» de la lista?`)) return
     setRemoveFailed(false)
     try {
       await removeTitle(title.id)
+      load()
     } catch {
       setRemoveFailed(true)
     }
   }
 
-  const selected = titles?.find((t) => t.id === selectedId)
-  if (selected) return <TitleDetail title={selected} onClose={() => backToList(() => setSelectedId(null))} />
+  if (selected) return <TitleDetail title={selected} onClose={() => backToList(() => setSelectedId(null))} onChanged={load} />
   if (adding)
     return <AddTitle coupleId={coupleId} titles={titles ?? []} shared={adding.shared} onClose={() => backToList(() => setAdding(false))} />
 
@@ -149,10 +160,20 @@ export function TitleList({ filters, onFiltersChange }: { filters: Filters; onFi
           <p>{emptyText}</p>
         ))}
       {removeFailed && <p role="alert">No se pudo quitar. Probá de nuevo.</p>}
+      {gone && <p role="alert">{`«${gone}» ya no está en la lista`}</p>}
       <ul className="title-list">
         {shown?.map((t) => (
           <li key={t.id}>
-            <button className="open" aria-label={`Ver ${t.title}`} onClick={() => openScreen(() => setSelectedId(t.id))}>
+            <button
+              className="open"
+              onClick={() =>
+                openScreen(() => {
+                  opened.current = t
+                  setSelectedId(t.id)
+                })
+              }
+            >
+              <span className="visually-hidden">Ver </span>
               <TitleCard
                 title={t.title}
                 originalTitle={t.originalTitle}

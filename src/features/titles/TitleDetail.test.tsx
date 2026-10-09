@@ -61,8 +61,10 @@ const onClose = vi.fn()
 beforeEach(() => vi.resetAllMocks())
 afterEach(() => vi.restoreAllMocks())
 
+const onChanged = vi.fn()
+
 function renderDetail(title: Title = parasitos) {
-  render(withCouple(<TitleDetail title={title} onClose={onClose} />))
+  render(withCouple(<TitleDetail title={title} onClose={onClose} onChanged={onChanged} />))
 }
 
 test('shows what is saved right away, while the detail loads', () => {
@@ -222,4 +224,35 @@ test('Volver a Por ver unmarks, and a failure says so', async () => {
   await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Volver a Por ver' })))
   expect(api.setWatched).toHaveBeenCalledWith('t1', false)
   expect(screen.getByText('No se pudo guardar. Probá de nuevo.')).toBeInTheDocument()
+})
+
+test('a double tap on Marcar como vista sends one request, and the list is asked to reload', async () => {
+  api.fetchTitleDetail.mockReturnValue(new Promise(() => {}))
+  let finish!: () => void
+  api.setWatched.mockReturnValue(new Promise<void>((r) => (finish = r)))
+  renderDetail()
+  const button = screen.getByRole('button', { name: 'Marcar como vista' })
+  fireEvent.click(button)
+  fireEvent.click(button)
+  expect(api.setWatched).toHaveBeenCalledTimes(1)
+  await act(async () => finish())
+  expect(onChanged).toHaveBeenCalled()
+})
+
+test('removing from the detail asks the list to reload', async () => {
+  api.fetchTitleDetail.mockReturnValue(new Promise(() => {}))
+  api.removeTitle.mockResolvedValue(undefined)
+  vi.spyOn(window, 'confirm').mockReturnValue(true)
+  renderDetail()
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Quitar' })))
+  expect(onClose).toHaveBeenCalled()
+  expect(onChanged).toHaveBeenCalled()
+})
+
+test('Reintentar shows Cargando el detalle… while it retries', async () => {
+  api.fetchTitleDetail.mockRejectedValueOnce(new Error('network')).mockReturnValue(new Promise(() => {}))
+  renderDetail()
+  fireEvent.click(await screen.findByRole('button', { name: 'Reintentar' }))
+  expect(screen.getByText('Cargando el detalle…')).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Reintentar' })).not.toBeInTheDocument()
 })
