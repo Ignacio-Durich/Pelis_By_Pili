@@ -24,10 +24,8 @@
 - **Decisiones confirmadas por Nacho el 2026-10-09:**
   1. Los comentarios quedan **guardados en la app**, no por mail.
   2. El buscador de la lista busca por **nombre, nombre original y director**. No busca en "De dónde vino" ni en la reseña.
-- **Decisiones mías para que Nacho confirme al revisar el plan:**
-  - El buscador va arriba de "Por ver | Vistas".
-  - Mientras hay texto, el buscador mira las dos pestañas a la vez: primero "Por ver" y después "Vistas". No aplica los filtros.
-  - Tocar "Lista" lo vacía.
+  3. El buscador va en "Lista" y **busca solo en la pestaña abierta**: en "Por ver" busca entre las por ver y en "Vistas" entre las vistas.
+- **Decisiones mías:** en "Por ver" la búsqueda se suma a los filtros activos. Lo escrito se mantiene al cambiar de pestaña y al abrir un título y volver. Tocar "Lista" lo vacía.
 
 ## Review Focus
 
@@ -58,17 +56,18 @@
     - `'  '` da `true`.
     - `director: null` no rompe nada.
   - En `TitleList.test.tsx`:
-    - Escribir "nolan" en el campo `Buscar en la lista` muestra un título de Nolan en "Por ver" y otro en "Vistas", en ese orden. Muestra el de "Por ver" aunque un filtro activo lo excluya. No muestra los demás.
-    - Mientras hay texto, desaparecen "Por ver | Vistas" y el panel de filtros, y se ve el título `<h2>Resultados</h2>`.
+    - En "Por ver", escribir "nolan" en el campo `Buscar en la lista` muestra solo el título de Nolan que está por ver, no el de Nolan que está en "Vistas" ni los demás.
+    - Pasar a "Vistas" con "nolan" escrito muestra solo el de Nolan visto.
+    - En "Por ver", con un filtro activo que excluye al de Nolan, no aparece.
     - Con "zzz" se ve `Ningún título coincide con «zzz»`.
-    - Al borrar el texto vuelve la pestaña de antes.
     - Abrir un resultado y volver conserva lo escrito.
 - [ ] **Step 2: Correr** `npx vitest run src/features/titles/filters.test.ts src/features/titles/TitleList.test.tsx` → FAIL.
 - [ ] **Step 3: Implementar.**
   - Estado `query` en `TitleList`.
   - Campo `<input type="search" aria-label="Buscar en la lista" placeholder="Buscar por nombre o director">` arriba de `.segmented`, debajo de la bandeja.
-  - Con texto: los de "Por ver" en su orden, y después los vistos ordenados por `watchedAt`, más reciente primero.
-  - El botón "+" se ve solo sin búsqueda en "Por ver", como hoy.
+  - `shown` suma `matchesQuery(t, query)` al filtrado de cada pestaña; el orden no cambia.
+  - El contador de filtros cuenta lo que se ve con la búsqueda incluida.
+  - El mensaje de lista vacía por búsqueda va antes que el de filtros.
   - "Lista" ya remonta `TitleList` con `key`, así que se vacía solo.
   - CSS: el campo ocupa todo el ancho, con el estilo de los otros `input`.
 - [ ] **Step 4: Correr** los mismos tests → PASS.
