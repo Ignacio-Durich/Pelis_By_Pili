@@ -1,7 +1,7 @@
 // Edge Function (Deno): recibe lo que manda el Atajo de iOS y lo guarda en la bandeja de la
 // pareja. No hay sesión: la persona se identifica con su clave personal (encabezado
 // x-share-key, nunca en la URL, que queda en los registros). Se busca por su SHA-256.
-import { createClient } from 'npm:@supabase/supabase-js@2'
+import { createClient } from 'npm:@supabase/supabase-js@2.117.2'
 import { parseShare } from './lib.ts'
 
 

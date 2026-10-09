@@ -1,7 +1,7 @@
 // Edge Function (Deno): busca en TMDB en tres idiomas sin exponer la clave al navegador.
 // Con { query } busca títulos (y, si lo escrito es un director o actor, lo suyo); con { details }
 // devuelve director y temporadas de los resultados, en un segundo pedido para no demorar la búsqueda.
-import { createClient } from 'npm:@supabase/supabase-js@2'
+import { createClient } from 'npm:@supabase/supabase-js@2.117.2'
 import { pickDirector, pickSeasons } from '../_shared/people.ts'
 import {
   fallbackQueries,
@@ -76,6 +76,12 @@ Deno.serve(async (req) => {
   const token = req.headers.get('Authorization')?.replace(/^Bearer /, '') ?? ''
   const { data, error } = await supabase.auth.getClaims(token)
   if (error || data?.claims.role !== 'authenticated') return json(401, { error: 'unauthorized' })
+  // Solo quien está en un espacio: con su sesión, RLS deja ver su propia fila de miembro.
+  const asUser = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+  })
+  const { count } = await asUser.from('couple_members').select('user_id', { count: 'exact', head: true }).eq('user_id', data.claims.sub)
+  if (!count) return json(403, { error: 'no_couple' })
 
   const body = await req.json().catch(() => null)
   const wanted = parseDetailsRequest(body)

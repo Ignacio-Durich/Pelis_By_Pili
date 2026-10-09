@@ -4,7 +4,7 @@ export type SharedItem = { url: string | null; body: string | null; query: strin
 
 const LINK = /https?:\/\/\S+/i
 // Parámetros que agregan las apps para rastrear quién compartió: no hacen falta para abrir el link.
-const TRACKING = /^(igsh|igshid|si|fbclid|utm_.*|share_.*)$/i
+const TRACKING = /^(igsh|igshid|si|fbclid|utm_.*|share_.*|_t|_r|is_from_webapp|sender_device|pp|feature)$/i
 
 const SOURCES: [RegExp, string][] = [
   [/(^|\.)instagram\.com$/, 'Instagram'],
@@ -14,6 +14,14 @@ const SOURCES: [RegExp, string][] = [
   [/(^|\.)(facebook\.com|fb\.watch)$/, 'Facebook'],
   [/(^|\.)threads\.(net|com)$/, 'Threads'],
 ]
+
+// Un punto, coma o paréntesis pegado al final es del texto, no del link (salvo un paréntesis que cierra uno del link).
+function trimLink(raw: string): string {
+  let link = raw
+  const count = (c: string) => link.split(c).length - 1
+  while (/[.,;:!?)]$/.test(link) && !(link.endsWith(')') && count('(') >= count(')'))) link = link.slice(0, -1)
+  return link
+}
 
 const text = (value: unknown) => (typeof value === 'string' ? value.replace(/\s+/g, ' ').trim() : '')
 
@@ -34,9 +42,10 @@ export function parseShare(input: unknown): SharedItem | null {
   const name = text(fields.name)
 
   const found = shared.match(LINK)?.[0]
-  const link = found ? cleanLink(found) : null
+  const link = found ? cleanLink(trimLink(found)) : null
   const url = link && link.toString().length <= 2000 ? link.toString() : null
-  const body = (link ? text(shared.replace(found!, ' ')) : shared).slice(0, 500) || null
+  // Si el link viene repetido (link y texto juntos), se saca todas las veces.
+  const body = (link ? text(shared.split(found!).join(' ')) : shared).slice(0, 500) || null
   const query = name && name !== '-' ? name.slice(0, 100) : null
   if (!url && !body && !query) return null
 
