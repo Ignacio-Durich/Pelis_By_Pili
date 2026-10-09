@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 import { makeTitle } from '../../test/titles'
-import { activeCount, filterOptions, imdbText, matchesFilters, NO_FILTERS, runtimeText, type Filters } from './filters'
+import { activeCount, filterOptions, imdbText, matchesFilters, NO_FILTERS, runtimeText, YEAR_RANGE, yearText, type Filters } from './filters'
 
 const parasitos = makeTitle({ runtime: 132, imdbRating: '8.5/10', genres: ['Comedia', 'Drama'], streaming: ['Netflix', 'Prime Video'] })
 const dark = makeTitle({ mediaType: 'tv', runtime: 60, imdbRating: '8.7/10', genres: ['Ciencia ficción', 'Drama'], streaming: ['Netflix'] })
@@ -52,6 +52,21 @@ test('platforms: only titles on a chosen platform, never ones without platforms'
   expect(matchesFilters(onlyPrime, f({ platforms: ['Netflix', 'Prime Video'] }))).toBe(true)
 })
 
+test('release year range, ends included, open at both ends, and a title without year does not pass', () => {
+  const old = makeTitle({ year: 1972 })
+  const recent = makeTitle({ year: 2019 })
+  expect(matchesFilters(recent, f({ year: [2010, YEAR_RANGE.max] }))).toBe(true)
+  expect(matchesFilters(old, f({ year: [2010, YEAR_RANGE.max] }))).toBe(false)
+  expect(matchesFilters(recent, f({ year: [2000, 2019] }))).toBe(true)
+  expect(matchesFilters(recent, f({ year: [2000, 2018] }))).toBe(false)
+  // El piso de la barra no pone piso: "Hasta 1980" incluye lo anterior a 1950.
+  expect(matchesFilters(makeTitle({ year: 1931 }), f({ year: [YEAR_RANGE.min, 1980] }))).toBe(true)
+  // El techo tampoco: lo que se estrena el año que viene entra con "Desde 2020".
+  expect(matchesFilters(makeTitle({ year: YEAR_RANGE.max + 1 }), f({ year: [2020, YEAR_RANGE.max] }))).toBe(true)
+  expect(matchesFilters(makeTitle({ year: null }), f({ year: [2000, YEAR_RANGE.max] }))).toBe(false)
+  expect(activeCount(f({ year: [2000, YEAR_RANGE.max] }))).toBe(1)
+})
+
 test('all active filters must hold', () => {
   expect(matchesFilters(dark, f({ type: 'tv', platforms: ['Netflix'], imdb: [8, 10] }))).toBe(true)
   expect(matchesFilters(dark, f({ type: 'tv', platforms: ['Netflix'], imdb: [9, 10] }))).toBe(false)
@@ -80,4 +95,8 @@ test('range texts', () => {
   expect(imdbText([6, 10])).toBe('6 o más')
   expect(imdbText([1, 8])).toBe('Hasta 8')
   expect(imdbText([6, 8])).toBe('Entre 6 y 8')
+  expect(yearText([YEAR_RANGE.min, YEAR_RANGE.max])).toBe('Cualquier año')
+  expect(yearText([2010, YEAR_RANGE.max])).toBe('Desde 2010')
+  expect(yearText([YEAR_RANGE.min, 1999])).toBe('Hasta 1999')
+  expect(yearText([1990, 2005])).toBe('Entre 1990 y 2005')
 })

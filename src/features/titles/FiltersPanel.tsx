@@ -8,6 +8,8 @@ import {
   RUNTIME_RANGE,
   runtimeText,
   withChosen,
+  YEAR_RANGE,
+  yearText,
   type Filters,
 } from './filters'
 import { RangeSlider } from './RangeSlider'
@@ -70,6 +72,14 @@ export function FiltersPanel({ value, options, count: { matching, total }, onCha
             text={imdbText(value.imdb)}
             format={String}
             onChange={(imdb) => set({ imdb })}
+          />
+          <RangeSlider
+            label="Año de estreno"
+            {...YEAR_RANGE}
+            value={value.year}
+            text={yearText(value.year)}
+            format={String}
+            onChange={(year) => set({ year })}
           />
           <Chips label="Géneros" options={withChosen(options.genres, value.genres)} chosen={value.genres} onToggle={(g) => set({ genres: toggle(value.genres, g) })} />
           <Chips

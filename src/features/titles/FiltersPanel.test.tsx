@@ -45,6 +45,13 @@ test('duration and IMDb are range bars with their texts', () => {
   expect(onChange).toHaveBeenLastCalledWith({ ...NO_FILTERS, runtime: [60, 150], imdb: [7, 10] })
 })
 
+test('release year is a range bar with its text', () => {
+  open()
+  expect(screen.getByText('Cualquier año')).toBeInTheDocument()
+  fireEvent.change(screen.getByRole('slider', { name: 'Año de estreno mínimo' }), { target: { value: '2010' } })
+  expect(onChange).toHaveBeenLastCalledWith({ ...NO_FILTERS, year: [2010, NO_FILTERS.year[1]] })
+})
+
 test('genre and platform chips toggle', () => {
   open({ ...NO_FILTERS, platforms: ['Netflix'] })
   expect(screen.getByRole('button', { name: 'Netflix' })).toHaveAttribute('aria-pressed', 'true')

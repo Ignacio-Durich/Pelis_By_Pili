@@ -5,6 +5,7 @@ export type Filters = {
   // Rangos [mínimo, máximo]: el rango completo es "cualquiera".
   runtime: [number, number]
   imdb: [number, number]
+  year: [number, number]
   genres: string[]
   platforms: string[]
 }
@@ -12,11 +13,14 @@ export type Filters = {
 // Duración en minutos, de a media hora; el tope (4 h) significa "o más". IMDb de a un punto.
 export const RUNTIME_RANGE = { min: 0, max: 240, step: 30 }
 export const IMDB_RANGE = { min: 1, max: 10, step: 1 }
+// Año de estreno: las puntas no cortan ("Hasta 1980" incluye lo anterior a 1950, "Desde 2020" los estrenos que vienen).
+export const YEAR_RANGE = { min: 1950, max: new Date().getFullYear(), step: 1 }
 
 export const NO_FILTERS: Filters = {
   type: 'all',
   runtime: [RUNTIME_RANGE.min, RUNTIME_RANGE.max],
   imdb: [IMDB_RANGE.min, IMDB_RANGE.max],
+  year: [YEAR_RANGE.min, YEAR_RANGE.max],
   genres: [],
   platforms: [],
 }
@@ -28,6 +32,7 @@ export function activeCount(f: Filters): number {
     f.type !== 'all',
     !isFull(f.runtime, RUNTIME_RANGE),
     !isFull(f.imdb, IMDB_RANGE),
+    !isFull(f.year, YEAR_RANGE),
     f.genres.length > 0,
     f.platforms.length > 0,
   ].filter(Boolean).length
@@ -44,6 +49,10 @@ export function matchesFilters(t: Title, f: Filters): boolean {
   if (!isFull(f.imdb, IMDB_RANGE)) {
     const imdb = t.imdbRating ? parseFloat(t.imdbRating) : NaN
     if (!(imdb >= f.imdb[0] && imdb <= f.imdb[1])) return false
+  }
+  if (!isFull(f.year, YEAR_RANGE)) {
+    const [low, high] = f.year
+    if (t.year === null || (low > YEAR_RANGE.min && t.year < low) || (high < YEAR_RANGE.max && t.year > high)) return false
   }
   if (f.genres.length > 0 && !f.genres.some((g) => t.genres.includes(g))) return false
   if (f.platforms.length > 0 && !f.platforms.some((p) => t.streaming.includes(p))) return false
@@ -74,6 +83,13 @@ export function imdbText([low, high]: [number, number]): string {
   if (isFull([low, high], IMDB_RANGE)) return 'Cualquier puntaje'
   if (low === IMDB_RANGE.min) return `Hasta ${high}`
   if (high === IMDB_RANGE.max) return `${low} o más`
+  return `Entre ${low} y ${high}`
+}
+
+export function yearText([low, high]: [number, number]): string {
+  if (isFull([low, high], YEAR_RANGE)) return 'Cualquier año'
+  if (low === YEAR_RANGE.min) return `Hasta ${high}`
+  if (high === YEAR_RANGE.max) return `Desde ${low}`
   return `Entre ${low} y ${high}`
 }
 
