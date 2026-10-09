@@ -3,7 +3,7 @@ import { enqueue } from '../../lib/offline'
 import { useMemberName } from '../couple/coupleContext'
 import { dismissShared, originNote, type SharedItem } from '../shared/sharedApi'
 import { fetchTitleDetail } from './detailApi'
-import { searchTitles, type SearchResult } from './searchApi'
+import { searchDetails, searchTitles, type Extra, type SearchResponse, type SearchResult } from './searchApi'
 import { TitleCard } from './TitleCard'
 import { addTitle, removeTitle, TitleError, type Title } from './titlesApi'
 import { usePendingOwner } from './useTitles'
@@ -26,7 +26,9 @@ export function AddTitle({ coupleId, titles, onClose, shared }: Props) {
   // El ítem compartido sale de la bandeja con el primer título agregado desde él.
   const dismissed = useRef(false)
   // null = todavía no se buscó nada
-  const [results, setResults] = useState<SearchResult[] | null>(null)
+  const [results, setResults] = useState<SearchResponse | null>(null)
+  // Director y temporadas de los resultados (llegan un momento después).
+  const [extras, setExtras] = useState<Record<string, Extra>>({})
   const [searching, setSearching] = useState(false)
   const [searchFailed, setSearchFailed] = useState(false)
   const [busyKey, setBusyKey] = useState<string | null>(null)
@@ -58,9 +60,20 @@ export function AddTitle({ coupleId, titles, onClose, shared }: Props) {
           setSearching(false)
         },
       )
-    }, 400)
+    }, 300)
     return () => clearTimeout(timer)
   }, [query])
+
+  useEffect(() => {
+    if (!results) return
+    const shown = [...(results.person?.results ?? []), ...results.results].slice(0, 20)
+    if (shown.length === 0) return
+    searchDetails(shown.map(({ mediaType, tmdbId }) => ({ mediaType, tmdbId }))).then(
+      (found) => setExtras((map) => ({ ...map, ...found })),
+      // Sin director ni temporadas los resultados igual sirven.
+      () => {},
+    )
+  }, [results])
 
   useEffect(() => {
     const update = () => setOnline(navigator.onLine)
@@ -150,34 +163,50 @@ export function AddTitle({ coupleId, titles, onClose, shared }: Props) {
       )}
       {savedForLater && <p>⏳ Guardado. Va a aparecer en Compartidos cuando vuelva la conexión</p>}
       {addError && <p role="alert">{addMessages[addError]}</p>}
-      {active && !searching && results?.length === 0 && <p>No encontramos nada con ese nombre</p>}
-      <ul className="title-list">
-        {active &&
-          results?.map((r) => {
-            const key = keyOf(r)
-            const inList = existing.get(key)
-            const justAdded = key in added
-            const status = justAdded
-              ? '✓ Agregada · tocala de nuevo para sacarla'
-              : inList
-                ? `Ya está en la lista (la agregó ${nameOf(inList.addedBy)})`
-                : null
-            return (
-              <li key={key}>
-                <button
-                  className="result"
-                  disabled={(!!inList && !justAdded) || busyKey !== null}
-                  onClick={() => (justAdded ? takeOut(key) : add(r))}
-                >
-                  <TitleCard title={r.title} originalTitle={r.originalTitle} year={r.year} mediaType={r.mediaType} posterPath={r.posterPath}>
-                    {r.overview && <small className="overview">{r.overview}</small>}
-                    {status && <small>{status}</small>}
-                  </TitleCard>
-                </button>
-              </li>
-            )
-          })}
-      </ul>
+      {active && !searching && results?.results.length === 0 && !results.person && <p>No encontramos nada con ese nombre</p>}
+      {active && results?.person && (
+        <>
+          <h3>{`${results.person.role === 'director' ? 'De' : 'Con'} ${results.person.name}`}</h3>
+          {resultList(results.person.results)}
+          {results.results.length > 0 && <h3>Títulos</h3>}
+        </>
+      )}
+      {active && results && resultList(results.results)}
     </section>
   )
+
+  function resultList(list: SearchResult[]) {
+    return (
+      <ul className="title-list">
+        {list.map((r) => {
+          const key = keyOf(r)
+          const inList = existing.get(key)
+          const justAdded = key in added
+          const status = justAdded
+            ? '✓ Agregada · tocala de nuevo para sacarla'
+            : inList
+              ? `Ya está en la lista (la agregó ${nameOf(inList.addedBy)})`
+              : null
+          return (
+            <li key={key}>
+              <button className="result" disabled={(!!inList && !justAdded) || busyKey !== null} onClick={() => (justAdded ? takeOut(key) : add(r))}>
+                <TitleCard
+                  title={r.title}
+                  originalTitle={r.originalTitle}
+                  year={r.year}
+                  mediaType={r.mediaType}
+                  posterPath={r.posterPath}
+                  director={extras[key]?.director}
+                  seasons={extras[key]?.seasons}
+                >
+                  {r.overview && <small className="overview">{r.overview}</small>}
+                  {status && <small>{status}</small>}
+                </TitleCard>
+              </button>
+            </li>
+          )
+        })}
+      </ul>
+    )
+  }
 }

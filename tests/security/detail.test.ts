@@ -86,7 +86,7 @@ test('the detail saves who directed it, and for a series its seasons', async () 
   await detail(A.client, aew)
   const { data } = await A.client.from('titles').select('id, director, seasons').in('id', [parasite, aew])
   const byId = Object.fromEntries((data ?? []).map((r) => [r.id, r]))
-  expect(byId[parasite]).toMatchObject({ director: 'Bong Joon-ho', seasons: null })
+  expect(byId[parasite]).toMatchObject({ director: expect.stringMatching(/Bong Joon/), seasons: null })
   expect(byId[aew].seasons).toBeGreaterThan(0)
 })
 

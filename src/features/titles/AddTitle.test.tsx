@@ -1,13 +1,13 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 
-const api = vi.hoisted(() => ({ addTitle: vi.fn(), removeTitle: vi.fn(), searchTitles: vi.fn(), fetchTitleDetail: vi.fn(), dismissShared: vi.fn() }))
+const api = vi.hoisted(() => ({ addTitle: vi.fn(), removeTitle: vi.fn(), searchTitles: vi.fn(), searchDetails: vi.fn(), fetchTitleDetail: vi.fn(), dismissShared: vi.fn() }))
 vi.mock('./titlesApi', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./titlesApi')>()),
   addTitle: api.addTitle,
   removeTitle: api.removeTitle,
 }))
-vi.mock('./searchApi', () => ({ searchTitles: api.searchTitles }))
+vi.mock('./searchApi', () => ({ searchTitles: api.searchTitles, searchDetails: api.searchDetails }))
 vi.mock('./detailApi', () => ({ fetchTitleDetail: api.fetchTitleDetail }))
 vi.mock('../shared/sharedApi', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../shared/sharedApi')>()),
@@ -19,7 +19,7 @@ import { pendingFor } from '../../lib/offline'
 import { withCouple } from '../../test/providers'
 import type { SharedItem } from '../shared/sharedApi'
 import { AddTitle } from './AddTitle'
-import type { SearchResult } from './searchApi'
+import type { SearchResponse, SearchResult } from './searchApi'
 import { TitleError, type Title } from './titlesApi'
 
 const angelito: SearchResult = {
@@ -35,12 +35,14 @@ const parasitos: SearchResult = { ...angelito, tmdbId: 496243, title: 'Parásito
 const sinDatos: SearchResult = { ...angelito, tmdbId: 9, mediaType: 'tv', title: 'Serie rara', originalTitle: 'Serie rara', year: null, posterPath: null, overview: '' }
 
 const onClose = vi.fn()
+const found = (results: SearchResult[], person: SearchResponse['person'] = null): SearchResponse => ({ results, person })
 
 beforeEach(() => {
   vi.resetAllMocks()
   vi.useFakeTimers()
   api.fetchTitleDetail.mockResolvedValue({})
   api.dismissShared.mockResolvedValue(undefined)
+  api.searchDetails.mockResolvedValue({})
 })
 afterEach(() => vi.useRealTimers())
 
@@ -50,7 +52,7 @@ function renderAdd(titles: Title[] = [], shared?: SharedItem) {
 
 async function typeQuery(value: string) {
   fireEvent.change(screen.getByLabelText('Buscar película o serie'), { target: { value } })
-  await act(async () => vi.advanceTimersByTime(400))
+  await act(async () => vi.advanceTimersByTime(300))
 }
 
 test('shows the search and note fields and Volver', () => {
@@ -67,8 +69,8 @@ test('shows the search and note fields and Volver', () => {
   expect(onClose).toHaveBeenCalled()
 })
 
-test('searches once, 400 ms after the last key, and not with one letter', async () => {
-  api.searchTitles.mockResolvedValue([angelito])
+test('searches once, 300 ms after the last key, and not with one letter', async () => {
+  api.searchTitles.mockResolvedValue(found([angelito]))
   renderAdd()
   await typeQuery('m')
   expect(api.searchTitles).not.toHaveBeenCalled()
@@ -82,12 +84,12 @@ test('searches once, 400 ms after the last key, and not with one letter', async 
 })
 
 test('shows Buscando…, no results and search errors', async () => {
-  let finish: (r: SearchResult[]) => void = () => {}
+  let finish: (r: SearchResponse) => void = () => {}
   api.searchTitles.mockReturnValueOnce(new Promise((r) => (finish = r)))
   renderAdd()
   await typeQuery('nada')
   expect(screen.getByText('Buscando…')).toBeInTheDocument()
-  await act(async () => finish([]))
+  await act(async () => finish(found([])))
   expect(screen.getByText('No encontramos nada con ese nombre')).toBeInTheDocument()
 
   api.searchTitles.mockRejectedValueOnce(new Error('502'))
@@ -96,19 +98,56 @@ test('shows Buscando…, no results and search errors', async () => {
 })
 
 test('a late answer for an old query does not replace the current results', async () => {
-  const answers: Record<string, (r: SearchResult[]) => void> = {}
+  const answers: Record<string, (r: SearchResponse) => void> = {}
   api.searchTitles.mockImplementation((q: string) => new Promise((r) => (answers[q] = r)))
   renderAdd()
   await typeQuery('par')
   await typeQuery('parásitos')
-  await act(async () => answers['parásitos']([parasitos]))
-  await act(async () => answers['par']([angelito]))
+  await act(async () => answers['parásitos'](found([parasitos])))
+  await act(async () => answers['par'](found([angelito])))
   expect(screen.getByText('Parásitos')).toBeInTheDocument()
   expect(screen.queryByText('Mi pobre angelito')).not.toBeInTheDocument()
 })
 
+test('a director or actor name shows what they made in its own section, first', async () => {
+  const nolan = { name: 'Christopher Nolan', role: 'director' as const, results: [parasitos] }
+  api.searchTitles.mockResolvedValue(found([angelito], nolan))
+  renderAdd()
+  await typeQuery('nolan')
+  const headings = screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent)
+  expect(headings).toEqual(['De Christopher Nolan', 'Títulos'])
+  expect(screen.getByRole('button', { name: /Parásitos/ })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: /Mi pobre angelito/ })).toBeInTheDocument()
+  api.searchTitles.mockResolvedValue(found([angelito], { ...nolan, name: 'Ricardo Darín', role: 'actor' }))
+  await typeQuery('darin')
+  expect(screen.getByRole('heading', { name: 'Con Ricardo Darín' })).toBeInTheDocument()
+})
+
+test('results fill in who directed them and the seasons a moment later', async () => {
+  api.searchTitles.mockResolvedValue(found([angelito, sinDatos]))
+  api.searchDetails.mockResolvedValue({ 'movie:771': { director: 'Chris Columbus', seasons: null }, 'tv:9': { director: 'Alguien', seasons: 2 } })
+  renderAdd()
+  await typeQuery('algo')
+  expect(api.searchDetails).toHaveBeenCalledWith([
+    { mediaType: 'movie', tmdbId: 771 },
+    { mediaType: 'tv', tmdbId: 9 },
+  ])
+  expect(screen.getByText('Dirigida por Chris Columbus')).toBeInTheDocument()
+  expect(screen.getByText('Serie · 2 temporadas')).toBeInTheDocument()
+  expect(screen.getByText('Creada por Alguien')).toBeInTheDocument()
+})
+
+test('if the details fail, the results stay as they are', async () => {
+  api.searchTitles.mockResolvedValue(found([angelito]))
+  api.searchDetails.mockRejectedValue(new Error('502'))
+  renderAdd()
+  await typeQuery('mi pobre')
+  expect(screen.getByText('1990 · Película')).toBeInTheDocument()
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+})
+
 test('a result without poster, year or overview shows no null or undefined', async () => {
-  api.searchTitles.mockResolvedValue([sinDatos])
+  api.searchTitles.mockResolvedValue(found([sinDatos]))
   renderAdd()
   await typeQuery('serie rara')
   expect(screen.getByText('Serie')).toBeInTheDocument()
@@ -118,7 +157,7 @@ test('a result without poster, year or overview shows no null or undefined', asy
 test('tapping a result adds it once with the note, then marks it and clears the note', async () => {
   let finish: () => void = () => {}
   api.addTitle.mockReturnValue(new Promise<string>((r) => (finish = () => r('t9'))))
-  api.searchTitles.mockResolvedValue([angelito])
+  api.searchTitles.mockResolvedValue(found([angelito]))
   renderAdd()
   fireEvent.change(screen.getByLabelText('¿De dónde vino? (opcional)'), { target: { value: 'un reel' } })
   await typeQuery('mi pobre')
@@ -135,7 +174,7 @@ test('tapping a result adds it once with the note, then marks it and clears the 
 test('tapping a just-added result again takes it out of the list', async () => {
   api.addTitle.mockResolvedValue('t9')
   api.removeTitle.mockResolvedValue(undefined)
-  api.searchTitles.mockResolvedValue([angelito])
+  api.searchTitles.mockResolvedValue(found([angelito]))
   const { rerender } = render(withCouple(<AddTitle coupleId="c1" titles={[]} onClose={onClose} />))
   await typeQuery('mi pobre')
   await act(async () => fireEvent.click(screen.getByRole('button', { name: /Mi pobre angelito/ })))
@@ -151,7 +190,7 @@ test('tapping a just-added result again takes it out of the list', async () => {
 test('a failed take-out keeps it marked as added and says so', async () => {
   api.addTitle.mockResolvedValue('t9')
   api.removeTitle.mockRejectedValue(new TitleError('network'))
-  api.searchTitles.mockResolvedValue([angelito])
+  api.searchTitles.mockResolvedValue(found([angelito]))
   renderAdd()
   await typeQuery('mi pobre')
   await act(async () => fireEvent.click(screen.getByRole('button', { name: /Mi pobre angelito/ })))
@@ -161,7 +200,7 @@ test('a failed take-out keeps it marked as added and says so', async () => {
 })
 
 test('a result already in the list says who added it and cannot be added', async () => {
-  api.searchTitles.mockResolvedValue([angelito])
+  api.searchTitles.mockResolvedValue(found([angelito]))
   const existing: Title = {
     ...angelito,
     id: 't1',
@@ -197,7 +236,7 @@ test.each([
   ['network', 'No se pudo agregar. Probá de nuevo.'],
 ] as const)('an add failing with %s shows its message', async (kind, text) => {
   api.addTitle.mockRejectedValue(new TitleError(kind))
-  api.searchTitles.mockResolvedValue([angelito])
+  api.searchTitles.mockResolvedValue(found([angelito]))
   renderAdd()
   await typeQuery('mi pobre')
   await act(async () => fireEvent.click(screen.getByRole('button', { name: /Mi pobre angelito/ })))
@@ -215,7 +254,7 @@ test('clearing the search while it is in flight does not leave Buscando… on sc
 
 test('adding a title asks for its detail in the background', async () => {
   api.addTitle.mockResolvedValue('t9')
-  api.searchTitles.mockResolvedValue([angelito])
+  api.searchTitles.mockResolvedValue(found([angelito]))
   renderAdd()
   await typeQuery('mi pobre')
   await act(async () => fireEvent.click(screen.getByRole('button', { name: /Mi pobre angelito/ })))
@@ -225,7 +264,7 @@ test('adding a title asks for its detail in the background', async () => {
 test('a failing background detail does not show an error', async () => {
   api.addTitle.mockResolvedValue('t9')
   api.fetchTitleDetail.mockRejectedValue(new Error('502'))
-  api.searchTitles.mockResolvedValue([angelito])
+  api.searchTitles.mockResolvedValue(found([angelito]))
   renderAdd()
   await typeQuery('mi pobre')
   await act(async () => fireEvent.click(screen.getByRole('button', { name: /Mi pobre angelito/ })))
@@ -244,11 +283,11 @@ const reel: SharedItem = {
 }
 
 test('from a shared item it starts with the search and the note already filled in', async () => {
-  api.searchTitles.mockResolvedValue([angelito])
+  api.searchTitles.mockResolvedValue(found([angelito]))
   renderAdd([], reel)
   expect(screen.getByLabelText('Buscar película o serie')).toHaveValue('Mi pobre')
   expect(screen.getByLabelText('¿De dónde vino? (opcional)')).toHaveValue('Reel de Instagram · https://www.instagram.com/reel/abc/')
-  await act(async () => vi.advanceTimersByTime(400))
+  await act(async () => vi.advanceTimersByTime(300))
   expect(api.searchTitles).toHaveBeenCalledWith('Mi pobre')
 })
 
@@ -259,9 +298,9 @@ test('a shared item without a name starts with an empty search', () => {
 
 test('adding from a shared item takes it out of the inbox once and keeps the note', async () => {
   api.addTitle.mockResolvedValue('t9')
-  api.searchTitles.mockResolvedValue([angelito, parasitos])
+  api.searchTitles.mockResolvedValue(found([angelito, parasitos]))
   renderAdd([], reel)
-  await act(async () => vi.advanceTimersByTime(400))
+  await act(async () => vi.advanceTimersByTime(300))
   await act(async () => fireEvent.click(screen.getByRole('button', { name: /Mi pobre angelito/ })))
   await act(async () => fireEvent.click(screen.getByRole('button', { name: /Parásitos/ })))
   expect(api.dismissShared).toHaveBeenCalledTimes(1)
