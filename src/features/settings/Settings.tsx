@@ -6,6 +6,7 @@ import { useCouple } from '../couple/coupleContext'
 import { buildInviteLink } from '../couple/invite'
 import { coupleMessages } from '../couple/messages'
 import { ShareShortcut } from '../shared/ShareShortcut'
+import { Feedback } from './Feedback'
 import { ThemePicker } from './ThemePicker'
 
 export function Settings() {
@@ -59,6 +60,7 @@ export function Settings() {
       )}
       <ThemePicker />
       <ShareShortcut />
+      <Feedback />
       <button onClick={() => signOut()}>Cerrar sesión</button>
       <section className="attribution">
         <img src="/tmdb-logo.svg" alt="TMDB" />
