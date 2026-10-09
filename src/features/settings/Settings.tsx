@@ -18,7 +18,7 @@ export function Settings() {
   const together = names.every(Boolean) ? `: ${names.join(' y ')}` : ''
   const [link, setLink] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
-  const [copied, setCopied] = useState(false)
+  const [copied, setCopied] = useState<boolean | null>(null)
   const [error, setError] = useState<CoupleErrorKind | null>(null)
 
   async function invite() {
@@ -34,8 +34,12 @@ export function Settings() {
   }
 
   async function copy(text: string) {
-    await navigator.clipboard.writeText(text)
-    setCopied(true)
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+    } catch {
+      setCopied(false)
+    }
   }
 
   return (
@@ -51,6 +55,7 @@ export function Settings() {
               <input readOnly aria-label="Enlace de invitación" value={link} onFocus={(e) => e.target.select()} />
               <button onClick={() => copy(link)}>Copiar enlace</button>
               {copied && <p>¡Copiado!</p>}
+              {copied === false && <p role="alert">No se pudo copiar. Mantené apretado el enlace para copiarlo.</p>}
             </>
           )}
           {error && <p role="alert">{coupleMessages[error]}</p>}

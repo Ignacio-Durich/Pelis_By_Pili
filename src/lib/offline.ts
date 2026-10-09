@@ -21,12 +21,29 @@ export function readCache<T>(key: string, owner: string): T | null {
   }
 }
 
-export type Pending =
+// Al cerrar sesión: se olvida lo guardado para mostrar sin red (lista, pareja, bandeja, partidas).
+// Los pendientes quedan: son de esa cuenta y se mandan cuando vuelva a entrar.
+export function clearCaches(): void {
+  try {
+    for (const key of Object.keys(localStorage)) if (key.startsWith('pelis-cache:')) localStorage.removeItem(key)
+  } catch {
+    // Sin almacenamiento no hay nada guardado.
+  }
+}
+
+// attempts: veces que falló como si no hubiera conexión (falta en los anotados antes de la etapa 12).
+export type Pending = (
   | { id: string; kind: 'watched'; titleId: string; watched: boolean }
   | { id: string; kind: 'score'; titleId: string; score: number; note: string }
   | { id: string; kind: 'later'; query: string; note: string }
+) & { attempts?: number }
 
-type NewPending = Pending extends infer P ? (P extends Pending ? Omit<P, 'id'> : never) : never
+type NewPending = Pending extends infer P ? (P extends Pending ? Omit<P, 'id' | 'attempts'> : never) : never
+
+// Un error desconocido del servidor también se ve como "sin red" (callRpc no lo distingue): sin tope,
+// ese pendiente trababa a los de atrás para siempre. Con la cola se intenta después de cada carga
+// que sale bien (o sea, con conexión), así que 20 fallas seguidas son un error de verdad.
+const MAX_ATTEMPTS = 20
 
 const queueKey = (owner: string) => `pelis-pending:${owner}`
 const listeners = new Set<() => void>()
@@ -80,8 +97,8 @@ export function clearDropped(owner: string): void {
 
 const running = new Map<string, Promise<FlushResult>>()
 
-// Manda en orden. Un error de red corta (lo que falta queda para la próxima); cualquier otro
-// error descarta ese pendiente y sigue. Dos llamadas a la vez comparten la misma corrida, así
+// Manda en orden. Un error de red corta (lo que falta queda para la próxima), salvo que ya sea la
+// falla número 20; cualquier otro error descarta ese pendiente y sigue. Dos llamadas a la vez comparten la misma corrida, así
 // nada se manda dos veces.
 export function flushPending(owner: string, send: (item: Pending) => Promise<void>, isNetwork: (e: unknown) => boolean): Promise<FlushResult> {
   const current = running.get(owner)
@@ -93,7 +110,14 @@ export function flushPending(owner: string, send: (item: Pending) => Promise<voi
         await send(item)
         result.sent++
       } catch (error) {
-        if (isNetwork(error)) break
+        const attempts = (item.attempts ?? 0) + 1
+        if (isNetwork(error) && attempts < MAX_ATTEMPTS) {
+          write(
+            owner,
+            pendingFor(owner).map((p) => (p.id === item.id ? { ...p, attempts } : p)),
+          )
+          break
+        }
         result.dropped.push({ item, error })
         dropped.set(owner, [...droppedFor(owner), { item, error }])
       }

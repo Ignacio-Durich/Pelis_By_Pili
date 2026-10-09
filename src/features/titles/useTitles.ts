@@ -51,6 +51,8 @@ export function useTitles(coupleId: string): {
   const [offline, setOffline] = useState(() => !navigator.onLine)
   const [pending, setPending] = useState<Pending[]>(() => pendingFor(owner))
   const [dropped, setDropped] = useState<Dropped[]>(() => droppedFor(owner))
+  // Lo ya mandado sigue aplicado hasta que llega la lista nueva (si no, la tarjeta vuelve un momento a como estaba).
+  const [sent, setSent] = useState<Pending[]>([])
   // Para volver a cargar después de mandar lo pendiente (load no se puede llamar a sí mismo).
   const reload = useRef<() => void>(() => {})
   // Solo cuenta la respuesta del último pedido: una carga vieja que llega tarde no pisa la nueva.
@@ -63,8 +65,13 @@ export function useTitles(coupleId: string): {
         if (request !== lastRequest.current) return
         saveCache('titles', coupleId, list)
         setTitles(list)
+        setSent([])
         setOffline(false)
-        flushPending(owner, send, isNetworkError).then((result) => {
+        const sendAndHold = async (p: Pending) => {
+          await send(p)
+          setSent((held) => [...held, p])
+        }
+        flushPending(owner, sendAndHold, isNetworkError).then((result) => {
           if (result.sent || result.dropped.length) reload.current()
         })
       },
@@ -118,7 +125,7 @@ export function useTitles(coupleId: string): {
   }, [waiting, load])
 
   return {
-    titles: titles && applyPending(titles, pending, userId),
+    titles: titles && applyPending(titles, [...sent, ...pending], userId),
     offline,
     load,
     pending: pending.length,

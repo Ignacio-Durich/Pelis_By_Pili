@@ -157,3 +157,13 @@ test('Tema shows the 15 themes and choosing one paints the app and is remembered
   expect(savedTheme()).toBe('menta')
   await screen.findByRole('button', { name: 'Crear mi clave' })
 })
+
+test('if copying fails it says how to copy by hand', async () => {
+  api.createInvite.mockResolvedValue('tok')
+  api.writeText.mockRejectedValue(new Error('denied'))
+  renderSettings(1)
+  fireEvent.click(screen.getByRole('button', { name: 'Invitar a mi pareja' }))
+  fireEvent.click(await screen.findByRole('button', { name: 'Copiar enlace' }))
+  expect(await screen.findByText('No se pudo copiar. Mantené apretado el enlace para copiarlo.')).toBeInTheDocument()
+  expect(screen.queryByText('¡Copiado!')).not.toBeInTheDocument()
+})

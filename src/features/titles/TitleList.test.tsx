@@ -539,3 +539,16 @@ test('the card is announced with its scores and who added it', async () => {
   expect(card).toHaveAccessibleName(expect.stringContaining('IMDb 7.7'))
   expect(card).toHaveAccessibleName(expect.stringContaining('La agregó Pili'))
 })
+
+test('after a change is sent, the card keeps it until the new list arrives', async () => {
+  enqueue('u1:c1', { kind: 'watched', titleId: 't1', watched: true })
+  api.listTitles.mockResolvedValueOnce([angelito]).mockReturnValue(new Promise(() => {}))
+  api.setWatched.mockResolvedValue(undefined)
+  renderList()
+  await screen.findByRole('button', { name: 'Vistas' })
+  await act(async () => {})
+  expect(api.setWatched).toHaveBeenCalled()
+  expect(pendingFor('u1:c1')).toEqual([])
+  fireEvent.click(screen.getByRole('button', { name: 'Vistas' }))
+  expect(screen.getByText('Mi pobre angelito')).toBeInTheDocument()
+})
