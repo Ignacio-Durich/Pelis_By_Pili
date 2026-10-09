@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 import { makeTitle } from '../../test/titles'
-import { activeCount, filterOptions, imdbText, matchesFilters, NO_FILTERS, runtimeText, YEAR_RANGE, yearText, type Filters } from './filters'
+import { activeCount, filterOptions, imdbText, matchesFilters, matchesQuery, NO_FILTERS, runtimeText, YEAR_RANGE, yearText, type Filters } from './filters'
 
 const parasitos = makeTitle({ runtime: 132, imdbRating: '8.5/10', genres: ['Comedia', 'Drama'], streaming: ['Netflix', 'Prime Video'] })
 const dark = makeTitle({ mediaType: 'tv', runtime: 60, imdbRating: '8.7/10', genres: ['Ciencia ficción', 'Drama'], streaming: ['Netflix'] })
@@ -99,4 +99,18 @@ test('range texts', () => {
   expect(yearText([2010, YEAR_RANGE.max])).toBe('Desde 2010')
   expect(yearText([YEAR_RANGE.min, 1999])).toBe('Hasta 1999')
   expect(yearText([1990, 2005])).toBe('Entre 1990 y 2005')
+})
+
+test('the list search ignores accents and case, and looks in the name, the original name and the director', () => {
+  expect(matchesQuery(makeTitle({ title: 'Amélie' }), 'amelie')).toBe(true)
+  expect(matchesQuery(makeTitle({ director: 'Christopher Nolan' }), 'NOLAN')).toBe(true)
+  expect(matchesQuery(makeTitle({ title: 'Mi pobre angelito', originalTitle: 'Home Alone' }), 'home alone')).toBe(true)
+  expect(matchesQuery(makeTitle({ title: 'El padrino', director: 'Francis Ford Coppola' }), 'padrino coppola')).toBe(true)
+  expect(matchesQuery(makeTitle({ title: 'El padrino', director: null }), 'xyz')).toBe(false)
+  expect(matchesQuery(makeTitle({ title: 'El padrino', director: null }), 'padr')).toBe(true)
+})
+
+test('an empty list search lets every title through', () => {
+  expect(matchesQuery(makeTitle(), '  ')).toBe(true)
+  expect(matchesQuery(makeTitle(), '')).toBe(true)
 })
