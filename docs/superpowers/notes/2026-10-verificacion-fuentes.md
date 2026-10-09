@@ -162,3 +162,7 @@ Impacto en el plan: afecta ya a la Etapa 1, no solo a las siguientes. La novia d
 
 - Antes de mostrarle la app a Pili, Nacho borró desde el panel de Supabase la cuenta de prueba que usaba en el celular de su hermana. Comprobado leyendo el proyecto real (sin mostrar claves): 1 cuenta, el espacio con solo "Nacho" y ninguna partida abierta. Los títulos que había agregado quedan con "La agregó alguien"; sus puntajes y votos se borraron con la cuenta. Pili entra con "Invitar a mi pareja".
 
+
+# Mejoras de uso (2026-10-09)
+
+- Nacho corrió `db push` (`20261016000000_title_people.sql`); se publicaron `tmdb-search` y `title-detail`. `npm run test:security:remote`: detalle y búsqueda pasan en la corrida completa; `names` y `shared` se cortaron por el límite de inicios de sesión y pasaron solos 8 minutos después (19/19).
