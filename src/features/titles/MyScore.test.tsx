@@ -27,6 +27,8 @@ test('shows the score and note fields', () => {
   expect(scoreField()).toHaveAttribute('inputMode', 'decimal')
   expect(scoreField()).toHaveAttribute('placeholder', 'Ej.: 8,75')
   expect(screen.getByLabelText('Una nota (opcional)')).toHaveAttribute('maxLength', '200')
+  // Varias líneas: la reseña entera se ve sin moverse dentro del campo.
+  expect(screen.getByLabelText('Una nota (opcional)').tagName).toBe('TEXTAREA')
   expect(save()).toBeDisabled()
 })
 

@@ -5,15 +5,16 @@ import { dismissShared, originNote, type SharedItem } from '../shared/sharedApi'
 import { fetchTitleDetail } from './detailApi'
 import { searchTitles, type SearchResult } from './searchApi'
 import { TitleCard } from './TitleCard'
-import { addTitle, TitleError, type Title } from './titlesApi'
+import { addTitle, removeTitle, TitleError, type Title } from './titlesApi'
 import { usePendingOwner } from './useTitles'
 
 // `shared`: se abrió desde la bandeja de compartidos, con la búsqueda y la nota ya cargadas.
 type Props = { coupleId: string; titles: Title[]; onClose: () => void; shared?: SharedItem }
 
-const addMessages: Record<'duplicate' | 'network', string> = {
+const addMessages: Record<'duplicate' | 'network' | 'remove', string> = {
   duplicate: 'Ya está en la lista',
   network: 'No se pudo agregar. Probá de nuevo.',
+  remove: 'No se pudo sacar. Probá de nuevo.',
 }
 
 const keyOf = (t: { mediaType: string; tmdbId: number }) => `${t.mediaType}:${t.tmdbId}`
@@ -29,8 +30,9 @@ export function AddTitle({ coupleId, titles, onClose, shared }: Props) {
   const [searching, setSearching] = useState(false)
   const [searchFailed, setSearchFailed] = useState(false)
   const [busyKey, setBusyKey] = useState<string | null>(null)
-  const [added, setAdded] = useState<string[]>([])
-  const [addError, setAddError] = useState<'duplicate' | 'network' | null>(null)
+  // Lo agregado desde esta pantalla (clave → id): tocarlo de nuevo lo saca de la lista.
+  const [added, setAdded] = useState<Record<string, string>>({})
+  const [addError, setAddError] = useState<keyof typeof addMessages | null>(null)
   const owner = usePendingOwner()
   const [online, setOnline] = useState(() => navigator.onLine)
   const [savedForLater, setSavedForLater] = useState(false)
@@ -86,7 +88,7 @@ export function AddTitle({ coupleId, titles, onClose, shared }: Props) {
       const id = await addTitle(coupleId, result, note)
       // En segundo plano: la función guarda los puntajes y Realtime actualiza la tarjeta.
       fetchTitleDetail(id).catch(() => {})
-      setAdded((list) => [...list, keyOf(result)])
+      setAdded((map) => ({ ...map, [keyOf(result)]: id }))
       if (shared && !dismissed.current) {
         dismissed.current = true
         dismissShared(shared.id).catch(() => {})
@@ -100,12 +102,29 @@ export function AddTitle({ coupleId, titles, onClose, shared }: Props) {
     }
   }
 
+  async function takeOut(key: string) {
+    if (busyKey) return
+    setBusyKey(key)
+    setAddError(null)
+    try {
+      await removeTitle(added[key])
+      setAdded((map) => Object.fromEntries(Object.entries(map).filter(([k]) => k !== key)))
+    } catch {
+      setAddError('remove')
+    } finally {
+      setBusyKey(null)
+    }
+  }
+
   const existing = new Map(titles.map((t) => [keyOf(t), t]))
   // Con menos de 2 letras no hay búsqueda en curso: lo que haya quedado de antes no se muestra.
   const active = query.trim().length >= 2
 
   return (
     <section className="add-title">
+      <button className="back" onClick={onClose}>
+        Volver
+      </button>
       <h2>Agregar</h2>
       <label>
         Buscar película o serie
@@ -121,7 +140,6 @@ export function AddTitle({ coupleId, titles, onClose, shared }: Props) {
         ¿De dónde vino? (opcional)
         <input maxLength={200} placeholder="Ej.: un reel, una recomendación" value={note} onChange={(e) => setNote(e.target.value)} />
       </label>
-      <button onClick={onClose}>Volver</button>
       {active && searching && <p>Buscando…</p>}
       {!online && <p>Sin conexión: no se puede buscar ahora.</p>}
       {online && active && searchFailed && <p role="alert">No se pudo buscar. Probá de nuevo.</p>}
@@ -138,14 +156,19 @@ export function AddTitle({ coupleId, titles, onClose, shared }: Props) {
           results?.map((r) => {
             const key = keyOf(r)
             const inList = existing.get(key)
-            const status = added.includes(key)
-              ? '✓ Agregada'
+            const justAdded = key in added
+            const status = justAdded
+              ? '✓ Agregada · tocala de nuevo para sacarla'
               : inList
                 ? `Ya está en la lista (la agregó ${nameOf(inList.addedBy)})`
                 : null
             return (
               <li key={key}>
-                <button className="result" disabled={!!inList || added.includes(key) || busyKey !== null} onClick={() => add(r)}>
+                <button
+                  className="result"
+                  disabled={(!!inList && !justAdded) || busyKey !== null}
+                  onClick={() => (justAdded ? takeOut(key) : add(r))}
+                >
                   <TitleCard title={r.title} originalTitle={r.originalTitle} year={r.year} mediaType={r.mediaType} posterPath={r.posterPath}>
                     {r.overview && <small className="overview">{r.overview}</small>}
                     {status && <small>{status}</small>}

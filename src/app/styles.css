@@ -67,6 +67,7 @@ label {
 }
 
 input,
+textarea,
 button {
   font: inherit;
   font-size: 17px; /* 16px o más evita el zoom automático de Safari al enfocar */
@@ -219,8 +220,28 @@ button.open {
   padding: 0;
 }
 
+/* Volver: una pastilla con flecha, bien visible arriba a la izquierda. */
 button.back {
   align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  padding: 8px 16px 8px 12px;
+  font-size: 16px;
+}
+
+button.back::before {
+  content: '‹';
+  font-size: 24px;
+  line-height: 16px;
+}
+
+/* Terminar (en la fila de arriba de una partida): texto, sin pastilla. */
+button.end {
   background: none;
   color: var(--accent);
   padding: 0;
@@ -334,6 +355,13 @@ button.secondary {
 .my-score h3 {
   margin: 12px 0 0;
   font-size: 17px;
+}
+
+.my-score textarea {
+  resize: vertical;
+  /* Crece con el texto donde el navegador lo permite; si no, las 4 filas alcanzan para 200 letras. */
+  field-sizing: content;
+  min-height: calc(4lh + 24px);
 }
 
 .my-score small {

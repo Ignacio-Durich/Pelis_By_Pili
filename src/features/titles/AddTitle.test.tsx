@@ -1,10 +1,11 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 
-const api = vi.hoisted(() => ({ addTitle: vi.fn(), searchTitles: vi.fn(), fetchTitleDetail: vi.fn(), dismissShared: vi.fn() }))
+const api = vi.hoisted(() => ({ addTitle: vi.fn(), removeTitle: vi.fn(), searchTitles: vi.fn(), fetchTitleDetail: vi.fn(), dismissShared: vi.fn() }))
 vi.mock('./titlesApi', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./titlesApi')>()),
   addTitle: api.addTitle,
+  removeTitle: api.removeTitle,
 }))
 vi.mock('./searchApi', () => ({ searchTitles: api.searchTitles }))
 vi.mock('./detailApi', () => ({ fetchTitleDetail: api.fetchTitleDetail }))
@@ -127,8 +128,36 @@ test('tapping a result adds it once with the note, then marks it and clears the 
   expect(api.addTitle).toHaveBeenCalledTimes(1)
   expect(api.addTitle).toHaveBeenCalledWith('c1', angelito, 'un reel')
   await act(async () => finish())
-  expect(screen.getByText('✓ Agregada')).toBeInTheDocument()
+  expect(screen.getByText('✓ Agregada · tocala de nuevo para sacarla')).toBeInTheDocument()
   expect(screen.getByLabelText('¿De dónde vino? (opcional)')).toHaveValue('')
+})
+
+test('tapping a just-added result again takes it out of the list', async () => {
+  api.addTitle.mockResolvedValue('t9')
+  api.removeTitle.mockResolvedValue(undefined)
+  api.searchTitles.mockResolvedValue([angelito])
+  const { rerender } = render(withCouple(<AddTitle coupleId="c1" titles={[]} onClose={onClose} />))
+  await typeQuery('mi pobre')
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: /Mi pobre angelito/ })))
+  // Realtime ya trajo el título a la lista: igual se puede sacar desde acá.
+  rerender(withCouple(<AddTitle coupleId="c1" titles={[{ id: 't9', mediaType: 'movie', tmdbId: 771, addedBy: 'u1' } as Title]} onClose={onClose} />))
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: /Mi pobre angelito/ })))
+  expect(api.removeTitle).toHaveBeenCalledWith('t9')
+  rerender(withCouple(<AddTitle coupleId="c1" titles={[]} onClose={onClose} />))
+  expect(screen.queryByText(/Agregada/)).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: /Mi pobre angelito/ })).toBeEnabled()
+})
+
+test('a failed take-out keeps it marked as added and says so', async () => {
+  api.addTitle.mockResolvedValue('t9')
+  api.removeTitle.mockRejectedValue(new TitleError('network'))
+  api.searchTitles.mockResolvedValue([angelito])
+  renderAdd()
+  await typeQuery('mi pobre')
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: /Mi pobre angelito/ })))
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: /Mi pobre angelito/ })))
+  expect(screen.getByRole('alert')).toHaveTextContent('No se pudo sacar. Probá de nuevo.')
+  expect(screen.getByText('✓ Agregada · tocala de nuevo para sacarla')).toBeInTheDocument()
 })
 
 test('a result already in the list says who added it and cannot be added', async () => {
@@ -198,7 +227,7 @@ test('a failing background detail does not show an error', async () => {
   renderAdd()
   await typeQuery('mi pobre')
   await act(async () => fireEvent.click(screen.getByRole('button', { name: /Mi pobre angelito/ })))
-  expect(screen.getByText('✓ Agregada')).toBeInTheDocument()
+  expect(screen.getByText('✓ Agregada · tocala de nuevo para sacarla')).toBeInTheDocument()
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
 })
 

@@ -52,3 +52,12 @@ test('the bottom bar has Lista, Elegir and Ajustes, and filters are shared', asy
   expect(await screen.findByRole('heading', { name: 'Ruleta' })).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Filtros (1)' })).toBeInTheDocument()
 })
+
+test('tapping Lista while inside Agregar or a detail goes back to the list', async () => {
+  renderHome(2)
+  fireEvent.click(await screen.findByRole('button', { name: 'Agregar' }))
+  expect(screen.getByRole('heading', { name: 'Agregar' })).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: 'Lista' }))
+  expect(screen.queryByRole('heading', { name: 'Agregar' })).not.toBeInTheDocument()
+  expect(await screen.findByRole('heading', { name: 'Por ver' })).toBeInTheDocument()
+})
