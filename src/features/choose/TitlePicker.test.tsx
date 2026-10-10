@@ -25,3 +25,20 @@ test('locked titles show who chose them, cannot be picked and do not count', () 
   fireEvent.click(screen.getByRole('button', { name: 'Listo (3 de 3)' }))
   expect(onDone).toHaveBeenCalledWith(['c', 'd', 'e'])
 })
+
+test('a chosen title that was watched meanwhile shows up no more and does not count', () => {
+  const onDone = vi.fn()
+  const seen = makeTitle({ id: 'w', tmdbId: 99, title: 'Peli W', status: 'watched', watchedAt: '2026-10-07T20:00:00Z' })
+  const toWatch = titles.slice(0, 3)
+  render(<TitlePicker heading="Elegí tus 3" titles={[...toWatch, seen]} matching={toWatch} initial={['a', 'b', 'w']} need={3} onDone={onDone} />)
+  expect(screen.queryByRole('button', { name: /Peli W/ })).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Listo (2 de 3)' })).toBeDisabled()
+  press('c')
+  fireEvent.click(screen.getByRole('button', { name: 'Listo (3 de 3)' }))
+  expect(onDone).toHaveBeenCalledWith(['a', 'b', 'c'])
+})
+
+test('with nothing to choose Listo stays disabled', () => {
+  render(<TitlePicker heading="Elegí tus 3" titles={[]} matching={[]} initial={[]} need={3} onDone={vi.fn()} />)
+  expect(screen.getByRole('button', { name: /^Listo/ })).toBeDisabled()
+})

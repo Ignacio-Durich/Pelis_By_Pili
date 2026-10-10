@@ -113,6 +113,8 @@ test('three rounds leave one winner, and Listo goes back to the start', async ()
   expect(screen.getByText('Final · duelo 1 de 1')).toBeInTheDocument()
   press(/Peli C/)
   expect(screen.getByText('¡Ganó Peli C!')).toBeInTheDocument()
+  // La carta ganadora no es un botón (VoiceOver no dice "botón atenuado").
+  expect(screen.queryByRole('button', { name: /Peli C/ })).not.toBeInTheDocument()
   press('Listo')
   expect(screen.getByRole('button', { name: 'Empezar' })).toBeInTheDocument()
 })
