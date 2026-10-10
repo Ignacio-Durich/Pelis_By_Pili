@@ -106,12 +106,31 @@ test('a change that keeps failing as if there were no connection is dropped afte
     if (p.kind === 'watched' && p.titleId === 'stuck') throw network
     sent.push(p.kind === 'watched' ? p.titleId : '')
   }
-  for (let i = 0; i < 19; i++) await flushPending('o', send, isNetwork)
+  vi.useFakeTimers({ toFake: ['Date'] })
+  for (let i = 0; i < 19; i++) {
+    await flushPending('o', send, isNetwork)
+    vi.setSystemTime(Date.now() + 60_000)
+  }
   expect(pendingFor('o')).toHaveLength(2)
   const last = await flushPending('o', send, isNetwork)
+  vi.useRealTimers()
   expect(last.dropped.map((d) => d.item.kind === 'watched' && d.item.titleId)).toEqual(['stuck'])
   expect(sent).toEqual(['next'])
   expect(pendingFor('o')).toEqual([])
+})
+
+test('failures less than a minute apart count as one try, so a burst of reloads does not drop a change', async () => {
+  vi.useFakeTimers({ toFake: ['Date'] })
+  enqueue('o', { kind: 'score', titleId: 't1', score: 8, note: '' })
+  const send = async () => {
+    throw network
+  }
+  for (let i = 0; i < 25; i++) await flushPending('o', send, isNetwork)
+  expect(pendingFor('o')[0].attempts).toBe(1)
+  vi.setSystemTime(Date.now() + 60_000)
+  await flushPending('o', send, isNetwork)
+  vi.useRealTimers()
+  expect(pendingFor('o')[0].attempts).toBe(2)
 })
 
 test('clearCaches forgets what was saved but keeps what is waiting to be sent', () => {

@@ -31,19 +31,22 @@ export function clearCaches(): void {
   }
 }
 
-// attempts: veces que falló como si no hubiera conexión (falta en los anotados antes de la etapa 12).
+// attempts: veces que falló como si no hubiera conexión, y failedAt cuándo se contó la última
+// (faltan en los anotados antes de la etapa 12).
 export type Pending = (
   | { id: string; kind: 'watched'; titleId: string; watched: boolean }
   | { id: string; kind: 'score'; titleId: string; score: number; note: string }
   | { id: string; kind: 'later'; query: string; note: string }
-) & { attempts?: number }
+) & { attempts?: number; failedAt?: number }
 
-type NewPending = Pending extends infer P ? (P extends Pending ? Omit<P, 'id' | 'attempts'> : never) : never
+type NewPending = Pending extends infer P ? (P extends Pending ? Omit<P, 'id' | 'attempts' | 'failedAt'> : never) : never
 
 // Un error desconocido del servidor también se ve como "sin red" (callRpc no lo distingue): sin tope,
 // ese pendiente trababa a los de atrás para siempre. Con la cola se intenta después de cada carga
-// que sale bien (o sea, con conexión), así que 20 fallas seguidas son un error de verdad.
+// que sale bien (o sea, con conexión), así que 20 fallas seguidas son un error de verdad. Las fallas
+// a menos de un minuto cuentan como una: Realtime puede disparar decenas de cargas en segundos.
 const MAX_ATTEMPTS = 20
+const ATTEMPT_GAP_MS = 60_000
 
 const queueKey = (owner: string) => `pelis-pending:${owner}`
 const listeners = new Set<() => void>()
@@ -110,11 +113,13 @@ export function flushPending(owner: string, send: (item: Pending) => Promise<voi
         await send(item)
         result.sent++
       } catch (error) {
-        const attempts = (item.attempts ?? 0) + 1
+        const counts = item.failedAt === undefined || Date.now() - item.failedAt >= ATTEMPT_GAP_MS
+        const attempts = (item.attempts ?? 0) + (counts ? 1 : 0)
         if (isNetwork(error) && attempts < MAX_ATTEMPTS) {
+          const failedAt = counts ? Date.now() : item.failedAt
           write(
             owner,
-            pendingFor(owner).map((p) => (p.id === item.id ? { ...p, attempts } : p)),
+            pendingFor(owner).map((p) => (p.id === item.id ? { ...p, attempts, failedAt } : p)),
           )
           break
         }
