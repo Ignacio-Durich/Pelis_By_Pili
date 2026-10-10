@@ -681,10 +681,19 @@ button.chip[aria-pressed='true'] {
 }
 
 /* Ajustes → Atajo para compartir */
-.share-shortcut {
+.share-shortcut,
+.feedback {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.feedback textarea {
+  resize: vertical;
+}
+
+.feedback p[role='status']:empty {
+  display: none;
 }
 
 .share-shortcut code {
