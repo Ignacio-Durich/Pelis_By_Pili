@@ -201,13 +201,20 @@ export function Tournament({ filters, onFiltersChange, onBack, random = Math.ran
 }
 
 // Una candidata del duelo: se toca entera para elegirla.
+// Sin onChoose (la ganadora) no es un botón: VoiceOver no dice "botón atenuado".
 function DuelCard({ title, onChoose }: { title: Title; onChoose?: () => void }) {
-  return (
-    <button className="duel-card" disabled={!onChoose} onClick={onChoose}>
+  const inside = (
+    <>
       {title.posterPath ? <img src={`https://image.tmdb.org/t/p/w342${title.posterPath}`} alt="" /> : <span className="duel-poster" />}
       <span className="duel-info">
         <TitleFacts title={title} />
       </span>
+    </>
+  )
+  if (!onChoose) return <div className="duel-card winner">{inside}</div>
+  return (
+    <button className="duel-card" onClick={onChoose}>
+      {inside}
     </button>
   )
 }

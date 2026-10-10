@@ -19,7 +19,8 @@ type Props = {
 export function TitlePicker({ heading, titles, matching, initial, need, locked, onDone }: Props) {
   const [chosen, setChosen] = useState<string[]>(initial)
   // Lo ya elegido sigue a la vista aunque los filtros hayan cambiado.
-  const options = [...matching, ...titles.filter((t) => initial.includes(t.id) && !matching.includes(t))]
+  // (Salvo que ya se haya visto: eso no se puede elegir.)
+  const options = [...matching, ...titles.filter((t) => initial.includes(t.id) && !matching.includes(t) && t.status === 'to_watch')]
   const isLocked = (id: string) => locked?.ids.includes(id) ?? false
   const selectable = options.filter((t) => !isLocked(t.id))
   const picked = chosen.filter((id) => selectable.some((t) => t.id === id))
@@ -48,7 +49,7 @@ export function TitlePicker({ heading, titles, matching, initial, need, locked, 
           </li>
         ))}
       </ul>
-      <button className="reveal-done" disabled={picked.length !== target} onClick={() => onDone(picked)}>
+      <button className="reveal-done" disabled={options.length === 0 || picked.length !== target} onClick={() => onDone(picked)}>
         {`Listo (${picked.length} de ${target})`}
       </button>
     </>

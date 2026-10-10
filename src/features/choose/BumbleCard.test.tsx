@@ -115,3 +115,11 @@ test('the synopsis side can be swiped too, without its own scroll', async () => 
   drag(150)
   expect(onVote).toHaveBeenCalledWith(true)
 })
+
+test('the card says which title it is, and space flips it without scrolling', () => {
+  render(<BumbleCard title={dark} onVote={onVote} />)
+  const front = screen.getByRole('button', { name: 'Dark — ver sinopsis' })
+  // fireEvent devuelve false si el evento se canceló (preventDefault).
+  expect(fireEvent.keyDown(front, { key: ' ' })).toBe(false)
+  expect(screen.getByRole('button', { name: 'Dark — volver al frente' })).toBeInTheDocument()
+})

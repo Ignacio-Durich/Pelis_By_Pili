@@ -291,3 +291,14 @@ test('Deshacer cannot be tapped twice while it is on its way', async () => {
   press('Deshacer')
   expect(api.bumbleUndo).toHaveBeenCalledTimes(1)
 })
+
+test('the winner shows big, with Ver detalle and a way back', async () => {
+  const votes = ['a', 'b', 'c'].flatMap((id) => [v('u1', id, id === 'b'), v('u2', id, true)])
+  await renderGame(votes)
+  expect(screen.getByText('¡Ganó Peli B!')).toBeInTheDocument()
+  expect(document.querySelector('.bumble-card')).not.toBeNull()
+  press('Ver detalle')
+  expect(screen.getByRole('heading', { name: 'Peli B' })).toBeInTheDocument()
+  press('Volver')
+  expect(screen.getByText('¡Ganó Peli B!')).toBeInTheDocument()
+})

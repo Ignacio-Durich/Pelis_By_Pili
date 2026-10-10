@@ -54,7 +54,7 @@ export function BumbleCard({ title, onVote, undo }: Props) {
         data-testid="bumble-card"
         role="button"
         tabIndex={0}
-        aria-label={flipped ? 'Volver al frente de la carta' : 'Ver sinopsis'}
+        aria-label={flipped ? `${title.title} — volver al frente` : `${title.title} — ver sinopsis`}
         style={{ transform: dx ? `translateX(${dx}px) rotate(${dx / 20}deg)` : undefined }}
         onPointerDown={down}
         onPointerMove={move}
@@ -63,7 +63,11 @@ export function BumbleCard({ title, onVote, undo }: Props) {
           start.current = null
           setDx(0)
         }}
-        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && flip()}
+        onKeyDown={(e) => {
+          if (e.key !== 'Enter' && e.key !== ' ') return
+          e.preventDefault()
+          flip()
+        }}
       >
         {flipped ? (
           <div className="bumble-back">

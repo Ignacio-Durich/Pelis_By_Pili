@@ -4,7 +4,7 @@ import { useUserId } from '../auth/sessionContext'
 import { useCouple, useMemberName } from '../couple/coupleContext'
 import { filterOptions, matchesFilters, type Filters } from '../titles/filters'
 import { FiltersPanel } from '../titles/FiltersPanel'
-import { TitleCard } from '../titles/TitleCard'
+import { TitleDetail } from '../titles/TitleDetail'
 import type { Title } from '../titles/titlesApi'
 import { useTitles } from '../titles/useTitles'
 import { BumbleCard } from './BumbleCard'
@@ -14,6 +14,7 @@ import { NO_PARTNER, playerName } from './players'
 import { bumbleUndo, bumbleVote, finishBumble, startBumble, type BumbleSession } from './bumbleApi'
 import { bumbleState, buildDeck, lastUndoable, seededIndex, type BumbleState, type Vote } from './bumbleLogic'
 import { TieBreak } from './TieBreak'
+import { TitleFacts } from './TitleFacts'
 import { useBumble } from './useBumble'
 
 type Props = { filters: Filters; onFiltersChange: (f: Filters) => void; onBack: () => void; random?: () => number }
@@ -277,6 +278,7 @@ type Ending = Exclude<BumbleState, { kind: 'round' }>
 
 function Outcome({ state, byId, seed, onDone }: { state: Ending; byId: Map<string, Title>; seed: string; onDone: (winner: string | null) => void }) {
   const [rouletteWinner, setRouletteWinner] = useState<string | null>(null)
+  const [showDetail, setShowDetail] = useState(false)
 
   if (state.kind === 'none') {
     return (
@@ -290,11 +292,25 @@ function Outcome({ state, byId, seed, onDone }: { state: Ending; byId: Map<strin
   const winnerId = state.kind === 'winner' ? state.titleId : rouletteWinner
   const winner = winnerId ? byId.get(winnerId) : undefined
   if (winnerId && winner) {
+    // Realtime trae los cambios que se hagan en el detalle (esta pantalla no recarga la lista).
+    if (showDetail) return <TitleDetail title={winner} onClose={() => setShowDetail(false)} onChanged={() => {}} />
     return (
       <>
         <h3>{`¡Ganó ${winner.title}!`}</h3>
-        <TitleCard title={winner.title} originalTitle={winner.originalTitle} year={winner.year} mediaType={winner.mediaType} posterPath={winner.posterPath} />
-        <button onClick={() => onDone(winnerId)}>Listo</button>
+        <div className="bumble">
+          <div className="bumble-card winner">
+            {winner.posterPath && <img src={`https://image.tmdb.org/t/p/w500${winner.posterPath}`} alt="" />}
+            <div className="bumble-info">
+              <TitleFacts title={winner} />
+            </div>
+          </div>
+          <div className="bumble-votes">
+            <button className="secondary" onClick={() => setShowDetail(true)}>
+              Ver detalle
+            </button>
+            <button onClick={() => onDone(winnerId)}>Listo</button>
+          </div>
+        </div>
       </>
     )
   }
