@@ -127,6 +127,17 @@ test('the card shows who directed it, and for a series how many seasons', async 
   expect(screen.getByText('2020 · Serie · 1 temporada')).toBeInTheDocument()
 })
 
+test('in Por ver the card shows how long it lasts, and Vistas does not', async () => {
+  api.listTitles.mockResolvedValue([
+    { ...angelito, runtime: 103 },
+    { ...visto('t7', 'Vista antes', '2026-10-01T20:00:00Z'), year: 2001, runtime: 90 },
+  ])
+  renderList()
+  expect(await screen.findByText('1990 · Película · 1 h 43')).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: 'Vistas' }))
+  expect(screen.getByText('2001 · Película')).toBeInTheDocument()
+})
+
 test('Quitar asks for confirmation before removing', async () => {
   api.listTitles.mockResolvedValue([angelito])
   api.removeTitle.mockResolvedValue(undefined)

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { formatMinutes } from './filters'
 import { kindLine, peopleLine } from './titleText'
 
 type Props = {
@@ -9,10 +10,11 @@ type Props = {
   posterPath: string | null
   director?: string | null
   seasons?: number | null
+  runtime?: number | null
   children?: ReactNode
 }
 
-export function TitleCard({ title, originalTitle, year, mediaType, posterPath, director, seasons, children }: Props) {
+export function TitleCard({ title, originalTitle, year, mediaType, posterPath, director, seasons, runtime, children }: Props) {
   const people = peopleLine(mediaType, director)
   const showOriginal = originalTitle && originalTitle.toLowerCase() !== title.toLowerCase()
   return (
@@ -25,7 +27,7 @@ export function TitleCard({ title, originalTitle, year, mediaType, posterPath, d
       <div className="card-text">
         <strong>{title}</strong>
         {showOriginal && <small>{`Original: ${originalTitle}`}</small>}
-        <small>{kindLine(year, mediaType, seasons)}</small>
+        <small>{[kindLine(year, mediaType, seasons), runtime ? formatMinutes(runtime) : null].filter(Boolean).join(' · ')}</small>
         {people && <small>{people}</small>}
         {children}
       </div>

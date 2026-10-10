@@ -179,6 +179,7 @@ export function TitleList({ filters, onFiltersChange }: { filters: Filters; onFi
                 posterPath={t.posterPath}
                 director={t.director}
                 seasons={t.seasons}
+                runtime={tab === 'to_watch' ? t.runtime : null}
               >
                 <small>{`IMDb ${imdbScore(t.imdbRating)} · RT ${rtScore(t.rottenTomatoes)}`}</small>
                 {t.pending && <small>⏳ Se guarda cuando vuelva la conexión</small>}
