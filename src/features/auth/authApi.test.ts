@@ -96,3 +96,23 @@ test('signOut closes only this phone and forgets the saved lists, even without c
   expect(auth.signOut).toHaveBeenCalledWith({ scope: 'local' })
   expect(readCache('titles', 'c1')).toBeNull()
 })
+
+test('signOut without connection and an expired token still forgets the session on this phone', async () => {
+  // supabase-js intenta renovar el token vencido, falla sin red y devuelve el error sin borrar la sesión.
+  localStorage.setItem('sb-abc-auth-token', '{}')
+  auth.signOut.mockResolvedValueOnce({ error: network }).mockImplementationOnce(async () => {
+    expect(localStorage.getItem('sb-abc-auth-token')).toBeNull()
+    return { error: null }
+  })
+  await signOut()
+  expect(auth.signOut).toHaveBeenCalledTimes(2)
+})
+
+test('a list saved while signing out is forgotten too', async () => {
+  auth.signOut.mockImplementation(async () => {
+    saveCache('titles', 'c1', [])
+    return { error: null }
+  })
+  await signOut()
+  expect(readCache('titles', 'c1')).toBeNull()
+})

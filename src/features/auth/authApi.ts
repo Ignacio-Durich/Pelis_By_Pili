@@ -51,8 +51,17 @@ export function onAuthChange(cb: (session: Session | null) => void): () => void 
   return () => data.subscription.unsubscribe()
 }
 
-// Solo este celular. Sin red, supabase-js igual borra la sesión guardada (y avisa con el error).
+// Solo este celular. Con el token vencido y sin red, supabase-js no puede renovarlo y devuelve el
+// error sin borrar la sesión: se borra a mano y la segunda vuelta avisa SIGNED_OUT. Las listas se
+// olvidan al final, por si una carga terminó mientras tanto.
 export async function signOut(): Promise<void> {
-  clearCaches()
-  await supabase.auth.signOut({ scope: 'local' })
+  try {
+    const { error } = await supabase.auth.signOut({ scope: 'local' })
+    if (error) {
+      for (const key of Object.keys(localStorage)) if (key.startsWith('sb-') && key.endsWith('-auth-token')) localStorage.removeItem(key)
+      await supabase.auth.signOut({ scope: 'local' })
+    }
+  } finally {
+    clearCaches()
+  }
 }
