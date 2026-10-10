@@ -180,3 +180,32 @@ Pedidos de Nacho después de usar la app, hechos directo en main:
   - Si lo escrito es un director o actor (todas las palabras en su nombre; con una parte del nombre, solo si es conocido), arriba aparece "De …" o "Con …" con lo suyo: películas dirigidas y series creadas, o donde actuó (sin entrevistas ni cameos de un capítulo), lo más votado primero.
   - Director y temporadas de los resultados llegan en un segundo pedido a la misma función, para no demorar la búsqueda.
   - La búsqueda espera 300 ms después de la última tecla (eran 400), y lo ya buscado queda en memoria mientras la app está abierta.
+
+# Etapa 12 — Refinamiento (2026-10-09)
+
+Plan: `docs/superpowers/plans/2026-10-09-etapa-12-refinamiento.md`. Rama `etapa-12-refinamiento`.
+
+Se dejan, con su motivo:
+
+- **`bumble_undo` sin revisar en la base que la vuelta siga abierta:** las vueltas se calculan en el celular a partir de los votos, así que la base no sabe cuándo terminó una. Si uno deshace justo cuando el otro termina, el otro celular vuelve un momento a la vuelta anterior y al final queda todo coherente. Arreglarlo pide guardar las vueltas en la base (una función nueva).
+- **"Listo" en la ruleta de desempate antes de que el otro gire:** mostrarle al otro la última partida es una función nueva y el caso es raro.
+- **Animación de salida de la carta de Bumble:** función nueva.
+- **OMDb consultado dos veces al agregar un título y abrirlo enseguida:** cuesta una consulta de las 1000 por día. Evitarlo pide coordinar el completado en segundo plano con el detalle abierto.
+- **Un título anotado sin red puede quedar dos veces en Compartidos** si la app se cierra justo entre mandarlo y sacarlo de la cola (o con dos pestañas en la compu): se descarta a mano. Evitarlo pide un id armado en el celular y una restricción en la base.
+
+Decisiones tomadas al hacerla:
+
+- **Buscador de la lista** (pedido de Nacho): arriba de "Por ver | Vistas", busca solo en la pestaña abierta, por nombre, nombre original y director, sin importar tildes ni mayúsculas; en "Por ver" se suma a los filtros. Lo escrito sigue al cambiar de pestaña o abrir un título; tocar "Lista" lo borra.
+- **Comentarios:** tabla `feedback` que la app no puede leer (Nacho los ve en el panel de Supabase o pidiéndolos). Hasta 20 por persona por día y 2000 letras.
+- **Tope de la bandeja (100)** ahora lo controla un trigger de la base, para el Atajo y para la app; ni el admin puede pasarlo.
+- **Insert de `titles` por columnas:** la app solo puede cargar las columnas de "Agregar"; estado, fecha de vista y puntajes los escriben las funciones.
+- **OMDb:** cualquier error con puntajes guardados se trata como el límite (se muestran los guardados con el aviso), y el puntaje de TMDB nuevo se guarda igual. Los datos fuera de rango de TMDB se recortan en vez de hacer fallar el guardado.
+- **Búsqueda de TMDB:** solo para cuentas que están en un espacio (403 si no).
+- **Aviso cuando se quita el título abierto:** dice "«X» ya no está en la lista", sin nombrar a nadie (la app no sabe quién lo quitó).
+- **Pendientes:** después de 20 intentos fallidos con la app conectada, un pendiente se descarta con el aviso de siempre (un error desconocido del servidor se veía como "sin red" y trababa la cola).
+- **Cerrar sesión:** solo en ese celular (`scope: 'local'`), y borra del celular la lista, la pareja, la bandeja y las partidas guardadas; los pendientes quedan para cuando esa cuenta vuelva a entrar.
+- **Sesión vencida:** sin cambios de código. Las tablas no responden a pedidos sin sesión (error, no lista vacía), y la app ya pide entrar cuando Supabase dice que no hay sesión; quedó un test.
+- **Barras de filtros:** los nombres para lectores de pantalla son "Duración desde/hasta" (no "mínima/máxima"), y un extremo se frena un paso antes del otro.
+- **Completado en segundo plano:** corre desde cada pantalla con títulos (lista y modos de Elegir), uno a la vez en toda la app, y sigue con los vistos porque el director y las temporadas se ven en "Vistas".
+- **Ruleta:** con un filtro activo queda un solo contador (el de los filtros); si la pareja agrega un título después de vetar todo, se puede volver a girar.
+- **Ganadora de Bumble:** carta grande con "Ver detalle" y "Listo".
