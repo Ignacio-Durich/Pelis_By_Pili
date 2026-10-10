@@ -9,10 +9,14 @@ export function ShareShortcut() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(false)
   const [copied, setCopied] = useState<'key' | 'url' | null>(null)
+  // Si falla la red no se sabe si hay clave: no se ofrece "Crear mi clave" (pisaría la que anda).
+  const [loadFailed, setLoadFailed] = useState(false)
 
-  useEffect(() => {
-    shareKeyCreatedAt().then(setCreatedAt, () => setCreatedAt(null))
-  }, [])
+  function loadCreatedAt() {
+    shareKeyCreatedAt().then(setCreatedAt, () => setLoadFailed(true))
+  }
+
+  useEffect(loadCreatedAt, [])
 
   async function create() {
     setBusy(true)
@@ -36,7 +40,20 @@ export function ShareShortcut() {
     <section className="share-shortcut">
       <h2>Atajo para compartir</h2>
       <p>Guardá en Pelis By Pili lo que ves en Instagram, TikTok o donde sea, desde el menú Compartir.</p>
-      {key ? (
+      {loadFailed ? (
+        <>
+          <p role="alert">No se pudo ver tu clave.</p>
+          <button
+            className="secondary"
+            onClick={() => {
+              setLoadFailed(false)
+              loadCreatedAt()
+            }}
+          >
+            Reintentar
+          </button>
+        </>
+      ) : key ? (
         <>
           <input readOnly aria-label="Tu clave" value={key} onFocus={(e) => e.target.select()} />
           <button onClick={() => copy(key, 'key')}>Copiar clave</button>

@@ -56,11 +56,25 @@ test('Agregar hands the item over', () => {
   expect(screen.getByRole('button', { name: 'Agregar lo compartido' })).toHaveTextContent('Agregar')
 })
 
-test('Descartar removes it, and says so if it fails', async () => {
+test('Descartar removes it', async () => {
+  api.dismissShared.mockResolvedValue(undefined)
   renderInbox([reel])
   await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Descartar' })))
   expect(api.dismissShared).toHaveBeenCalledWith('i1')
+})
+
+test('Descartar takes the item off the screen right away, without waiting for realtime', async () => {
+  api.dismissShared.mockResolvedValue(undefined)
+  render(withCouple(<SharedInbox items={[reel, note]} onSearch={onSearch} />))
+  await act(async () => fireEvent.click(screen.getAllByRole('button', { name: 'Descartar' })[0]))
+  expect(screen.queryByText('Parásitos')).not.toBeInTheDocument()
+  expect(screen.getByText('📥 Compartidos (1)')).toBeInTheDocument()
+})
+
+test('a failed Descartar keeps the item', async () => {
   api.dismissShared.mockRejectedValue(new Error('network'))
+  render(withCouple(<SharedInbox items={[reel]} onSearch={onSearch} />))
   await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Descartar' })))
-  expect(screen.getByText('No se pudo descartar. Probá de nuevo.')).toBeInTheDocument()
+  expect(screen.getByText('Parásitos')).toBeInTheDocument()
+  expect(screen.getByRole('alert')).toHaveTextContent('No se pudo descartar. Probá de nuevo.')
 })
