@@ -7,20 +7,26 @@ import { dismissShared, sourceLabel, type SharedItem } from './sharedApi'
 export function SharedInbox({ items, onSearch }: { items: SharedItem[]; onSearch: (item: SharedItem) => void }) {
   const nameOf = useMemberName()
   const [failed, setFailed] = useState(false)
+  // Lo descartado se saca al toque, sin esperar a Realtime (que puede estar caído).
+  const [dismissed, setDismissed] = useState<string[]>([])
+  const shown = items.filter((item) => !dismissed.includes(item.id))
 
-  if (items.length === 0) return null
+  if (shown.length === 0) return null
 
   function dismiss(id: string) {
     setFailed(false)
-    dismissShared(id).catch(() => setFailed(true))
+    dismissShared(id).then(
+      () => setDismissed((d) => [...d, id]),
+      () => setFailed(true),
+    )
   }
 
   return (
     <details className="shared-inbox">
-      <summary>{`📥 Compartidos (${items.length})`}</summary>
+      <summary>{`📥 Compartidos (${shown.length})`}</summary>
       {failed && <p role="alert">No se pudo descartar. Probá de nuevo.</p>}
       <ul>
-        {items.map((item) => {
+        {shown.map((item) => {
           const label = sourceLabel(item)
           const who = `lo compartió ${nameOf(item.sharedBy)}`
           return (

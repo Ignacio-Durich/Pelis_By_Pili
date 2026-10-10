@@ -167,3 +167,12 @@ test('if copying fails it says how to copy by hand', async () => {
   expect(await screen.findByText('No se pudo copiar. Mantené apretado el enlace para copiarlo.')).toBeInTheDocument()
   expect(screen.queryByText('¡Copiado!')).not.toBeInTheDocument()
 })
+
+test('if the key date cannot be read it offers Reintentar, never Crear mi clave', async () => {
+  api.shareKeyCreatedAt.mockRejectedValueOnce(new Error('network')).mockResolvedValue('2026-10-08T15:00:00Z')
+  renderSettings(2)
+  expect(await screen.findByText('No se pudo ver tu clave.')).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Crear mi clave' })).not.toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }))
+  expect(await screen.findByText('Tu clave se creó el 8/10/2026')).toBeInTheDocument()
+})
