@@ -166,3 +166,9 @@ Impacto en el plan: afecta ya a la Etapa 1, no solo a las siguientes. La novia d
 # Mejoras de uso (2026-10-09)
 
 - Nacho corrió `db push` (`20261016000000_title_people.sql`); se publicaron `tmdb-search` y `title-detail`. `npm run test:security:remote`: detalle y búsqueda pasan en la corrida completa; `names` y `shared` se cortaron por el límite de inicios de sesión y pasaron solos 8 minutos después (19/19).
+
+# Etapa 12 (2026-10-09)
+
+- **Emails con el código:** el proyecto real manda los códigos por el SMTP de Gmail de Nacho (contraseña de aplicación, cargada por Nacho en el panel de Supabase → Authentication → SMTP; nunca en el repo). La plantilla es `supabase/templates/codigo.html` con `{{ .Token }}` (el código de 6 dígitos, no un link); la local usa la misma desde `supabase/config.toml`.
+- **Hosting:** Cloudflare Workers con archivos estáticos (ya no Netlify, ver "Mudanza de hosting a Cloudflare"). Servir los archivos es gratis y sin límite; el plan gratis limita las ejecuciones de código propio (100.000 pedidos por día), que esta app no usa. Lo de Netlify (créditos por publicación) ya no aplica.
+- **Pausa de Supabase:** la regla anotada en la sección 3 sigue (un proyecto gratis sin actividad por una semana se pausa, con aviso por email antes, y se restaura desde el panel). Con el uso diario de la app no debería pasar, así que no se programó una consulta diaria (la idea de la función programada de Netlify quedó sin sentido con la mudanza). Falta que Nacho lo confirme mirando el panel (Project settings → General).
