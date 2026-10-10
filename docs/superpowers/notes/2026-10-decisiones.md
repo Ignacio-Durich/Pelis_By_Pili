@@ -202,10 +202,19 @@ Decisiones tomadas al hacerla:
 - **OMDb:** cualquier error con puntajes guardados se trata como el límite (se muestran los guardados con el aviso), y el puntaje de TMDB nuevo se guarda igual. Los datos fuera de rango de TMDB se recortan en vez de hacer fallar el guardado.
 - **Búsqueda de TMDB:** solo para cuentas que están en un espacio (403 si no).
 - **Aviso cuando se quita el título abierto:** dice "«X» ya no está en la lista", sin nombrar a nadie (la app no sabe quién lo quitó).
-- **Pendientes:** después de 20 intentos fallidos con la app conectada, un pendiente se descarta con el aviso de siempre (un error desconocido del servidor se veía como "sin red" y trababa la cola).
-- **Cerrar sesión:** solo en ese celular (`scope: 'local'`), y borra del celular la lista, la pareja, la bandeja y las partidas guardadas; los pendientes quedan para cuando esa cuenta vuelva a entrar.
+- **Pendientes:** después de 20 intentos fallidos con la app conectada (las fallas a menos de un minuto cuentan como una), un pendiente se descarta con el aviso de siempre (un error desconocido del servidor se veía como "sin red" y trababa la cola).
+- **Cerrar sesión:** solo en ese celular (`scope: 'local'`), y borra del celular la lista, la pareja, la bandeja y las partidas guardadas; los pendientes quedan para cuando esa cuenta vuelva a entrar. Sin red y con el token vencido, la sesión se borra a mano (supabase-js no la borra si no pudo renovar el token); tarda unos segundos.
 - **Sesión vencida:** sin cambios de código. Las tablas no responden a pedidos sin sesión (error, no lista vacía), y la app ya pide entrar cuando Supabase dice que no hay sesión; quedó un test.
 - **Barras de filtros:** los nombres para lectores de pantalla son "Duración desde/hasta" (no "mínima/máxima"), y un extremo se frena un paso antes del otro.
 - **Completado en segundo plano:** corre desde cada pantalla con títulos (lista y modos de Elegir), uno a la vez en toda la app, y sigue con los vistos porque el director y las temporadas se ven en "Vistas".
 - **Ruleta:** con un filtro activo queda un solo contador (el de los filtros); si la pareja agrega un título después de vetar todo, se puede volver a girar.
 - **Ganadora de Bumble:** carta grande con "Ver detalle" y "Listo".
+
+**Quedan para más adelante (revisión final de la etapa 12):**
+- OMDb con un error permanente ("Incorrect IMDb ID") deja la fecha vieja: ese título consulta OMDb cada vez que se abre y muestra "desactualizados" para siempre.
+- El completado en segundo plano no tiene tiempo máximo: si un pedido queda colgado, no sigue hasta recargar la app.
+- En el cuerpo de lo compartido queda un "(" si el link venía entre paréntesis; `pp`, `feature`, `_t` y `_r` se sacan de links de cualquier sitio, no solo TikTok y YouTube.
+- La búsqueda de TMDB responde "no_couple" (403) ante una falla pasajera de la base, en vez de 500.
+- El trigger de la bandeja usa `for update`; `for no key update` evitaría frenar un instante los votos y altas de esa pareja.
+- El tope de 20 comentarios por día no tiene lock: dos envíos al mismo tiempo pueden dar 21.
+- Cerrar sesión sin red con el token vencido tarda unos segundos sin mostrar nada.
