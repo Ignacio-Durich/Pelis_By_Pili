@@ -13,11 +13,11 @@ vi.mock('../features/titles/titlesApi', async (importOriginal) => ({
   subscribeTitles: vi.fn().mockReturnValue(() => {}),
 }))
 
-import { nacho, pili, withCouple } from '../test/providers'
+import { tomas, juli, withCouple } from '../test/providers'
 import { Home } from './Home'
 
 function renderHome(memberCount: number) {
-  render(withCouple(<Home />, memberCount === 1 ? [nacho] : [nacho, pili]))
+  render(withCouple(<Home />, memberCount === 1 ? [tomas] : [tomas, juli]))
 }
 
 test('the Lista tab shows the title list', async () => {

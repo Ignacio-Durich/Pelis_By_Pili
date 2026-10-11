@@ -9,7 +9,7 @@ vi.mock('../titles/titlesApi', async (importOriginal) => ({
 }))
 vi.mock('../../lib/supabase', () => ({ supabase: {} }))
 
-import { nacho, withCouple } from '../../test/providers'
+import { tomas, withCouple } from '../../test/providers'
 import { makeTitle } from '../../test/titles'
 import { NO_FILTERS } from '../titles/filters'
 import { Tournament } from './Tournament'
@@ -47,7 +47,7 @@ async function startDuels() {
   fireEvent.click(await screen.findByRole('button', { name: 'Empezar' }))
   pick('a', 'b', 'c', 'd')
   press('Listo (4 de 4)')
-  press('Listo, soy Pili')
+  press('Listo, soy Juli')
   pick('e', 'f', 'g', 'h')
   press('Listo (4 de 4)')
   return view
@@ -65,13 +65,13 @@ test('the start screen needs at least two titles', async () => {
 test('each one chooses 4, passing the phone; the first one choices are locked for the second', async () => {
   renderTournament()
   fireEvent.click(await screen.findByRole('button', { name: 'Empezar' }))
-  expect(screen.getByText('Turno de Nacho: elegí 4')).toBeInTheDocument()
+  expect(screen.getByText('Turno de Tomás: elegí 4')).toBeInTheDocument()
   pick('a', 'b', 'c', 'd')
   press('Listo (4 de 4)')
-  expect(screen.getByText('Pasale el celu a Pili')).toBeInTheDocument()
-  press('Listo, soy Pili')
-  expect(screen.getByText('Turno de Pili: elegí 4')).toBeInTheDocument()
-  expect(screen.getAllByText('La eligió Nacho')).toHaveLength(4)
+  expect(screen.getByText('Pasale el celu a Juli')).toBeInTheDocument()
+  press('Listo, soy Juli')
+  expect(screen.getByText('Turno de Juli: elegí 4')).toBeInTheDocument()
+  expect(screen.getAllByText('La eligió Tomás')).toHaveLength(4)
   expect(screen.getByRole('button', { name: /Peli A/ })).toBeDisabled()
   pick('e', 'f', 'g', 'h')
   press('Listo (4 de 4)')
@@ -121,7 +121,7 @@ test('three rounds leave one winner, and Listo goes back to the start', async ()
 
 test('with a short list there are holes and it still ends', async () => {
   api.listTitles.mockResolvedValue(titles.slice(0, 3))
-  renderTournament([nacho])
+  renderTournament([tomas])
   fireEvent.click(await screen.findByRole('button', { name: 'Empezar' }))
   pick('a', 'b', 'c')
   press('Listo (3 de 3)')

@@ -80,7 +80,7 @@ export function TitleList({ filters, onFiltersChange }: { filters: Filters; onFi
         ? 'No queda nada por ver'
         : 'Nuestra lista está vacía'
 
-  // "Nacho 8,75 · Pili —"
+  // "Tomás 8,75 · Juli —"
   const ourScores = (t: Title) =>
     members
       .map((m) => {

@@ -224,7 +224,7 @@ test('a result already in the list says who added it and cannot be added', async
   }
   renderAdd([existing])
   await typeQuery('mi pobre')
-  expect(screen.getByText('Ya está en la lista (la agregó Pili)')).toBeInTheDocument()
+  expect(screen.getByText('Ya está en la lista (la agregó Juli)')).toBeInTheDocument()
   const result = screen.getByRole('button', { name: /Mi pobre angelito/ })
   expect(result).toBeDisabled()
   fireEvent.click(result)

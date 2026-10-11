@@ -104,8 +104,8 @@ test('shows each title with who added it, the note and the original name', async
   api.listTitles.mockResolvedValue([angelito, sinDatos])
   renderList()
   expect(await screen.findByText('Mi pobre angelito')).toBeInTheDocument()
-  expect(screen.getByText('La agregó Pili')).toBeInTheDocument()
-  expect(screen.getByText('La agregó Nacho')).toBeInTheDocument()
+  expect(screen.getByText('La agregó Juli')).toBeInTheDocument()
+  expect(screen.getByText('La agregó Tomás')).toBeInTheDocument()
   expect(screen.getByText('De dónde vino: un reel')).toBeInTheDocument()
   expect(screen.getByText('Original: Home Alone')).toBeInTheDocument()
   expect(screen.getByText('1990 · Película')).toBeInTheDocument()
@@ -264,7 +264,7 @@ test('Por ver and Vistas tabs split the list, newest watched first', async () =>
   const names = [...document.querySelectorAll('.title-list strong')].map((n) => n.textContent)
   expect(names).toEqual(['Vista después', 'Vista antes'])
   expect(screen.getByText('Vista el 7/10/2026')).toBeInTheDocument()
-  expect(screen.getByText('Nacho 8,75 · Pili —')).toBeInTheDocument()
+  expect(screen.getByText('Tomás 8,75 · Juli —')).toBeInTheDocument()
 })
 
 test('an empty Vistas says so', async () => {
@@ -548,7 +548,7 @@ test('the card is announced with its scores and who added it', async () => {
   const card = await screen.findByRole('button', { name: /^Ver Mi pobre angelito/ })
   expect(card).not.toHaveAttribute('aria-label')
   expect(card).toHaveAccessibleName(expect.stringContaining('IMDb 7.7'))
-  expect(card).toHaveAccessibleName(expect.stringContaining('La agregó Pili'))
+  expect(card).toHaveAccessibleName(expect.stringContaining('La agregó Juli'))
 })
 
 test('after a change is sent, the card keeps it until the new list arrives', async () => {

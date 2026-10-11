@@ -36,9 +36,9 @@ test('Guardar is disabled while the name is empty or blank', () => {
 test('saves the name and finishes', async () => {
   api.setDisplayName.mockResolvedValue(undefined)
   render(<NameForm onDone={onDone} />)
-  type('Pili')
+  type('Juli')
   fireEvent.click(screen.getByRole('button', { name: 'Guardar' }))
-  expect(api.setDisplayName).toHaveBeenCalledWith('Pili')
+  expect(api.setDisplayName).toHaveBeenCalledWith('Juli')
   await vi.waitFor(() => expect(onDone).toHaveBeenCalled())
 })
 
@@ -48,7 +48,7 @@ test.each([
 ] as const)('a %s error shows its message', async (kind, text) => {
   api.setDisplayName.mockRejectedValue(new CoupleError(kind))
   render(<NameForm onDone={onDone} />)
-  type('Pili')
+  type('Juli')
   fireEvent.click(screen.getByRole('button', { name: 'Guardar' }))
   expect(await screen.findByText(text)).toBeInTheDocument()
   expect(onDone).not.toHaveBeenCalled()

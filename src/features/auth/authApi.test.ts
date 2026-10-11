@@ -29,38 +29,38 @@ beforeEach(() => {
 })
 
 test('requestCode sends the normalized email', async () => {
-  await requestCode('  Nacho@Gmail.COM ')
-  expect(auth.signInWithOtp).toHaveBeenCalledWith({ email: 'nacho@gmail.com' })
+  await requestCode('  Tomas@Gmail.COM ')
+  expect(auth.signInWithOtp).toHaveBeenCalledWith({ email: 'tomas@gmail.com' })
 })
 
 test('requestCode maps a Supabase rate limit to rate_limited', async () => {
   auth.signInWithOtp.mockResolvedValue({ data: {}, error: rateLimit })
-  expect(await kindOf(requestCode('nacho@gmail.com'))).toBe('rate_limited')
+  expect(await kindOf(requestCode('tomas@gmail.com'))).toBe('rate_limited')
 })
 
 test('requestCode maps a fetch failure to network', async () => {
   auth.signInWithOtp.mockResolvedValue({ data: {}, error: network })
-  expect(await kindOf(requestCode('nacho@gmail.com'))).toBe('network')
+  expect(await kindOf(requestCode('tomas@gmail.com'))).toBe('network')
 })
 
 test('requestCode rejects an implausible email without calling Supabase', async () => {
-  expect(await kindOf(requestCode('nacho'))).toBe('invalid_email')
+  expect(await kindOf(requestCode('tomas'))).toBe('invalid_email')
   expect(auth.signInWithOtp).not.toHaveBeenCalled()
 })
 
 test('verifyCode sends the normalized email with type email', async () => {
-  await verifyCode(' Nacho@Gmail.com', '123456')
-  expect(auth.verifyOtp).toHaveBeenCalledWith({ email: 'nacho@gmail.com', token: '123456', type: 'email' })
+  await verifyCode(' Tomas@Gmail.com', '123456')
+  expect(auth.verifyOtp).toHaveBeenCalledWith({ email: 'tomas@gmail.com', token: '123456', type: 'email' })
 })
 
 test('verifyCode maps a wrong code to wrong_code', async () => {
   auth.verifyOtp.mockResolvedValue({ data: {}, error: badOtp })
-  expect(await kindOf(verifyCode('nacho@gmail.com', '000000'))).toBe('wrong_code')
+  expect(await kindOf(verifyCode('tomas@gmail.com', '000000'))).toBe('wrong_code')
 })
 
 test('verifyCode maps a fetch failure to network', async () => {
   auth.verifyOtp.mockResolvedValue({ data: {}, error: network })
-  expect(await kindOf(verifyCode('nacho@gmail.com', '000000'))).toBe('network')
+  expect(await kindOf(verifyCode('tomas@gmail.com', '000000'))).toBe('network')
 })
 
 test('getSession returns the session or null', async () => {

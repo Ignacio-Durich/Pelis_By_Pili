@@ -29,7 +29,7 @@ vi.mock('./bumbleApi', async (importOriginal) => ({
 }))
 vi.mock('../../lib/supabase', () => ({ supabase: {} }))
 
-import { nacho, withCouple } from '../../test/providers'
+import { tomas, withCouple } from '../../test/providers'
 import { makeTitle } from '../../test/titles'
 import { NO_FILTERS, type Filters } from '../titles/filters'
 import { Bumble } from './Bumble'
@@ -80,7 +80,7 @@ async function changeGame(votes: Vote[], deck?: string[]) {
 }
 
 test('asks how many phones; two phones need the partner', async () => {
-  renderBumble([nacho])
+  renderBumble([tomas])
   expect(await screen.findByText('¿Cuántos celulares van a usar?')).toBeInTheDocument()
   expect(screen.getByRole('button', { name: '📱📱 Dos' })).toBeDisabled()
   expect(screen.getByText('Para usar dos celulares, tu pareja tiene que unirse')).toBeInTheDocument()
@@ -106,7 +106,7 @@ test('an open game is entered directly, with both progresses', async () => {
   await renderGame([v('u2', 'a', true)])
   expect(screen.queryByText('¿Cuántos celulares van a usar?')).not.toBeInTheDocument()
   expect(cardTitle()).toBe('Peli A')
-  expect(screen.getByText('Vos: 0 de 3 · Pili: 1 de 3')).toBeInTheDocument()
+  expect(screen.getByText('Vos: 0 de 3 · Juli: 1 de 3')).toBeInTheDocument()
 })
 
 test('voting saves and moves on without waiting', async () => {
@@ -135,9 +135,9 @@ test('a partner vote that completes a match shows it, and undoing it takes it aw
   expect(screen.getByText('Matches: 0')).toBeInTheDocument()
 })
 
-test('when I finish and Pili did not, it waits for her', async () => {
+test('when I finish and Juli did not, it waits for her', async () => {
   await renderGame(['a', 'b', 'c'].map((id) => v('u1', id, true)).concat(v('u2', 'a', true)))
-  expect(screen.getByText('Esperando a Pili (1 de 3)')).toBeInTheDocument()
+  expect(screen.getByText('Esperando a Juli (1 de 3)')).toBeInTheDocument()
 })
 
 test('one match wins and Listo saves it', async () => {
@@ -152,7 +152,7 @@ test('several matches go to round 2', async () => {
   const votes = ['a', 'b', 'c'].flatMap((id) => [v('u1', id, id !== 'c'), v('u2', id, true)])
   await renderGame(votes)
   expect(screen.getByText('Vuelta 2')).toBeInTheDocument()
-  expect(screen.getByText('Vos: 0 de 2 · Pili: 0 de 2')).toBeInTheDocument()
+  expect(screen.getByText('Vos: 0 de 2 · Juli: 0 de 2')).toBeInTheDocument()
 })
 
 test('no match says so and Otra partida closes the game', async () => {
@@ -194,15 +194,15 @@ test('one phone: each one swipes the whole deck, passing the phone', async () =>
   renderBumble()
   await screen.findByText('¿Cuántos celulares van a usar?')
   press('📱 Uno')
-  expect(screen.getByText('Turno de Nacho · 0 de 3')).toBeInTheDocument()
+  expect(screen.getByText('Turno de Tomás · 0 de 3')).toBeInTheDocument()
   expect(cardTitle()).toBe('Peli A')
   press('👍 Sí')
   press('👍 Sí')
   press('👎 No')
-  expect(screen.getByText('Pasale el celu a Pili')).toBeInTheDocument()
+  expect(screen.getByText('Pasale el celu a Juli')).toBeInTheDocument()
   expect(screen.queryByTestId('bumble-card')).not.toBeInTheDocument()
-  press('Listo, soy Pili')
-  expect(screen.getByText('Turno de Pili · 0 de 3')).toBeInTheDocument()
+  press('Listo, soy Juli')
+  expect(screen.getByText('Turno de Juli · 0 de 3')).toBeInTheDocument()
   expect(cardTitle()).toBe('Peli A')
   press('👍 Sí')
   press('👎 No')
@@ -215,7 +215,7 @@ test('one phone: each one swipes the whole deck, passing the phone', async () =>
 })
 
 test('one phone alone in the space calls the other one tu pareja', async () => {
-  renderBumble([nacho])
+  renderBumble([tomas])
   await screen.findByText('¿Cuántos celulares van a usar?')
   press('📱 Uno')
   for (let i = 0; i < 3; i++) press('👍 Sí')
@@ -234,7 +234,7 @@ test('one phone: undo works in the turn and before passing the phone', async () 
   for (let i = 0; i < 3; i++) press('👍 Sí')
   press('Deshacer')
   expect(cardTitle()).toBe('Peli C')
-  expect(screen.getByText('Turno de Nacho · 2 de 3')).toBeInTheDocument()
+  expect(screen.getByText('Turno de Tomás · 2 de 3')).toBeInTheDocument()
 })
 
 test('one phone: the game survives the app reloading', async () => {
@@ -244,7 +244,7 @@ test('one phone: the game survives the app reloading', async () => {
   press('👍 Sí')
   first.unmount()
   renderBumble()
-  expect(await screen.findByText('Turno de Nacho · 1 de 3')).toBeInTheDocument()
+  expect(await screen.findByText('Turno de Tomás · 1 de 3')).toBeInTheDocument()
   expect(cardTitle()).toBe('Peli B')
 })
 
@@ -253,12 +253,12 @@ test('one phone: several matches announce a second round', async () => {
   await screen.findByText('¿Cuántos celulares van a usar?')
   press('📱 Uno')
   for (let i = 0; i < 3; i++) press('👍 Sí')
-  press('Listo, soy Pili')
+  press('Listo, soy Juli')
   for (let i = 0; i < 3; i++) press('👍 Sí')
   expect(screen.getByText('¡3 matches! Vuelven a deslizar solo esos')).toBeInTheDocument()
   press('Seguir')
   expect(screen.getByText('Vuelta 2')).toBeInTheDocument()
-  expect(screen.getByText('Turno de Nacho · 0 de 3')).toBeInTheDocument()
+  expect(screen.getByText('Turno de Tomás · 0 de 3')).toBeInTheDocument()
 })
 
 test('a voted title removed from the list does not hide Deshacer', async () => {

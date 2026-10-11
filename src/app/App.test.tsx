@@ -18,8 +18,8 @@ vi.mock('../features/couple/coupleApi', async (importOriginal) => ({
     coupleId: 'c1',
     memberCount: 2,
     members: [
-      { userId: 'u1', displayName: 'Nacho' },
-      { userId: 'u2', displayName: 'Pili' },
+      { userId: 'u1', displayName: 'Tomás' },
+      { userId: 'u2', displayName: 'Juli' },
     ],
   }),
 }))

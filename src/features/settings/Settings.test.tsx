@@ -14,13 +14,13 @@ vi.mock('../shared/sharedApi', async (importOriginal) => ({
 }))
 vi.mock('../../lib/supabase', () => ({ supabase: {} }))
 
-import { nacho, pili, withCouple } from '../../test/providers'
+import { tomas, juli, withCouple } from '../../test/providers'
 import { savedTheme } from '../../lib/theme'
 import { SHARE_URL } from '../shared/sharedApi'
 import { Settings } from './Settings'
 
 function renderSettings(memberCount: number) {
-  render(withCouple(<Settings />, memberCount === 1 ? [nacho] : [pili, nacho]))
+  render(withCouple(<Settings />, memberCount === 1 ? [tomas] : [juli, tomas]))
 }
 
 beforeEach(() => {
@@ -62,11 +62,11 @@ test('Cerrar sesión calls signOut', () => {
 
 test('with two members names both, mine first', () => {
   renderSettings(2)
-  expect(screen.getByText('Son dos personas en este espacio: Nacho y Pili')).toBeInTheDocument()
+  expect(screen.getByText('Son dos personas en este espacio: Tomás y Juli')).toBeInTheDocument()
 })
 
 test('a missing name is left out', () => {
-  render(withCouple(<Settings />, [nacho, { userId: 'u2', displayName: null }]))
+  render(withCouple(<Settings />, [tomas, { userId: 'u2', displayName: null }]))
   expect(screen.getByText('Son dos personas en este espacio')).toBeInTheDocument()
 })
 

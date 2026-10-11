@@ -1,4 +1,4 @@
--- Nombre visible de cada persona dentro de su espacio ("La agregó Pili").
+-- Nombre visible de cada persona dentro de su espacio ("La agregó Juli").
 -- Se carga solo con set_display_name y cada uno cambia únicamente el suyo.
 
 alter table public.couple_members
