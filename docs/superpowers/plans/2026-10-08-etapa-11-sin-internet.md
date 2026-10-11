@@ -7,7 +7,7 @@
 **Architecture:**
 - **Lo último visto queda en el celular** (`localStorage`): la sesión (solo el id de la cuenta), la pareja y la lista de títulos. Al abrir sin red, los "portones" (sesión y pareja) y la lista usan eso en vez de mostrar "Sin conexión".
 - **Cola de pendientes** (`localStorage`): marcar vista, puntaje y "agregar después". Se aplican al momento sobre la lista guardada (se ven con ⏳) y se mandan en orden al volver la conexión (evento `online`, volver la app al frente o una carga que sale bien).
-- **"Agregar después" va a la bandeja de la etapa 8** con una función nueva para la persona con sesión (`add_shared_item`): al sincronizar aparece en "📥 Compartidos" de los dos, y desde ahí "Agregar" busca el título correcto. (Elegido por Nacho el 2026-10-08.)
+- **"Agregar después" va a la bandeja de la etapa 8** con una función nueva para la persona con sesión (`add_shared_item`): al sincronizar aparece en "📥 Compartidos" de los dos, y desde ahí "Agregar" busca el título correcto. (Elegido por Tomás el 2026-10-08.)
 - **La app abre sin red** gracias al service worker que ya existe (vite-plugin-pwa); se suma guardar los pósters ya vistos.
 
 **Tech Stack:** lo de las etapas anteriores. Sin dependencias nuevas.
@@ -22,7 +22,7 @@
 - Pantallas que entran en iPhone 13 (390×844) y 15 (393×852) (spec, sección 12).
 - Alcance estricto. **No entra:** nada fuera de la carga y la calificación sin conexión (ni quitar títulos, ni Bumble o Top 3 secreto con dos celulares, ni buscar en TMDB sin red).
 - Cada decisión fuera del plan va a `docs/superpowers/notes/2026-10-decisiones.md`; los menores de la revisión final, a la Etapa 12.
-- **Decisiones confirmadas por Nacho el 2026-10-08:**
+- **Decisiones confirmadas por Tomás el 2026-10-08:**
   1. **Agregar sin internet** = anotar el nombre (y "de dónde vino"); al volver la conexión va a "📥 Compartidos" de los dos, y desde ahí "Agregar" busca el título.
   2. **Sin internet se ve la última lista** (Por ver, Vistas, detalle con lo guardado) y se puede **marcar como vista y puntuar**. Los modos de un celular (Ruleta, Preguntas rápidas, Bumble, Top 3 secreto y Torneo con un celular) también andan con la lista guardada.
   3. **Lo pendiente se ve al instante con ⏳** (en la tarjeta y en el detalle) y arriba de la lista un aviso: "Sin conexión. Lo que hagas se guarda cuando vuelva la conexión (n pendientes)".
@@ -48,7 +48,7 @@
 
 **Interfaces:**
 - Produces: `add_shared_item(p_query text, p_body text) returns uuid` (`security definer`): `no_couple` sin espacio; recorta los dos textos (vacío = nulo); `invalid_item` si quedan los dos vacíos o pasan los largos de `shared_items` (100 y 500); `inbox_full` con 100 ítems en la bandeja de la pareja; guarda con `shared_by = auth.uid()`, sin link ni origen, y devuelve el id.
-- [ ] **Step 1: Write the failing tests:** Pili agrega "Dark" con una nota y Nacho lo lee en la bandeja con `shared_by` Pili; vacío da `invalid_item`; 101 letras en el nombre, `invalid_item`; sin espacio, `no_couple`; anónimo, error; con 100 ítems, `inbox_full`; el `INSERT` llega a la pareja por Realtime (como el test de la etapa 8).
+- [ ] **Step 1: Write the failing tests:** Juli agrega "Dark" con una nota y Tomás lo lee en la bandeja con `shared_by` Juli; vacío da `invalid_item`; 101 letras en el nombre, `invalid_item`; sin espacio, `no_couple`; anónimo, error; con 100 ítems, `inbox_full`; el `INSERT` llega a la pareja por Realtime (como el test de la etapa 8).
 - [ ] **Step 2: Run** → FAIL. **Step 3: Write the migration.** **Step 4: Run** `npx supabase migration up` y `npm run test:security` → PASS.
 - [ ] **Step 5: Commit** `feat: agregar a la bandeja con sesión`
 
@@ -107,9 +107,9 @@
 ### Task 6: Publicación y aceptación
 
 - [ ] **Step 1:** `npm test && npm run test:security && npm run typecheck`.
-- [ ] **Step 2 (Nacho):** `npx supabase db push`; después una corrida de `npm run test:security:remote` (repetir a los minutos los archivos que corte el límite de Auth).
+- [ ] **Step 2 (Tomás):** `npx supabase db push`; después una corrida de `npm run test:security:remote` (repetir a los minutos los archivos que corte el límite de Auth).
 - [ ] **Step 3:** `CI=true WRANGLER_SEND_METRICS=false npm run deploy < /dev/null` y comprobar el bundle publicado.
-- [ ] **Step 4: Prueba de aceptación** (Nacho y Pili de prueba): con la app ya abierta una vez, modo avión; abrirla desde la pantalla de inicio; marcar una como vista, puntuarla y anotar un título; sacar el modo avión; en el otro celular aparece lo anotado en Compartidos y la peli como vista con su puntaje.
+- [ ] **Step 4: Prueba de aceptación** (Tomás y Juli de prueba): con la app ya abierta una vez, modo avión; abrirla desde la pantalla de inicio; marcar una como vista, puntuarla y anotar un título; sacar el modo avión; en el otro celular aparece lo anotado en Compartidos y la peli como vista con su puntaje.
 - [ ] **Step 5: Commit** `docs: cierre de la Etapa 11`
 
 **Cierre de la Etapa 11:** se agrega un título en modo avión y aparece en el otro celular al reconectar. **No entra:** nada fuera de la carga y la calificación sin conexión.

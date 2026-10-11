@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** "Bumble": Nacho y Pili deslizan un mazo de títulos de "Por ver" con cartas tipo Tinder/Bumble; cuando a los dos les gusta el mismo hay match. Se juega con dos celulares (en vivo, el match aparece en los dos al mismo tiempo) o con uno solo pasándoselo. Con varios matches hay segunda vuelta.
+**Goal:** "Bumble": Tomás y Juli deslizan un mazo de títulos de "Por ver" con cartas tipo Tinder/Bumble; cuando a los dos les gusta el mismo hay match. Se juega con dos celulares (en vivo, el match aparece en los dos al mismo tiempo) o con uno solo pasándoselo. Con varios matches hay segunda vuelta.
 
 **Architecture:**
 - **Lógica pura** en `bumbleLogic.ts`: armar el mazo y, a partir de los votos, calcular en qué vuelta están, la próxima carta de cada uno, los matches y el resultado. Es la misma para uno y dos celulares: cambia solo de dónde salen los votos.
@@ -16,12 +16,12 @@
 
 ## Global Constraints
 
-- Interfaz en español rioplatense; los textos exactos están en cada tarea. El modo se llama **"Bumble"** (pedido de Nacho; antes "Swipe y match").
+- Interfaz en español rioplatense; los textos exactos están en cada tarea. El modo se llama **"Bumble"** (pedido de Tomás; antes "Swipe y match").
 - El mazo sale de "Por ver" (spec, sección 8), nunca de un catálogo general.
 - Nadie ajeno a la pareja lee ni escribe sesiones o votos (mismo modelo de `is_member` y `revoke all` de la etapa 1). Claves primarias al azar (lección de la etapa 4: Realtime manda la clave de las filas borradas a cualquiera).
-- Alcance estricto. **No entra:** Atajo de iOS, revelación simultánea ni torneo; tampoco avisos push ("Pili empezó un Bumble") ni guardar en la base las partidas de un celular.
+- Alcance estricto. **No entra:** Atajo de iOS, revelación simultánea ni torneo; tampoco avisos push ("Juli empezó un Bumble") ni guardar en la base las partidas de un celular.
 - Cada decisión fuera de este plan se anota en `docs/superpowers/notes/2026-10-decisiones.md`. Los puntos menores de la revisión final van a la Etapa 12 de la spec.
-- Decisiones confirmadas por Nacho el 2026-10-08:
+- Decisiones confirmadas por Tomás el 2026-10-08:
   - **Mazo:** los de "Por ver" que cumplen los filtros (los mismos de la lista y la ruleta), mezclados al azar, **hasta 30** (con menos, todos; mínimo 2). Los dos ven las mismas cartas en el mismo orden.
   - **¿Uno o dos celulares?** Al empezar se pregunta "¿Cuántos celulares van a usar?": "📱 Uno" o "📱📱 Dos". Con un solo miembro en el espacio, "Dos" está deshabilitado con "Para usar dos celulares, tu pareja tiene que unirse". Si la pareja ya empezó un Bumble con dos celulares, se entra directo a esa partida, sin preguntar.
   - **Con un celular cada uno desliza el mazo entero:** primero quien tiene la sesión abierta, después aparece "Pasale el celu a <nombre>" (sin mostrar lo que votó el primero) y desliza el otro. Si el espacio tiene un solo miembro, el otro se llama "tu pareja".
@@ -66,7 +66,7 @@
   - `bumble_undo` borra solo el último voto de quien llama (el de la pareja queda); dos seguidos borran los dos últimos; sin votos no falla; C recibe `not_found`.
   - `finish_bumble(id, título)` deja `done` con `result_title_id`; con `null`, `cancelled`; una segunda llamada no falla; después se puede empezar otra.
   - C no ve sesiones ni votos de A; nadie puede `insert`/`update`/`delete` directo (error de permisos).
-  - Realtime: Pili recibe el `INSERT` del voto de Nacho en `bumble_votes` (filtro `couple_id=eq.A`) y C, con el mismo filtro, no recibe nada (patrón de espera de `scores.test.ts`). Al deshacer, Pili recibe el `DELETE` (sin filtro, como en `titles`: solo viaja el `id`).
+  - Realtime: Juli recibe el `INSERT` del voto de Tomás en `bumble_votes` (filtro `couple_id=eq.A`) y C, con el mismo filtro, no recibe nada (patrón de espera de `scores.test.ts`). Al deshacer, Juli recibe el `DELETE` (sin filtro, como en `titles`: solo viaja el `id`).
 - [ ] **Step 2: Run** `npm run test:security -- bumble` → FAIL (no existen las funciones).
 - [ ] **Step 3: Write the migration** (tablas, índices por `couple_id` y `session_id`, RLS, `revoke all` + `grant select` a `authenticated` + `grant all` a `service_role`, las cuatro funciones, `alter publication supabase_realtime add table` de las dos).
 - [ ] **Step 4: Run** `npx supabase db reset` (si después las plantillas de correo no andan: `npx supabase stop && npx supabase start`, y volver a levantar `npx supabase functions serve --env-file .env.local`) y `npm run test:security` → todo en verde.
@@ -149,9 +149,9 @@ Frente: póster grande (TMDB `w500`; sin póster, fondo liso con el título), en
 
 Pantallas (todas con "Volver a los modos" arriba, dentro de la sección):
 - **Inicio** (sin partida abierta de dos celulares ni partida local guardada): `<h2>Bumble</h2>`, "Deslicen las cartas. Hay match cuando a los dos les gusta la misma.", `FiltersPanel` con el contador, "¿Cuántos celulares van a usar?" con "📱 Uno" y "📱📱 Dos" (deshabilitados con menos de 2 títulos que cumplen: "Hacen falta al menos 2 títulos"; "Dos" también con un solo miembro, con su aviso). "Dos" = `startBumble(buildDeck(...))` y recargar. "Uno" = partida local con `buildDeck` y un id al azar (`crypto.randomUUID()`), guardada en `localStorage` (`pelis-bumble-local`, lecturas y escrituras en `try/catch`).
-- **Vuelta en curso:** "Vuelta r" (solo si r > 1, con "Vuelven a deslizar los matches"), la carta `next` del jugador que está en turno, y el avance: con dos celulares "Vos: 3 de 30 · Pili: 5 de 30"; con uno "Turno de Nacho · 3 de 30". El voto avanza al instante (estado local de pendientes mientras llega la recarga); si falla, la carta vuelve con "No se pudo guardar. Probá de nuevo.". Con dos celulares, cada match nuevo muestra "¡Match! <título>" (`role="status"`) y debajo "Matches: n". Botón "↩️ Deshacer" cuando `lastUndoable` no es `null` (dos celulares: `bumbleUndo(id)` y recargar; uno: saca ese voto de la partida local); la carta deshecha vuelve a ser la próxima. Botón "Terminar" (dos celulares: `finishBumble(id, null)`; uno: borra la partida local).
+- **Vuelta en curso:** "Vuelta r" (solo si r > 1, con "Vuelven a deslizar los matches"), la carta `next` del jugador que está en turno, y el avance: con dos celulares "Vos: 3 de 30 · Juli: 5 de 30"; con uno "Turno de Tomás · 3 de 30". El voto avanza al instante (estado local de pendientes mientras llega la recarga); si falla, la carta vuelve con "No se pudo guardar. Probá de nuevo.". Con dos celulares, cada match nuevo muestra "¡Match! <título>" (`role="status"`) y debajo "Matches: n". Botón "↩️ Deshacer" cuando `lastUndoable` no es `null` (dos celulares: `bumbleUndo(id)` y recargar; uno: saca ese voto de la partida local); la carta deshecha vuelve a ser la próxima. Botón "Terminar" (dos celulares: `finishBumble(id, null)`; uno: borra la partida local).
 - **Un celular, terminó el primero:** "Pasale el celu a <nombre>", el botón "Listo, soy <nombre>" y "↩️ Deshacer" (por si el primero se arrepiente antes de pasarlo).
-- **Dos celulares, terminé yo:** "Esperando a Pili (12 de 30)".
+- **Dos celulares, terminé yo:** "Esperando a Juli (12 de 30)".
 - **Fin de vuelta con varios matches (un celular):** "¡n matches! Vuelven a deslizar solo esos" y "Seguir", que empieza la vuelta siguiente con el primer jugador.
 - **`none`:** "No hubo match esta vez" y "Otra partida" (cierra la actual).
 - **`roulette`:** "Siguen empatados: decide la ruleta", la `Wheel` con los candidatos y "Girar", que gira hasta `seededIndex(`${id}:${round}`, n)`; al terminar, la ganadora.
@@ -160,8 +160,8 @@ Pantallas (todas con "Volver a los modos" arriba, dentro de la sección):
 
 - [ ] **Step 1: Write the failing tests** en `Bumble.test.tsx`, con `useTitles`/`bumbleApi`/`detailApi` mockeados como en `QuickQuestions.test.tsx`:
   - Inicio: pregunta los celulares; "Dos" deshabilitado con un solo miembro y su aviso; con 1 título los dos deshabilitados; "Dos" llama a `startBumble` con los ids de "Por ver" que cumplen los filtros; si ya hay partida abierta, entra directo sin preguntar.
-  - Dos celulares: muestra la primera carta sin voto mío y el avance; "👍 Sí" llama a `bumbleVote(id, 1, título, true)` y muestra la siguiente sin esperar la recarga; si falla, vuelve la misma carta con el aviso; un voto de Pili que llega por `notify` y completa un match muestra "¡Match! <título>"; terminé yo y Pili no: "Esperando a Pili (n de 30)"; con 1 match, "¡Ganó <título>!" y "Listo" llama a `finishBumble(id, título)`; con 2 matches, "Vuelta 2"; "Terminar" llama a `finishBumble(id, null)`; "↩️ Deshacer" llama a `bumbleUndo(id)` y vuelve a mostrar la carta deshecha; si Pili deshace (llega por `notify`) el voto que hacía un match, el match deja de contarse.
-  - Un celular: "Uno" arranca con "Turno de Nacho"; al votar todas aparece "Pasale el celu a Pili"; "Listo, soy Pili" muestra la primera carta otra vez con "Turno de Pili"; con un solo miembro dice "tu pareja"; después de un `unmount` y un render nuevo sigue en la misma carta (desde `localStorage`); con varios matches, "Seguir" arranca la vuelta 2; "↩️ Deshacer" en el turno y en "Pasale el celu" saca el último voto del jugador en turno.
+  - Dos celulares: muestra la primera carta sin voto mío y el avance; "👍 Sí" llama a `bumbleVote(id, 1, título, true)` y muestra la siguiente sin esperar la recarga; si falla, vuelve la misma carta con el aviso; un voto de Juli que llega por `notify` y completa un match muestra "¡Match! <título>"; terminé yo y Juli no: "Esperando a Juli (n de 30)"; con 1 match, "¡Ganó <título>!" y "Listo" llama a `finishBumble(id, título)`; con 2 matches, "Vuelta 2"; "Terminar" llama a `finishBumble(id, null)`; "↩️ Deshacer" llama a `bumbleUndo(id)` y vuelve a mostrar la carta deshecha; si Juli deshace (llega por `notify`) el voto que hacía un match, el match deja de contarse.
+  - Un celular: "Uno" arranca con "Turno de Tomás"; al votar todas aparece "Pasale el celu a Juli"; "Listo, soy Juli" muestra la primera carta otra vez con "Turno de Juli"; con un solo miembro dice "tu pareja"; después de un `unmount` y un render nuevo sigue en la misma carta (desde `localStorage`); con varios matches, "Seguir" arranca la vuelta 2; "↩️ Deshacer" en el turno y en "Pasale el celu" saca el último voto del jugador en turno.
   - `roulette`: "Girar" termina mostrando la ganadora de `seededIndex` (con movimiento reducido, como en `Roulette.test.tsx`).
   - Un título borrado del mazo no aparece ni traba el fin de la vuelta.
   - `ChooseMenu`: primer botón "Bumble" con "Deslicen y gana la que les guste a los dos", que abre el modo y vuelve.
@@ -177,9 +177,9 @@ Pantallas (todas con "Volver a los modos" arriba, dentro de la sección):
 - Modify: `docs/superpowers/notes/2026-10-verificacion-fuentes.md` ("Cierre de la Etapa 7").
 
 - [ ] **Step 1:** `npm test && npm run test:security && npm run typecheck`.
-- [ ] **Step 2 (Nacho):** `npx supabase db push`. Después, una sola corrida de `npm run test:security:remote`.
+- [ ] **Step 2 (Tomás):** `npx supabase db push`. Después, una sola corrida de `npm run test:security:remote`.
 - [ ] **Step 3:** `CI=true WRANGLER_SEND_METRICS=false npm run deploy < /dev/null` y comprobar que el bundle publicado es el local.
-- [ ] **Step 4: Prueba de aceptación** (Nacho y la cuenta de prueba en el celular de su hermana): con dos celulares, uno empieza y el otro entra solo; un match aparece en los dos al mismo tiempo; varios matches llevan a la vuelta 2; "↩️ Deshacer" saca un match en los dos; "Listo" y "Terminar" vuelven al inicio en los dos. Con un celular, la partida entera pasándoselo. En la carta, los datos y la sinopsis al tocarla.
+- [ ] **Step 4: Prueba de aceptación** (Tomás y la cuenta de prueba en un celular prestado): con dos celulares, uno empieza y el otro entra solo; un match aparece en los dos al mismo tiempo; varios matches llevan a la vuelta 2; "↩️ Deshacer" saca un match en los dos; "Listo" y "Terminar" vuelven al inicio en los dos. Con un celular, la partida entera pasándoselo. En la carta, los datos y la sinopsis al tocarla.
 - [ ] **Step 5: Commit** `docs: cierre de la Etapa 7`
 
 **Cierre de la Etapa 7:** dos celulares distintos detectan el match al mismo tiempo, y también se puede jugar con uno solo. **No entra** (no adelantar): Atajo de iOS, revelación simultánea ni torneo.

@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Que Nacho y Pili respondan cuánto tiempo tienen, qué ánimo tienen (uno o varios) y en qué plataforma quieren ver, y que la app sugiera los 3 mejores títulos de su lista "Por ver" para ese momento.
+**Goal:** Que Tomás y Juli respondan cuánto tiempo tienen, qué ánimo tienen (uno o varios) y en qué plataforma quieren ver, y que la app sugiera los 3 mejores títulos de su lista "Por ver" para ese momento.
 
 **Architecture:**
 - **Lógica pura** en `quickPick.ts`, sin red ni base. Recibe la lista y las respuestas y devuelve hasta 3 títulos, y si hubo que completar con otros que no coinciden con el ánimo. Usa los datos que ya se guardan desde la etapa 5: duración, géneros, plataformas y puntajes.
@@ -20,7 +20,7 @@
 - Solo se sugieren títulos de "Por ver" (spec, sección 8: el mazo sale de la lista, no de un catálogo general).
 - Alcance estricto. **No entra:** sesiones en tiempo real entre los dos celulares (swipe, revelación, torneo) ni lista sin conexión.
 - Cada decisión fuera de este plan se anota en `docs/superpowers/notes/2026-10-decisiones.md`. Los puntos menores de la revisión final van a la Etapa 12 de la spec.
-- Decisiones confirmadas por Nacho el 2026-10-07:
+- Decisiones confirmadas por Tomás el 2026-10-07:
   - **Ánimos y los géneros de TMDB que cuentan para cada uno** (nombres reales de TMDB en `es-AR`; las series usan algunos propios):
 
     | id | Texto | Géneros |
@@ -37,8 +37,8 @@
 
   - Se pueden elegir **varios ánimos**. Un título coincide si tiene algún género de alguno de los ánimos elegidos.
   - Si hay menos de 3 que cumplen todo, **se completa** con títulos que cumplen el tiempo y la plataforma aunque no coincidan con el ánimo, con el aviso "No encontramos 3 con ese ánimo; sumamos estas".
-- También confirmadas por Nacho el 2026-10-07:
-  - **Géneros de Relax** (lo pidió Nacho "para antes de dormir o de fondo"): los de la tabla. No se excluye nada intenso: un drama que también es "Música" cuenta como Relax.
+- También confirmadas por Tomás el 2026-10-07:
+  - **Géneros de Relax** (lo pidió Tomás "para antes de dormir o de fondo"): los de la tabla. No se excluye nada intenso: un drama que también es "Música" cuenta como Relax.
   - **Tiempo:** "Hasta 1 h 30" (90 min), "Hasta 2 h" (120), "Hasta 2 h 30" (150) o "Sin apuro" (sin límite, opción por defecto). En series cuenta la duración de un capítulo.
   - **Plataforma:** "Cualquiera" (por defecto) o una sola de las que aparecen en "Por ver".
   - **Orden:**
@@ -189,7 +189,7 @@ git add src && git commit -m "feat: menú de Elegir y preguntas rápidas"
 Run: `npm test && npm run test:security && npm run typecheck`, y después `npm run deploy` (compila, revisa que `dist/` no tenga claves ni la URL local, y publica en Cloudflare).
 Expected: todo en verde, `HTTP/2 200` en la dirección de la app, y el bundle publicado es el mismo que el local. No hace falta `db push` ni desplegar funciones.
 
-- [ ] **Step 2: Prueba de aceptación** (Nacho, y la cuenta de prueba en el celular de su hermana)
+- [ ] **Step 2: Prueba de aceptación** (Tomás, y la cuenta de prueba en un celular prestado)
 
 1. "Elegir" muestra el menú. "Ruleta" sigue funcionando igual.
 2. En "Preguntas rápidas", con "Hasta 2 h", "😂 Reírnos" y una plataforma, las 3 sugerencias son coherentes: entran en el tiempo, están en la plataforma, y las primeras son comedias.

@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Que Nacho o Pili (cada uno con su nombre visible) busquen una película o serie por cualquiera de sus nombres (español latino, España o inglés), la agreguen con un toque (con nota de origen opcional) o la quiten, y que a la otra persona le aparezca el cambio en la lista "Por ver" sin recargar.
+**Goal:** Que Tomás o Juli (cada uno con su nombre visible) busquen una película o serie por cualquiera de sus nombres (español latino, España o inglés), la agreguen con un toque (con nota de origen opcional) o la quiten, y que a la otra persona le aparezca el cambio en la lista "Por ver" sin recargar.
 
 **Architecture:**
 - La búsqueda pasa por una Edge Function de Supabase (`tmdb-search`). La función valida la sesión y consulta TMDB en tres idiomas a la vez (`es-MX`, `es-AR` y `en-US`); el idioma cambia con qué nombres compara TMDB. Después une los resultados.
@@ -23,9 +23,9 @@
 - Interfaz en español rioplatense; los textos exactos están en cada tarea.
 - Alcance estricto. **No entra:** puntajes, detalle, marcar vista, pestaña "Vistas", filtros, plataformas, lista sin conexión.
 - Cada decisión fuera de este plan se anota en `docs/superpowers/notes/2026-10-decisiones.md` con su motivo.
-- Decisiones confirmadas por Nacho el 2026-10-06:
+- Decisiones confirmadas por Tomás el 2026-10-06:
   - La intermediaria con TMDB es una Edge Function de Supabase.
-  - "Quién la cargó" se muestra con el nombre de cada persona ("La agregó Pili", "La agregó Nacho"). Cada miembro carga su nombre una vez (pedido de Nacho el 2026-10-07).
+  - "Quién la cargó" se muestra con el nombre de cada persona ("La agregó Juli", "La agregó Tomás"). Cada miembro carga su nombre una vez (pedido de Tomás el 2026-10-07).
   - La frase de atribución de TMDB va en Ajustes desde esta etapa. El logo y JustWatch quedan para la etapa 3.
   - **Quitar títulos de la lista** entra en esta etapa, aunque la spec no lo nombra. Cualquiera de los dos puede quitar cualquier título del espacio, con confirmación.
   - **Buscar por el nombre en inglés y por los nombres de cada región.**
@@ -149,7 +149,7 @@ Mismo patrón que `20261006000000_couples.sql`:
 Run: `npx supabase db reset && npm run test:security`
 Expected: PASS en los 12 tests de la etapa 1 y los 9 nuevos.
 
-- [ ] **Step 5: Aplicar en el proyecto real (Nacho, en su terminal) y verificar**
+- [ ] **Step 5: Aplicar en el proyecto real (Tomás, en su terminal) y verificar**
 
 Run: `npx supabase db push`; después, `npm run test:security:remote`
 Expected: la migración se aplica sin errores y los tests pasan también contra el proyecto real.
@@ -197,7 +197,7 @@ git add supabase/migrations tests/security && git commit -m "feat: tabla de tít
 - [ ] **Step 1: Escribir los tests de seguridad que fallan**
 
 En `tests/security/names.test.ts`: A y B comparten un espacio, C tiene un espacio propio, y `afterAll(cleanup)`.
-- `a member sets their own name and the partner reads it`: A llama a `set_display_name('  Nacho ')`; B lee `display_name = 'Nacho'` en la fila de A.
+- `a member sets their own name and the partner reads it`: A llama a `set_display_name('  Tomás ')`; B lee `display_name = 'Tomás'` en la fila de A.
 - `the name only changes the caller's row`: después de que A y B cargan sus nombres, el `display_name` de B sigue siendo el suyo.
 - `invalid names are rejected`: `''`, `'   '` y 31 caracteres → `invalid_name`.
 - `non-members cannot set a name`: un usuario sin espacio recibe `not_a_member`.
@@ -232,7 +232,7 @@ Expected: PASS en todos los tests de seguridad.
   - Al terminar `NameForm`, vuelve a leer el espacio y muestra los hijos.
   - Si el nombre que falta es el de la pareja, muestra los hijos igual.
 - `Settings`:
-  - Con dos miembros dice "Son dos personas en este espacio: Nacho y Pili", con el nombre propio primero.
+  - Con dos miembros dice "Son dos personas en este espacio: Tomás y Juli", con el nombre propio primero.
   - Si a alguno le falta el nombre, se lo omite: "Son dos personas en este espacio".
 - `useMemberName`: devuelve el nombre del miembro; con un id desconocido o `null`, `'alguien'`.
 
@@ -243,12 +243,12 @@ Expected: FAIL.
 
 - [ ] **Step 6: Implementar y verificar**
 
-`CoupleGate` pide el nombre después de crear el espacio o unirse, antes de mostrar el inicio. Si a Nacho o a Pili les falta el nombre (las cuentas de la etapa 1), se lo pide la próxima vez que abren la app.
+`CoupleGate` pide el nombre después de crear el espacio o unirse, antes de mostrar el inicio. Si a Tomás o a Juli les falta el nombre (las cuentas de la etapa 1), se lo pide la próxima vez que abren la app.
 
 Run: `npm test && npm run typecheck && npx oxlint`
 Expected: PASS.
 
-- [ ] **Step 7: Aplicar en el proyecto real (Nacho, en su terminal) y verificar**
+- [ ] **Step 7: Aplicar en el proyecto real (Tomás, en su terminal) y verificar**
 
 Run: `npx supabase db push`; después, `npm run test:security:remote`
 Expected: la migración se aplica sin errores y los tests pasan también contra el proyecto real.
@@ -336,7 +336,7 @@ Expected: PASS en los 4.
 
 - [ ] **Step 8: Secreto y despliegue en el proyecto real**
 
-Nacho crea el secreto `TMDB_API_KEY` en el panel de Supabase (**Edge Functions → Secrets**) con su clave de TMDB.
+Tomás crea el secreto `TMDB_API_KEY` en el panel de Supabase (**Edge Functions → Secrets**) con su clave de TMDB.
 
 Run: `npx supabase functions deploy tmdb-search --use-api --no-verify-jwt`; después, `npm run test:security:remote`
 Expected: el despliegue termina sin errores y los tests pasan contra el proyecto real. `--no-verify-jwt` deja la validación de la sesión al código, que funciona con las claves nuevas de Supabase.
@@ -450,7 +450,7 @@ git add src && git commit -m "feat: API de títulos y búsqueda en el cliente"
 - `TitleList`:
   - **Carga:** mientras carga muestra "Cargando…". Sin títulos muestra el encabezado "Por ver" y "Nuestra lista está vacía".
   - **Tarjetas:** cada título se muestra con `TitleCard`.
-    - Dice "La agregó <nombre>", con el nombre que devuelve `useMemberName(addedBy)` ("La agregó Pili").
+    - Dice "La agregó <nombre>", con el nombre que devuelve `useMemberName(addedBy)` ("La agregó Juli").
     - Con `originNote` muestra "De dónde vino: <nota>".
     - Con `originalTitle` distinto muestra "Original: <nombre>".
     - Un título sin año ni póster no muestra "null" ni "undefined".
@@ -505,7 +505,7 @@ Expected: PASS, sin advertencias de lint y con el build correcto.
 
 - [ ] **Step 5: Probar en local**
 
-Run: `npm run dev`, contra el proyecto real. Hay que entrar con dos sesiones del mismo espacio, por ejemplo Nacho en una ventana normal y una cuenta `+pareja` en una privada.
+Run: `npm run dev`, contra el proyecto real. Hay que entrar con dos sesiones del mismo espacio, por ejemplo Tomás en una ventana normal y una cuenta `+pareja` en una privada.
 1. Una sesión busca "wild tales" y la agrega con la nota "prueba".
 2. Después, busca "mi pobre angelito".
 3. Después, la otra sesión quita la primera.
@@ -515,7 +515,7 @@ Expected:
 - **Al agregar:** la otra ventana muestra el título sin recargar, con "La agregó <nombre de la otra sesión>" y "De dónde vino: prueba".
 - **Al quitar:** desaparece en las dos ventanas sin recargar.
 
-Después, Nacho quita la cuenta de prueba desde el panel.
+Después, Tomás quita la cuenta de prueba desde el panel.
 
 - [ ] **Step 6: Commit**
 
@@ -540,15 +540,15 @@ Antes de publicar, revisar que `dist/` no contenga los nombres ni los valores de
 Run: `npx netlify-cli deploy --prod --no-build --dir=dist`
 Expected: `curl -sI https://pelis-by-pili.netlify.app | head -n 1` devuelve `HTTP/2 200`.
 
-- [ ] **Step 3: Prueba de aceptación con Nacho y Pili en sus iPhones**
+- [ ] **Step 3: Prueba de aceptación con Tomás y Juli en sus iPhones**
 
 Con las dos apps instaladas y abiertas:
-0. Al abrir la app, cada uno ve una sola vez "¿Cómo te llamás?" y carga su nombre ("Nacho", "Pili"). En Ajustes dice "Son dos personas en este espacio: Nacho y Pili".
-1. Nacho busca una película por su nombre en inglés y la agrega con una nota. En el iPhone de Pili aparece sin recargar, con "La agregó Nacho" y la nota.
-2. Pili agrega una serie, y a Nacho le aparece sin recargar.
-3. Pili busca la película que agregó Nacho y ve "Ya está en la lista (la agregó Nacho)".
-4. Nacho manda la app a segundo plano y Pili agrega otra. Cuando Nacho vuelve a la app, el título ya está.
-5. Pili quita uno de los títulos y desaparece también en el iPhone de Nacho.
+0. Al abrir la app, cada uno ve una sola vez "¿Cómo te llamás?" y carga su nombre ("Tomás", "Juli"). En Ajustes dice "Son dos personas en este espacio: Tomás y Juli".
+1. Tomás busca una película por su nombre en inglés y la agrega con una nota. En el iPhone de Juli aparece sin recargar, con "La agregó Tomás" y la nota.
+2. Juli agrega una serie, y a Tomás le aparece sin recargar.
+3. Juli busca la película que agregó Tomás y ve "Ya está en la lista (la agregó Tomás)".
+4. Tomás manda la app a segundo plano y Juli agrega otra. Cuando Tomás vuelve a la app, el título ya está.
+5. Juli quita uno de los títulos y desaparece también en el iPhone de Tomás.
 
 Anotar el resultado y las versiones de iOS en las notas.
 

@@ -6,7 +6,7 @@
 
 **Architecture:**
 - **Buscador de la lista:** se filtra en el celular sobre la lista que ya está cargada. No hace pedidos y anda sin internet. La lógica pura `matchesQuery` va en `filters.ts`, junto a `matchesFilters`.
-- **Comentarios:** se guardan en una tabla `feedback` y se escriben con una función de la base. La app no los puede leer. Nacho los ve pidiéndomelos, porque los leo por SQL, o en el panel de Supabase.
+- **Comentarios:** se guardan en una tabla `feedback` y se escriben con una función de la base. La app no los puede leer. Tomás los ve pidiéndomelos, porque los leo por SQL, o en el panel de Supabase.
 - **Los menores van agrupados por zona, no por etapa:** base, funciones, lista y detalle, sesión y celular, ruleta y filtros, juegos, Compartidos. Cada uno lleva su test. Los que se dejan llevan una nota en las decisiones.
 
 **Tech Stack:** el de siempre. No suma dependencias.
@@ -21,7 +21,7 @@
 - Las pantallas de juego entran sin scroll en 390×844 y 393×852 (spec, sección 12).
 - Escrituras: siempre con funciones `security definer` y `search_path = ''`, y RLS con `is_member`. Nadie fuera de la pareja lee ni escribe.
 - Cada decisión fuera del plan va a `docs/superpowers/notes/2026-10-decisiones.md`, en la sección "Etapa 12 (2026-10-09)".
-- **Decisiones confirmadas por Nacho el 2026-10-09:**
+- **Decisiones confirmadas por Tomás el 2026-10-09:**
   1. Los comentarios quedan **guardados en la app**, no por mail.
   2. El buscador de la lista busca por **nombre, nombre original y director**. No busca en "De dónde vino" ni en la reseña.
   3. El buscador va en "Lista" y **busca solo en la pestaña abierta**: en "Por ver" busca entre las por ver y en "Vistas" entre las vistas.
@@ -106,7 +106,7 @@
     - Después de insertar 20 filas con el admin, el siguiente da `too_many`.
   - `Feedback.test.tsx`:
     - "Mandar" está deshabilitado con el campo vacío.
-    - Al mandar se ve `¡Gracias! Nacho lo va a leer.` y el campo se vacía.
+    - Al mandar se ve `¡Gracias! Tomás lo va a leer.` y el campo se vacía.
     - Con `too_many` se ve `Mandaste muchos hoy. Probá mañana.`
     - Con un error de red se ve `No se pudo mandar. Probá de nuevo.` y el texto queda en el campo.
 - [ ] **Step 2: Correr** `npm run test:security -- feedback` y `npx vitest run src/features/settings` → FAIL.
@@ -146,7 +146,7 @@
 - [ ] **Step 1: Escribir los tests que fallan.**
   - `titles.test.ts`: un miembro inserta directo con `status: 'watched'`, `watched_at` o `imdb_rating` → `42501`. Insertar con las columnas de la app sigue andando.
   - `shared.test.ts`: con 99 ítems, dos `add_shared_item` en `Promise.all` dejan exactamente 100 y uno da `inbox_full`. Lo mismo con dos POST a `share` en paralelo: uno da 201 y el otro 429.
-  - `names.test.ts`: `'\tPili\t'` se guarda como `'Pili'`.
+  - `names.test.ts`: `'\tJuli\t'` se guarda como `'Juli'`.
   - `couples.test.ts`:
     - El anónimo recibe `42501` específicamente en cada función y tabla.
     - Un miembro no puede borrar directo en `couple_members` ni en `invites`: la fila sigue.
@@ -222,7 +222,7 @@
   - `useTitles.test.ts`: dos `load` seguidos donde el primero responde último → queda la lista del segundo.
   - `TitleList.test.tsx`:
     - Con `subscribeTitles` sin disparar, "Quitar" saca el título igual porque `listTitles` se vuelve a pedir.
-    - Si el título abierto desaparece, se vuelve a la lista con el aviso `Pili quitó «X» de la lista` (`role="alert"`, con el nombre de quien agregó o "Lo quitaron" si no se sabe) y la lista vuelve a su posición.
+    - Si el título abierto desaparece, se vuelve a la lista con el aviso `Juli quitó «X» de la lista` (`role="alert"`, con el nombre de quien agregó o "Lo quitaron" si no se sabe) y la lista vuelve a su posición.
   - `TitleDetail.test.tsx`:
     - Un doble toque en "Marcar como vista" manda un solo pedido.
     - Después de marcar se llama `onChanged`.
@@ -387,7 +387,7 @@
 - [ ] **Step 2: Anotar en `2026-10-verificacion-fuentes.md`:**
   - El SMTP de Gmail y las plantillas con `{{ .Token }}`.
   - Que el hosting es Cloudflare Workers, no Netlify, con los límites del plan gratis.
-  - La regla de pausa de Supabase: un proyecto gratis se pausa después de 7 días sin actividad. Confirmarlo en el panel con Nacho.
+  - La regla de pausa de Supabase: un proyecto gratis se pausa después de 7 días sin actividad. Confirmarlo en el panel con Tomás.
 - [ ] **Step 3: En la spec, marcar como hechos** jugar con un solo celular y el botón de comentarios, y agregar el buscador de la lista.
 - [ ] **Step 4: Correr todo:** `npx vitest run`, `npx tsc -b`, `npx oxlint` y `npm run test:security` → todo en verde.
 - [ ] **Step 5: Commit** `docs: decisiones y notas de la etapa 12`
@@ -395,7 +395,7 @@
 ### Después de las tareas (proceso de siempre)
 
 1. Revisión visual a 390×844 y 393×852: el buscador, Ajustes con los comentarios, la ganadora de Bumble y la rueda después de girar.
-2. Nacho corre `npx supabase db push`. Hay dos migraciones nuevas.
+2. Tomás corre `npx supabase db push`. Hay dos migraciones nuevas.
 3. Despliego las funciones:
    - `npx supabase functions deploy tmdb-search --use-api --no-verify-jwt`
    - `npx supabase functions deploy share --use-api --no-verify-jwt`

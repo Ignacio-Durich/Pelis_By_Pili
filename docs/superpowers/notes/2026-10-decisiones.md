@@ -4,7 +4,7 @@ Cada línea: decisión — motivo — costo si está mal.
 
 ## Organización
 - Repo con un commit inicial solo de docs en `main`; el trabajo va en la rama `etapas-0-1` — no implementar directo en main — un merge.
-- Orden de tareas: 1, 2 y 3 (código), 6, 7, 8; después 5, los pasos con claves de 2 y 3, y al final 4 y 9 — avanzar sin claves mientras Nacho crea las cuentas — ninguno, las interfaces no cambian.
+- Orden de tareas: 1, 2 y 3 (código), 6, 7, 8; después 5, los pasos con claves de 2 y 3, y al final 4 y 9 — avanzar sin claves mientras Tomás crea las cuentas — ninguno, las interfaces no cambian.
 
 ## Task 1
 - Vitest solo incluye `src/**/*.test.{ts,tsx}` y `scripts/**/*.test.ts` — `npm test` no debe levantar `tests/security` (necesita claves y red; corre con `npm run test:security`) — ninguno.
@@ -64,16 +64,16 @@ Cada línea: decisión — motivo — costo si está mal.
 # Etapa 2
 
 ## Task 0
-- `npm run test:security` corre contra el Supabase local (`npx supabase start`, en Docker vía OrbStack) y `npm run test:security:remote` contra el proyecto real — así los tests no tocan la base donde ya están los datos de Nacho y Pili — si el stack local no está levantado, los tests fallan por conexión: `npx supabase start`.
+- `npm run test:security` corre contra el Supabase local (`npx supabase start`, en Docker vía OrbStack) y `npm run test:security:remote` contra el proyecto real — así los tests no tocan la base donde ya están los datos de Tomás y Juli — si el stack local no está levantado, los tests fallan por conexión: `npx supabase start`.
 - `.env.test.local` (ignorado por git) se genera desde `npx supabase status -o env` y copia `TMDB_API_KEY` y `OMDB_API_KEY` de `.env.local` — Vite le da prioridad sobre `.env.local` en el modo `test` — ninguno.
 
 ## Task 1
 - Realtime no filtra los `DELETE` (y con RLS solo manda el `id` del borrado), así que la app escucha los `INSERT` filtrados por espacio y los `DELETE` sin filtro, y ante cualquiera vuelve a pedir la lista. Verificado en local: un tercero de otro espacio recibe solo `{ id }` de los borrados ajenos, nunca el título ni el espacio — costo: cada borrado de cualquier espacio hace que las demás apps recarguen su lista (con dos personas, nada).
 - ~~Justo después de `db reset`, Realtime tarda en tomar la tabla~~ Corregido (ver Task 5, "Realtime"): la causa real era el hueco entre `SUBSCRIBED` y el momento en que el servidor empieza a escuchar la base.
-- Los `db push` de las Tasks 1 y 2 se piden juntos a Nacho, para molestarlo una sola vez — ninguno.
+- Los `db push` de las Tasks 1 y 2 se piden juntos a Tomás, para molestarlo una sola vez — ninguno.
 
 ## Task 2
-- Helper de tests `src/test/providers.tsx` (`withCouple`, `nacho`, `pili`): envuelve con sesión y espacio, porque ahora varios componentes necesitan el usuario actual y los miembros — ninguno.
+- Helper de tests `src/test/providers.tsx` (`withCouple`, `tomas`, `juli`): envuelve con sesión y espacio, porque ahora varios componentes necesitan el usuario actual y los miembros — ninguno.
 - En Ajustes, si a alguno de los dos le falta el nombre, la frase queda sin nombres ("Son dos personas en este espacio") en vez de mostrar un hueco — ninguno.
 - `getMyCouple` devuelve el tipo `Couple` de `coupleContext.ts` en vez de repetirlo — ninguno.
 
@@ -88,7 +88,7 @@ Cada línea: decisión — motivo — costo si está mal.
 - La lista se pide al montar y además cada vez que Realtime se (re)conecta; al arrancar se pide dos veces — más simple que coordinar las dos — una consulta de más al abrir.
 - **Realtime:** el canal avisa `SUBSCRIBED` al unirse, pero el servidor empieza a escuchar la base un momento después y lo avisa con un mensaje de sistema ("Subscribed to PostgreSQL"; medido: ~8 ms sin carga, más con carga). Un título agregado en ese hueco no llegaba. La app ahora recarga la lista con ese aviso y no con `SUBSCRIBED`, y el test de seguridad espera lo mismo. Antes del cambio el test fallaba de forma intermitente (con la suite completa y siempre tras reiniciar la base); después, 6 de 6 corridas seguidas en verde, incluida la primera tras reiniciar — ninguno.
 - En `supabase/config.toml` (solo el Supabase local) `sign_in_sign_ups` sube de 30 a 1000 cada 5 minutos: cada corrida de los tests de seguridad hace entrar a ~15 usuarios. Contra el proyecto real conviene correrlos de a una vez: la cuarta corrida seguida chocó con el límite de Supabase — ninguno.
-- Se salteó la prueba local con dos sesiones contra el proyecto real (Task 5, paso 5): el espacio real ya tiene a Nacho y Pili y no admite una cuenta de prueba. La cubren el test de seguridad de tiempo real contra el proyecto real y la prueba en los iPhones — costo: la primera prueba de la interfaz contra el proyecto real es la de los iPhones.
+- Se salteó la prueba local con dos sesiones contra el proyecto real (Task 5, paso 5): el espacio real ya tiene a Tomás y Juli y no admite una cuenta de prueba. La cubren el test de seguridad de tiempo real contra el proyecto real y la prueba en los iPhones — costo: la primera prueba de la interfaz contra el proyecto real es la de los iPhones.
 
 # Etapa 3
 
@@ -116,56 +116,56 @@ Cada línea: decisión — motivo — costo si está mal.
 - La función pura de la ruleta se llama `pick.ts` y no `roulette.ts`: en macOS el sistema de archivos no distingue mayúsculas y `./Roulette` resolvía al archivo equivocado — ninguno.
 - La ruleta queda oculta (no desmontada) mientras se ve el detalle de su resultado, para no perder el resultado ni los vetos; y una sesión por combinación de filtros (`key`), así cambiar un filtro renueva los vetos — ninguno.
 - La plataforma "Universal+ Amazon Channel" y similares aparecen tal como las da TMDB/JustWatch — si molestan, se pueden ocultar más adelante.
-- Barras de rango (pedido de Nacho): dos deslizadores nativos superpuestos, sin librerías. Duración de 0 a 4 h de a 30 min (el tope es "4 h o más", sin techo); IMDb de 1 a 10 de a 1. El rango completo no filtra — ninguno.
-- Ruleta animada (pedido de Nacho): rueda SVG con un gajo por título y flecha arriba; gira 5 vueltas o más en 4 s y frena en el elegido. Con hasta 12 títulos muestra los nombres (recortados a 14 caracteres); con más, solo colores. En la mitad izquierda los nombres se dan vuelta para no quedar cabeza abajo. Con "Reducir movimiento" no gira. Si la rueda no avisa que terminó (por ejemplo, la app pasó a segundo plano), el resultado aparece igual a los 4,5 s — ninguno.
+- Barras de rango (pedido de Tomás): dos deslizadores nativos superpuestos, sin librerías. Duración de 0 a 4 h de a 30 min (el tope es "4 h o más", sin techo); IMDb de 1 a 10 de a 1. El rango completo no filtra — ninguno.
+- Ruleta animada (pedido de Tomás): rueda SVG con un gajo por título y flecha arriba; gira 5 vueltas o más en 4 s y frena en el elegido. Con hasta 12 títulos muestra los nombres (recortados a 14 caracteres); con más, solo colores. En la mitad izquierda los nombres se dan vuelta para no quedar cabeza abajo. Con "Reducir movimiento" no gira. Si la rueda no avisa que terminó (por ejemplo, la app pasó a segundo plano), el resultado aparece igual a los 4,5 s — ninguno.
 - La rueda es un componente controlado (recibe la rotación y si anima; avisa al terminar) y el giro lo decide la ruleta al tocar "Girar", en vez de calcularlo dentro de la rueda con un efecto — ninguno.
 - La lógica de la rueda se llama `wheelMath.ts` (mismo choque de mayúsculas que `pick.ts`) — ninguno.
-- Arreglo (reportado por Nacho en el iPhone): al vetar, la rueda no volvía a girar. Causa: en la pantalla del resultado la rueda estaba dentro de otro contenedor que en la de giro, así que React la recreaba ya en su posición final y no había nada que animar. Ahora la rueda va siempre en el mismo lugar. Test que reproduce el caso (misma rueda, con transición) y verificación en el navegador midiendo el ángulo durante el giro — ninguno.
+- Arreglo (reportado por Tomás en el iPhone): al vetar, la rueda no volvía a girar. Causa: en la pantalla del resultado la rueda estaba dentro de otro contenedor que en la de giro, así que React la recreaba ya en su posición final y no había nada que animar. Ahora la rueda va siempre en el mismo lugar. Test que reproduce el caso (misma rueda, con transición) y verificación en el navegador midiendo el ángulo durante el giro — ninguno.
 - Revisión final: regla global `[hidden] { display: none !important }`. Sin ella, la ruleta "oculta" seguía visible (su clase define `display: flex`) y el detalle abierto desde la ruleta quedaba debajo, fuera de la pantalla. Verificado en el navegador midiendo el `display` antes (flex) y después (none) — ninguno.
 - Revisión final: lo elegido en géneros y plataformas siempre aparece como botón, aunque ya no quede ningún título con eso, para poder apagarlo — ninguno.
 - Revisión final: con los dos extremos de una barra juntos en la mitad alta, el pulgar del mínimo queda arriba, para que se pueda volver a bajar con el dedo — ninguno.
 
 # Hosting
 
-- Mudanza de Netlify a Cloudflare (elegido por Nacho): Worker con archivos estáticos en vez del Pages anterior, porque Wrangler ya delega Pages a Workers y el Pages viejo es el camino que Cloudflare deja atrás (otra mudanza obligaría a reinstalar la app en los celulares) — la dirección queda `pelis-by-pili.pelis-by-pili.workers.dev`; se puede cambiar el subdominio de la cuenta más adelante, antes del regalo. El 2026-10-08 Nacho lo cambió a `con-amor-nacho`: la app queda en `pelis-by-pili.con-amor-nacho.workers.dev`.
+- Mudanza de Netlify a Cloudflare (elegido por Tomás): Worker con archivos estáticos en vez del Pages anterior, porque Wrangler ya delega Pages a Workers y el Pages viejo es el camino que Cloudflare deja atrás (otra mudanza obligaría a reinstalar la app en los celulares) — la dirección queda `pelis-by-pili.pelis-by-pili.workers.dev`; se puede cambiar el subdominio de la cuenta más adelante, antes del regalo. El 2026-10-08 Tomás lo cambió a `con-amor-nacho`: la app queda en `pelis-by-pili.con-amor-nacho.workers.dev`.
 - `scripts/check-dist.ts` (con test) reemplaza al chequeo manual de claves antes de publicar, y `npm run deploy` lo corre siempre — ninguno.
 - Se borró `netlify.toml` — ya no se publica en Netlify.
 
 # Etapa 6
 
-- "¿Dónde lo ven?" pasa de una plataforma a varias (pedido de Nacho después de probarla en los iPhones): un título entra si está en alguna de las elegidas; "Cualquiera" borra la elección y queda marcada cuando no hay ninguna — la plataforma de la spec era una sola.
-- Las preguntas rápidas sugieren 5 títulos en vez de 3 (pedido de Nacho después de probarla); el aviso de relleno y el texto del menú dicen 5 — la spec decía 3.
+- "¿Dónde lo ven?" pasa de una plataforma a varias (pedido de Tomás después de probarla en los iPhones): un título entra si está en alguna de las elegidas; "Cualquiera" borra la elección y queda marcada cuando no hay ninguna — la plataforma de la spec era una sola.
+- Las preguntas rápidas sugieren 5 títulos en vez de 3 (pedido de Tomás después de probarla); el aviso de relleno y el texto del menú dicen 5 — la spec decía 3.
 
 # Etapa 7
 
-- Después de la primera prueba en los iPhones (pedido de Nacho): la sinopsis ya no tiene scroll propio (en iOS se quedaba con el gesto y no dejaba deslizar; con una sinopsis larga la carta se alarga y scrollea la página), y la partida entra en una pantalla de iPhone 13/15: fila única "Volver a los modos" / "Terminar", una línea chica de estado (vuelta, avance, matches), la carta con el alto que sobra, "↩️" entre 👎 y 👍, y el "¡Match!" flotando sobre la carta. Se sacó el texto "Vuelven a deslizar los matches" de la vuelta 2 (queda "Vuelta 2") — el plan no fijaba el diseño de la pantalla.
+- Después de la primera prueba en los iPhones (pedido de Tomás): la sinopsis ya no tiene scroll propio (en iOS se quedaba con el gesto y no dejaba deslizar; con una sinopsis larga la carta se alarga y scrollea la página), y la partida entra en una pantalla de iPhone 13/15: fila única "Volver a los modos" / "Terminar", una línea chica de estado (vuelta, avance, matches), la carta con el alto que sobra, "↩️" entre 👎 y 👍, y el "¡Match!" flotando sobre la carta. Se sacó el texto "Vuelven a deslizar los matches" de la vuelta 2 (queda "Vuelta 2") — el plan no fijaba el diseño de la pantalla.
 
 # Etapa 8
 
 - La función `share` contesta en texto y el Atajo termina con "Mostrar notificación" de "Contenido de URL" (en vez del texto fijo "Guardado en Pelis By Pili" del plan): si la clave no sirve o la bandeja está llena, se ve el motivo y no se pierde lo compartido sin aviso (hallazgo de la revisión final).
 - La guía avisa que, antes de pasar el Atajo por iCloud, hay que borrar la clave del encabezado (el link de iCloud lo abre cualquiera que lo tenga), y el paso de los tipos apunta al bloque "Recibir … de Hoja para compartir" de iOS actual.
-- Después de la primera prueba en el iPhone (pedido de Nacho): el botón de cada ítem de la bandeja dice "Agregar" en vez de "Buscar" (lleva a Agregar con la nota del reel); para lectores de pantalla se llama "Agregar lo compartido", porque el "+" de la lista ya es "Agregar".
-- La guía del Atajo nombra las acciones también en inglés (el iPhone de Nacho está en inglés) y el paso del menú Compartir usa el bloque "Recibir … de …" (Receive … from Nowhere) que aparece al usar "Entrada del atajo": en iOS 26 el menú del nombre ya no tiene "Detalles". Confirmado en el iPhone: "Pedir entrada" se puede mandar vacío.
-- En Ajustes, debajo de la guía, "¿Te pasaron el Atajo ya armado?": solo hay que cambiar el valor de `x-share-key` por la clave propia (pedido de Nacho, que le pasa el Atajo armado a Pili).
+- Después de la primera prueba en el iPhone (pedido de Tomás): el botón de cada ítem de la bandeja dice "Agregar" en vez de "Buscar" (lleva a Agregar con la nota del reel); para lectores de pantalla se llama "Agregar lo compartido", porque el "+" de la lista ya es "Agregar".
+- La guía del Atajo nombra las acciones también en inglés (el iPhone de Tomás está en inglés) y el paso del menú Compartir usa el bloque "Recibir … de …" (Receive … from Nowhere) que aparece al usar "Entrada del atajo": en iOS 26 el menú del nombre ya no tiene "Detalles". Confirmado en el iPhone: "Pedir entrada" se puede mandar vacío.
+- En Ajustes, debajo de la guía, "¿Te pasaron el Atajo ya armado?": solo hay que cambiar el valor de `x-share-key` por la clave propia (pedido de Tomás, que le pasa el Atajo armado a Juli).
 
 # Limpieza (2026-10-08)
 
-- Auditoría pedida por Nacho ("que todo funcione igual"): un solo hook para lo que se actualiza en vivo (`src/lib/useLive.ts`), un solo armado de escuchas de Realtime (`src/lib/realtime.ts`), un solo error con código y llamado a funciones SQL (`src/lib/rpc.ts`), las partidas de un celular guardadas con `readCache`/`saveCache` (ahora con dueño, así otra cuenta no ve la partida ajena; las partidas a medio jugar del momento de publicar se pierden una vez), y componentes compartidos `TitleFacts`, `PhonesChoice` y `players.ts`. Bumble y Top 3 secreto ahora también recargan al volver la conexión (como la bandeja).
+- Auditoría pedida por Tomás ("que todo funcione igual"): un solo hook para lo que se actualiza en vivo (`src/lib/useLive.ts`), un solo armado de escuchas de Realtime (`src/lib/realtime.ts`), un solo error con código y llamado a funciones SQL (`src/lib/rpc.ts`), las partidas de un celular guardadas con `readCache`/`saveCache` (ahora con dueño, así otra cuenta no ve la partida ajena; las partidas a medio jugar del momento de publicar se pierden una vez), y componentes compartidos `TitleFacts`, `PhonesChoice` y `players.ts`. Bumble y Top 3 secreto ahora también recargan al volver la conexión (como la bandeja).
 - Se sacó `@vite-pwa/assets-generator` (y `pwa-assets.config.ts` y el script `generate-pwa-assets`): los íconos ya están en `public/`. Si cambia el logo: instalarlo un momento (`npm i -D @vite-pwa/assets-generator@^2.0.0`), correr `npx pwa-assets-generator` (usa `pwa-assets.config.ts`) y volver a sacarlo.
-- Ícono sin el margen blanco (pedido de Nacho al verlo en su iPhone): `pwa-assets.config.ts` genera el de iPhone y el "maskable" sin margen y con el fondo azul de la app (#1b1b2f). El archivo queda en el repo con esos ajustes aunque el generador no esté instalado.
+- Ícono sin el margen blanco (pedido de Tomás al verlo en su iPhone): `pwa-assets.config.ts` genera el de iPhone y el "maskable" sin margen y con el fondo azul de la app (#1b1b2f). El archivo queda en el repo con esos ajustes aunque el generador no esté instalado.
 
 # Temas (2026-10-08)
 
-- Pedido de Nacho: 15 temas de color para elegir en Ajustes ("Tema"), cada celular el suyo, guardado en el celular (`pelis-theme`; al reinstalar vuelve a "Azul noche", el de siempre). El ícono de inicio no cambia. Los colores viven en `src/lib/theme.ts` y se aplican como variables CSS antes de dibujar la app; los temas claros cambian `color-scheme` y usan un rojo más oscuro para los avisos. Lo que va sobre los pósters (la carta de Bumble) y el texto de las porciones de la rueda quedan fijos. Hecho directo en main y sin plan, a pedido de Nacho.
+- Pedido de Tomás: 15 temas de color para elegir en Ajustes ("Tema"), cada celular el suyo, guardado en el celular (`pelis-theme`; al reinstalar vuelve a "Azul noche", el de siempre). El ícono de inicio no cambia. Los colores viven en `src/lib/theme.ts` y se aplican como variables CSS antes de dibujar la app; los temas claros cambian `color-scheme` y usan un rojo más oscuro para los avisos. Lo que va sobre los pósters (la carta de Bumble) y el texto de las porciones de la rueda quedan fijos. Hecho directo en main y sin plan, a pedido de Tomás.
 
 
 # Invitación en iPhone (2026-10-09)
 
-- Pili abrió el enlace y le creó un espacio propio. En la base real: su cuenta y su espacio (vacío) se crearon con 23 s de diferencia, y la invitación de Nacho quedó sin usar. Causa: el enlace se abre en Safari, pero la app de la pantalla de inicio arranca en `/` y no comparte nada con Safari, así que el `?invite=` no llega. Arreglo: en la bienvenida, primero "¿Te mandaron un enlace de invitación? Pegalo acá" + "Unirme", y abajo "Crear nuestro espacio". `parseInviteToken` encuentra el enlace aunque venga con texto alrededor. No se sumó una forma de pasarse de un espacio propio al de la pareja: el espacio de Pili lo borra Nacho en el dashboard y ella vuelve a la bienvenida. Hecho directo en main.
+- Juli abrió el enlace y le creó un espacio propio. En la base real: su cuenta y su espacio (vacío) se crearon con 23 s de diferencia, y la invitación de Tomás quedó sin usar. Causa: el enlace se abre en Safari, pero la app de la pantalla de inicio arranca en `/` y no comparte nada con Safari, así que el `?invite=` no llega. Arreglo: en la bienvenida, primero "¿Te mandaron un enlace de invitación? Pegalo acá" + "Unirme", y abajo "Crear nuestro espacio". `parseInviteToken` encuentra el enlace aunque venga con texto alrededor. No se sumó una forma de pasarse de un espacio propio al de la pareja: el espacio de Juli lo borra Tomás en el dashboard y ella vuelve a la bienvenida. Hecho directo en main.
 
 # Mejoras de uso (2026-10-09)
 
-Pedidos de Nacho después de usar la app, hechos directo en main:
+Pedidos de Tomás después de usar la app, hechos directo en main:
 
 - **Reseña:** la nota de "Tu puntaje" es un campo de 4 renglones (sigue el tope de 200 letras).
 - **Agregar:** lo agregado desde esa pantalla se saca tocándolo de nuevo ("✓ Agregada · tocala de nuevo para sacarla"). Lo que ya estaba en la lista antes sigue sin poder tocarse.
@@ -195,8 +195,8 @@ Se dejan, con su motivo:
 
 Decisiones tomadas al hacerla:
 
-- **Buscador de la lista** (pedido de Nacho): arriba de "Por ver | Vistas", busca solo en la pestaña abierta, por nombre, nombre original y director, sin importar tildes ni mayúsculas; en "Por ver" se suma a los filtros. Lo escrito sigue al cambiar de pestaña o abrir un título; tocar "Lista" lo borra.
-- **Comentarios:** tabla `feedback` que la app no puede leer (Nacho los ve en el panel de Supabase o pidiéndolos). Hasta 20 por persona por día y 2000 letras.
+- **Buscador de la lista** (pedido de Tomás): arriba de "Por ver | Vistas", busca solo en la pestaña abierta, por nombre, nombre original y director, sin importar tildes ni mayúsculas; en "Por ver" se suma a los filtros. Lo escrito sigue al cambiar de pestaña o abrir un título; tocar "Lista" lo borra.
+- **Comentarios:** tabla `feedback` que la app no puede leer (Tomás los ve en el panel de Supabase o pidiéndolos). Hasta 20 por persona por día y 2000 letras.
 - **Tope de la bandeja (100)** ahora lo controla un trigger de la base, para el Atajo y para la app; ni el admin puede pasarlo.
 - **Insert de `titles` por columnas:** la app solo puede cargar las columnas de "Agregar"; estado, fecha de vista y puntajes los escriben las funciones.
 - **OMDb:** cualquier error con puntajes guardados se trata como el límite (se muestran los guardados con el aviso), y el puntaje de TMDB nuevo se guarda igual. Los datos fuera de rango de TMDB se recortan en vez de hacer fallar el guardado.

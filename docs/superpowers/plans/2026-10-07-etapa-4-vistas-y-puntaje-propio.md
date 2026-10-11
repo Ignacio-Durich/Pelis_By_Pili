@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Que Nacho o Pili marquen un título como visto (y lo puedan deshacer), que la lista tenga las pestañas "Por ver" y "Vistas", y que cada uno ponga su propio puntaje con una nota corta y vea el del otro.
+**Goal:** Que Tomás o Juli marquen un título como visto (y lo puedan deshacer), que la lista tenga las pestañas "Por ver" y "Vistas", y que cada uno ponga su propio puntaje con una nota corta y vea el del otro.
 
 **Architecture:**
 - `titles` suma `status` y `watched_at`.
@@ -25,7 +25,7 @@
 - Interfaz en español rioplatense; los textos exactos están en cada tarea. Sin internet no se puede calificar (spec, sección 9).
 - Alcance estricto. **No entra:** ningún modo para elegir qué ver, filtros ni lista sin conexión.
 - Cada decisión fuera de este plan se anota en `docs/superpowers/notes/2026-10-decisiones.md`. Los puntos menores de la revisión final van a la Etapa 12 de la spec.
-- Decisiones confirmadas por Nacho el 2026-10-07 (la spec no las fija):
+- Decisiones confirmadas por Tomás el 2026-10-07 (la spec no las fija):
   - **Escala del 1 al 10, con hasta 2 decimales** (por ejemplo, 8,75).
     - Se escribe en un campo numérico; se acepta coma o punto.
     - Se muestra con coma y sin ceros de más: "8", "8,5", "8,75".
@@ -34,7 +34,7 @@
     - La fecha es el día en que se marca, sin elegir otra.
     - Se puede deshacer con "Volver a Por ver". Los puntajes se conservan y reaparecen si se vuelve a marcar.
   - **La nota del puntaje tiene hasta 200 caracteres**, igual que la nota de origen.
-  - **La tarjeta de "Vistas"** muestra la fecha y los dos puntajes ("Nacho 8 · Pili —").
+  - **La tarjeta de "Vistas"** muestra la fecha y los dos puntajes ("Tomás 8 · Juli —").
 
 ## Review Focus
 
@@ -202,7 +202,7 @@ git add src && git commit -m "feat: vistas y puntajes en el cliente"
 - **`TitleList`:**
   - Arriba hay dos botones, "Por ver" y "Vistas" (`aria-pressed`). El encabezado `h2` dice el nombre de la pestaña elegida.
   - "Por ver" muestra solo los `to_watch`, como hoy. "Vistas" muestra solo los `watched`, del más reciente al más viejo según `watchedAt`.
-  - Una tarjeta de "Vistas" dice "Vista el 7/10/2026" y "Nacho 8,75 · Pili —": los nombres van en el orden de `members`, los puntajes con `formatScore`, y "—" marca a quien no puntuó.
+  - Una tarjeta de "Vistas" dice "Vista el 7/10/2026" y "Tomás 8,75 · Juli —": los nombres van en el orden de `members`, los puntajes con `formatScore`, y "—" marca a quien no puntuó.
   - "Vistas" sin títulos dice "Todavía no vieron nada juntos".
   - El botón "+" está solo en "Por ver".
 - **`TitleDetail`**, con un título `to_watch`:
@@ -211,7 +211,7 @@ git add src && git commit -m "feat: vistas y puntajes en el cliente"
 - **`TitleDetail`**, con un título `watched`:
   - Dice "Vista el 7/10/2026".
   - El botón "Volver a Por ver" llama a `setWatched(id, false)`.
-  - Encabezado "Nuestros puntajes", con una fila por miembro: "Pili: 6,5" y su nota si tiene, o "Pili: todavía no puntuó".
+  - Encabezado "Nuestros puntajes", con una fila por miembro: "Juli: 6,5" y su nota si tiene, o "Juli: todavía no puntuó".
   - `MyScore` recibe el puntaje propio, o `null` si no hay.
   - Si `setWatched` falla, muestra "No se pudo guardar. Probá de nuevo.".
 - **`MyScore`:**
@@ -260,7 +260,7 @@ git add src && git commit -m "feat: pestañas Por ver y Vistas, marcar vista y p
   - `docs/superpowers/notes/2026-10-verificacion-fuentes.md`: sección "Cierre de la Etapa 4".
   - `docs/superpowers/specs/2026-10-06-pelis-by-pili-design.md`: los puntos menores de la revisión van a la Etapa 12.
 
-- [ ] **Step 1: Migración en el proyecto real (Nacho, en su terminal) y suite completa**
+- [ ] **Step 1: Migración en el proyecto real (Tomás, en su terminal) y suite completa**
 
 Run: `npx supabase db push`; después, `npm test`, `npm run test:security`, una sola corrida de `npm run test:security:remote`, `npm run typecheck` y `npm run build`.
 Expected: todo en verde.
@@ -272,11 +272,11 @@ Antes de publicar, revisar que `dist/` no contenga claves secretas ni `127.0.0.1
 Run: `npx netlify-cli deploy --prod --no-build --dir=dist`
 Expected: `HTTP/2 200`, y el bundle publicado es el mismo que el local.
 
-- [ ] **Step 3: Prueba de aceptación con Nacho y Pili**
+- [ ] **Step 3: Prueba de aceptación con Tomás y Juli**
 
-1. Nacho marca como vista una película: pasa a "Vistas" en los dos iPhones, con la fecha.
-2. Nacho le pone 8,75 con una nota, y Pili le pone 6,5 desde su iPhone. Cada uno ve los dos puntajes en el detalle y en la tarjeta de "Vistas", sin recargar.
-3. Pili cambia su puntaje a 7, y a Nacho le aparece el 7.
+1. Tomás marca como vista una película: pasa a "Vistas" en los dos iPhones, con la fecha.
+2. Tomás le pone 8,75 con una nota, y Juli le pone 6,5 desde su iPhone. Cada uno ve los dos puntajes en el detalle y en la tarjeta de "Vistas", sin recargar.
+3. Juli cambia su puntaje a 7, y a Tomás le aparece el 7.
 4. Uno la vuelve a "Por ver" y después la marca de nuevo: los puntajes siguen ahí.
 5. Ajustes ya no queda tapado: el cartel "Powered by Netlify" está apagado desde el panel de Netlify.
 

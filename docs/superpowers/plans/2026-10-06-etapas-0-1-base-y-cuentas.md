@@ -81,7 +81,7 @@ git add -A && git commit -m "chore: esqueleto PWA con Vite, React y Vitest"
 **Interfaces:**
 - Produces: `export function requireEnv(names: string[], source?: Record<string, string | undefined>): Record<string, string>` en `scripts/lib/env.ts`. Lanza `Error` con el mensaje `Faltan variables de entorno: A, B` (nombres separados por coma y espacio, en el orden recibido) si falta alguna o está vacía.
 
-- [ ] **Step 1: Pasos manuales de Nacho (no los hace Claude Code)**
+- [ ] **Step 1: Pasos manuales de Tomás (no los hace Claude Code)**
 
 Crear, con cuenta gratuita: un proyecto en Supabase; una clave de API en TMDB (cuenta gratis, uso personal); una clave gratuita de OMDb (llega por email, límite de 1.000 consultas por día); una cuenta en Netlify. Copiar las claves a `.env.local` siguiendo `.env.example`. Anotar en `.env.local` pero no en ningún otro archivo: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `TMDB_API_KEY`, `OMDB_API_KEY`.
 
@@ -170,7 +170,7 @@ Ejecutar `npm run build`, iniciar sesión en Netlify con `npx netlify-cli login`
 Run: `curl -sI <URL> | head -n 1` y `curl -s <URL>/manifest.webmanifest`
 Expected: `HTTP/2 200`; el manifest contiene `"display":"standalone"` y `"short_name":"Pelis"`.
 
-- [ ] **Step 3: Prueba manual en los dos iPhones (Nacho y su novia)**
+- [ ] **Step 3: Prueba manual en los dos iPhones (Tomás y Juli)**
 
 Abrir la URL en Safari, tocar Compartir, "Agregar a pantalla de inicio", abrir desde el ícono. Esperado: se abre a pantalla completa, sin la barra de Safari, mostrando "Pelis By Pili". Anotar en las notas el resultado de cada iPhone y la versión de iOS.
 
@@ -257,7 +257,7 @@ git add -A && git commit -m "feat: parejas, invitaciones y reglas de seguridad e
 
 - [ ] **Step 1: Escribir los tests que fallan**
 
-- `email.test.ts`: `normalizeEmail('  Nacho@Gmail.COM ')` es `'nacho@gmail.com'`; `isPlausibleEmail` es falso para `'nacho'`, `'a@b'` y vacío, y verdadero para `'nacho@gmail.com'`.
+- `email.test.ts`: `normalizeEmail('  Tomás@Gmail.COM ')` es `'tomas@gmail.com'`; `isPlausibleEmail` es falso para `'tomas'`, `'a@b'` y vacío, y verdadero para `'tomas@gmail.com'`.
 - `authApi.test.ts` (con el cliente de Supabase simulado): `requestCode` llama a `signInWithOtp` con el email normalizado; un error de límite de Supabase se traduce a `AuthError` de tipo `rate_limited`; un código incorrecto en `verifyCode` es `wrong_code`; un fallo de red es `network`; un email no plausible lanza `invalid_email` sin llamar a Supabase.
 - `AuthGate.test.tsx` (con `authApi` simulado): mientras `getSession` no resolvió se muestra "Cargando…" y no el formulario; sin sesión muestra el campo de email y el botón "Enviarme el código"; tras enviar el email muestra "Ingresá el código de 6 dígitos que te llegó por email" y un campo de código; un código incorrecto muestra "Código incorrecto o vencido"; `rate_limited` muestra "Pediste muchos códigos, esperá unos minutos"; si `getSession` falla por red muestra "Sin conexión. Probá de nuevo." con un botón "Reintentar" que vuelve a consultar; con sesión renderiza los hijos.
 
@@ -275,7 +275,7 @@ En `AuthGate`, el campo de código acepta solo dígitos y se envía al completar
 Run: `npm test && npm run typecheck`
 Expected: PASS.
 
-- [ ] **Step 5: Configurar el email de Supabase para que envíe el código (manual, Nacho)**
+- [ ] **Step 5: Configurar el email de Supabase para que envíe el código (manual, Tomás)**
 
 En el panel de Supabase, Authentication → Email Templates: en las plantillas "Confirm signup" y "Magic Link" reemplazar el enlace por el código usando `{{ .Token }}`, con asunto "Tu código de Pelis By Pili". Dejar un solo código por email.
 
@@ -385,7 +385,7 @@ Expected: la URL pública responde `200`. Confirmar en el panel de Netlify que e
 
 - [ ] **Step 3: Prueba de aceptación en los dos iPhones**
 
-Nacho entra desde la app instalada con su email (código de 6 dígitos), crea el espacio y copia el enlace de invitación; su novia abre el enlace en Safari, entra con su email y toca "Unirme"; luego ella abre la app instalada, pide su código y entra directo. Esperado: los dos ven "Nuestra lista está vacía"; los dos pueden cerrar sesión y volver a entrar; cerrar la app y volver a abrirla conserva la sesión; un tercer email con el mismo enlace recibe "Esta invitación no es válida o ya se usó". Anotar el resultado en las notas.
+Tomás entra desde la app instalada con su email (código de 6 dígitos), crea el espacio y copia el enlace de invitación; Juli abre el enlace en Safari, entra con su email y toca "Unirme"; luego ella abre la app instalada, pide su código y entra directo. Esperado: los dos ven "Nuestra lista está vacía"; los dos pueden cerrar sesión y volver a entrar; cerrar la app y volver a abrirla conserva la sesión; un tercer email con el mismo enlace recibe "Esta invitación no es válida o ya se usó". Anotar el resultado en las notas.
 
 - [ ] **Step 4: Commit**
 
