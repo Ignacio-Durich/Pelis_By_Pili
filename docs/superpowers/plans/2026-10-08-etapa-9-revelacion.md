@@ -22,15 +22,15 @@
 - Pantallas de juego que entran en iPhone 13 (390×844) y 15 (393×852) (spec, sección 12): la lista para elegir scrollea, pero el botón para confirmar queda siempre a la vista.
 - Alcance estricto. **No entra:** torneo.
 - Cada decisión fuera del plan va a `docs/superpowers/notes/2026-10-decisiones.md`; los menores de la revisión final, a la Etapa 12.
-- **Decisiones confirmadas por Nacho el 2026-10-08:**
+- **Decisiones confirmadas por Tomás el 2026-10-08:**
   1. **3 sin orden** por persona (o todos los de "Por ver" que cumplen los filtros, si son menos de 3).
   2. **Sin coincidencias:** se ven las elecciones de los dos y "Que decida la ruleta" gira entre todas (hasta 6). Con la misma ganadora en los dos celulares.
   3. **Con coincidencias:** una sola es la ganadora; si coinciden 2 o 3, la ruleta gira solo entre las coincidencias.
-  4. **El modo se llama "Top 3 secreto"** (elegido por Nacho), con "Cada uno elige 3 en secreto y se muestran a la vez", segundo en el menú (después de Bumble).
+  4. **El modo se llama "Top 3 secreto"** (elegido por Tomás), con "Cada uno elige 3 en secreto y se muestran a la vez", segundo en el menú (después de Bumble).
   5. **Se elige de "Por ver" con los filtros** de la lista (como Bumble y la ruleta), tocando para marcar y desmarcar; "Listo" se habilita con 3.
-  6. **Mientras el otro no eligió, se puede cambiar la elección** ("Cambiar mi elección"); el otro ve "Pili ya eligió", sin saber qué.
+  6. **Mientras el otro no eligió, se puede cambiar la elección** ("Cambiar mi elección"); el otro ve "Juli ya eligió", sin saber qué.
   7. **La revelación es automática** cuando eligen los dos, con una cuenta "3, 2, 1" en los dos celulares (con movimiento reducido, sin cuenta).
-  8. **Uno o dos celulares** como en Bumble: "📱 Uno" (el primero elige, "Pasale el celu a Pili", elige ella, "Revelar") o "📱📱 Dos" (necesita a la pareja en el espacio; si la pareja ya empezó una, se entra directo).
+  8. **Uno o dos celulares** como en Bumble: "📱 Uno" (el primero elige, "Pasale el celu a Juli", elige ella, "Revelar") o "📱📱 Dos" (necesita a la pareja en el espacio; si la pareja ya empezó una, se entra directo).
   9. Una sola partida de dos celulares abierta por pareja; "Listo" (con la ganadora) o "Terminar" la cierran para los dos.
 
 ## Review Focus
@@ -57,15 +57,15 @@
   - `submit_reveal(p_session_id uuid, p_title_ids uuid[]) returns void`: bloquea la fila de la partida (`for update`); `not_found` si no es de su pareja; `closed` si no está abierta o ya se reveló; sin repetidos, `invalid_picks` si quedan 0 o más de 3 o alguno no es de la pareja o no está en "Por ver"; guarda o reemplaza su elección, suma su id a `ready` y, si ya están los dos miembros, pone `revealed_at = now()`.
   - `finish_reveal(p_session_id uuid, p_result_title_id uuid) returns void`: como `finish_bumble` (`done` con resultado, `cancelled` sin; si ya estaba cerrada no hace nada); `not_in_picks` si el resultado no está en ninguna elección.
 
-- [ ] **Step 1: Write the failing tests** en `tests/security/reveal.test.ts` (pareja A = Nacho y Pili con títulos en "Por ver" y uno visto, pareja C ajena):
+- [ ] **Step 1: Write the failing tests** en `tests/security/reveal.test.ts` (pareja A = Tomás y Juli con títulos en "Por ver" y uno visto, pareja C ajena):
   - `start_reveal`: el otro miembro recibe la misma; dos en `Promise.all`, la misma; `no_partner` en un espacio de uno; `no_couple` sin espacio.
-  - **Secreto:** Nacho elige; Pili lee `reveal_picks` de la partida y solo ve las suyas (ninguna); Nacho ve la suya; la partida muestra `ready` con Nacho y `revealed_at` nulo; Nacho cambia su elección (queda la nueva). Pili elige: `revealed_at` deja de ser nulo y los dos leen las dos elecciones. C nunca lee nada.
+  - **Secreto:** Tomás elige; Juli lee `reveal_picks` de la partida y solo ve las suyas (ninguna); Tomás ve la suya; la partida muestra `ready` con Tomás y `revealed_at` nulo; Tomás cambia su elección (queda la nueva). Juli elige: `revealed_at` deja de ser nulo y los dos leen las dos elecciones. C nunca lee nada.
   - Después de revelar, `submit_reveal` da `closed` y las elecciones no cambian.
   - Los dos eligen en `Promise.all`: queda revelada una vez y las dos elecciones están.
   - `invalid_picks`: vacío, 4 títulos, uno visto, uno de C (los repetidos se juntan: `[a, a]` vale como `[a]`).
   - `finish_reveal`: `not_in_picks` con otro título; con uno elegido queda `done`; segunda llamada sin error; después se puede empezar otra.
   - Nadie escribe directo en las dos tablas.
-  - Realtime: Pili, escuchando `reveal_sessions` con filtro `couple_id=eq.A`, recibe el `UPDATE` cuando Nacho elige (con `ready`), y escuchando `reveal_picks` no recibe nada; C no recibe nada.
+  - Realtime: Juli, escuchando `reveal_sessions` con filtro `couple_id=eq.A`, recibe el `UPDATE` cuando Tomás elige (con `ready`), y escuchando `reveal_picks` no recibe nada; C no recibe nada.
 - [ ] **Step 2: Run** `npm run test:security -- reveal` → FAIL.
 - [ ] **Step 3: Write the migration.**
 - [ ] **Step 4: Run** `npx supabase migration up` y `npm run test:security` → todo en verde.
@@ -113,22 +113,22 @@
 
 Pantallas:
 - **Inicio:** `<h2>Top 3 secreto</h2>`, "Cada uno elige 3 en secreto y se muestran a la vez.", filtros con contador, "¿Cuántos celulares van a usar?" con "📱 Uno" / "📱📱 Dos" (mismas reglas que Bumble: con menos de 1 título, deshabilitados; "Dos" pide a la pareja).
-- **Elegir:** "Elegí tus 3" (o "Turno de Nacho: elegí tus 3"), la lista de "Por ver" que cumple los filtros como tarjetas chicas que se marcan y desmarcan (`aria-pressed`), y abajo, fija sobre las pestañas, "Listo (2 de 3)" habilitado al llegar a `min(3, cantidad)`. Si ya hay 3 marcadas, tocar otra no hace nada.
-- **Dos celulares, ya elegí:** "Listo. Esperando a Pili…" (o "Pili ya eligió" si está en `ready`), y "Cambiar mi elección" (vuelve a Elegir con lo propio marcado).
-- **Un celular:** después del primero, "Pasale el celu a Pili" y "Listo, soy Pili" (sin mostrar lo elegido); después del segundo, "Revelar".
-- **Revelación:** "3", "2", "1" (un segundo cada uno; sin cuenta con movimiento reducido) y después: "Coinciden" con sus tarjetas, "Eligió Nacho" y "Eligió Pili" con el resto; `winner` → "¡Ganó <título>!" y "Listo"; `roulette` → "Que decida la ruleta" (TieBreak, semilla `${id}:reveal`) y después la ganadora y "Listo". "Terminar" arriba (como Bumble).
-- [ ] **Step 1: Write the failing tests:** inicio y reglas de los botones; elegir marca hasta 3 y "Listo (3 de 3)" llama a `submitReveal` con esos ids; con dos celulares, esperando con "Cambiar mi elección" y "Pili ya eligió"; al llegar la revelación por `notify`, después de la cuenta (con temporizadores falsos) se ven "Coinciden" y las de cada uno, y con una coincidencia "¡Ganó…!" y "Listo" llama a `finishReveal`; sin coincidencias, "Que decida la ruleta" gira a la ganadora de `seededIndex`; con un celular, el pase sin mostrar lo elegido, "Revelar" y que sobrevive a un `unmount` (localStorage); `ChooseMenu` con "Top 3 secreto" segundo.
+- **Elegir:** "Elegí tus 3" (o "Turno de Tomás: elegí tus 3"), la lista de "Por ver" que cumple los filtros como tarjetas chicas que se marcan y desmarcan (`aria-pressed`), y abajo, fija sobre las pestañas, "Listo (2 de 3)" habilitado al llegar a `min(3, cantidad)`. Si ya hay 3 marcadas, tocar otra no hace nada.
+- **Dos celulares, ya elegí:** "Listo. Esperando a Juli…" (o "Juli ya eligió" si está en `ready`), y "Cambiar mi elección" (vuelve a Elegir con lo propio marcado).
+- **Un celular:** después del primero, "Pasale el celu a Juli" y "Listo, soy Juli" (sin mostrar lo elegido); después del segundo, "Revelar".
+- **Revelación:** "3", "2", "1" (un segundo cada uno; sin cuenta con movimiento reducido) y después: "Coinciden" con sus tarjetas, "Eligió Tomás" y "Eligió Juli" con el resto; `winner` → "¡Ganó <título>!" y "Listo"; `roulette` → "Que decida la ruleta" (TieBreak, semilla `${id}:reveal`) y después la ganadora y "Listo". "Terminar" arriba (como Bumble).
+- [ ] **Step 1: Write the failing tests:** inicio y reglas de los botones; elegir marca hasta 3 y "Listo (3 de 3)" llama a `submitReveal` con esos ids; con dos celulares, esperando con "Cambiar mi elección" y "Juli ya eligió"; al llegar la revelación por `notify`, después de la cuenta (con temporizadores falsos) se ven "Coinciden" y las de cada uno, y con una coincidencia "¡Ganó…!" y "Listo" llama a `finishReveal`; sin coincidencias, "Que decida la ruleta" gira a la ganadora de `seededIndex`; con un celular, el pase sin mostrar lo elegido, "Revelar" y que sobrevive a un `unmount` (localStorage); `ChooseMenu` con "Top 3 secreto" segundo.
 - [ ] **Step 2: Run** → FAIL. **Step 3: Implement** (y la sección 8 de la spec).
 - [ ] **Step 4: Run** `npm test && npm run typecheck && npm run lint && npm run build` → PASS.
-- [ ] **Step 5: Revisión visual** en local a 390×844 y 393×852 (el botón "Listo" siempre a la vista): con un celular entero, y con dos usando la Pili local por script.
+- [ ] **Step 5: Revisión visual** en local a 390×844 y 393×852 (el botón "Listo" siempre a la vista): con un celular entero, y con dos usando la Juli local por script.
 - [ ] **Step 6: Commit** `feat: pantalla de la revelación`
 
 ### Task 5: Publicación y aceptación
 
 - [ ] **Step 1:** `npm test && npm run test:security && npm run typecheck`.
-- [ ] **Step 2 (Nacho):** `npx supabase db push`; después una corrida de `npm run test:security:remote` (si el límite de pedidos de Auth corta, repetir los archivos afectados a los pocos minutos).
+- [ ] **Step 2 (Tomás):** `npx supabase db push`; después una corrida de `npm run test:security:remote` (si el límite de pedidos de Auth corta, repetir los archivos afectados a los pocos minutos).
 - [ ] **Step 3:** `CI=true WRANGLER_SEND_METRICS=false npm run deploy < /dev/null` y comprobar el bundle publicado.
-- [ ] **Step 4: Prueba de aceptación** (Nacho y Pili de prueba): con dos celulares, uno elige y el otro solo ve "ya eligió"; al elegir el segundo, la cuenta y la revelación en los dos a la vez; con y sin coincidencias. Con un celular, el pase sin espiar.
+- [ ] **Step 4: Prueba de aceptación** (Tomás y Juli de prueba): con dos celulares, uno elige y el otro solo ve "ya eligió"; al elegir el segundo, la cuenta y la revelación en los dos a la vez; con y sin coincidencias. Con un celular, el pase sin espiar.
 - [ ] **Step 5: Commit** `docs: cierre de la Etapa 9` (notas, "Cierre de la Etapa 9").
 
 **Cierre de la Etapa 9:** ninguno ve la elección del otro antes de la revelación. **No entra** (no adelantar): torneo.

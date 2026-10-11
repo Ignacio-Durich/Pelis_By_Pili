@@ -20,12 +20,12 @@
 - Cada duelo entra en una pantalla de iPhone 13 (390×844) y 15 (393×852) sin scroll (spec, sección 12).
 - Alcance estricto. **No entra:** modo sin internet; tampoco torneo con dos celulares ni guardar el torneo en la base.
 - Cada decisión fuera del plan va a `docs/superpowers/notes/2026-10-decisiones.md`; los menores de la revisión final, a la Etapa 12.
-- **Decisiones confirmadas por Nacho el 2026-10-08:**
+- **Decisiones confirmadas por Tomás el 2026-10-08:**
   1. **4 cada uno** de "Por ver" (con los filtros de la lista).
   2. **Cada duelo se decide juntos** con un toque, en un solo celular; sin desempates.
   3. **Dos cartas grandes por duelo** con póster, año, tipo, duración, géneros, `IMDb · RT` y plataformas.
-  4. **El torneo es de un celular** (no pregunta "uno o dos"): elige el que lo abre, "Pasale el celu a Pili", elige ella. Las del primero se ven marcadas como "La eligió Nacho" y no se pueden volver a elegir (no son secretas).
-  5. **En cuartos, cada duelo es una de Nacho contra una de Pili** (en orden al azar). Si entre los dos no llegan a 8 (lista corta o filtros), se completa al azar con otras de "Por ver" que cumplen los filtros; si ni así, hay huecos y esa candidata pasa sola de ronda.
+  4. **El torneo es de un celular** (no pregunta "uno o dos"): elige el que lo abre, "Pasale el celu a Juli", elige ella. Las del primero se ven marcadas como "La eligió Tomás" y no se pueden volver a elegir (no son secretas).
+  5. **En cuartos, cada duelo es una de Tomás contra una de Juli** (en orden al azar). Si entre los dos no llegan a 8 (lista corta o filtros), se completa al azar con otras de "Por ver" que cumplen los filtros; si ni así, hay huecos y esa candidata pasa sola de ronda.
   6. **"↩️ Deshacer"** vuelve al duelo anterior (como en Bumble).
   7. **El modo se llama "Torneo"**, con "Elijan 4 cada uno y que se enfrenten de a dos", tercero en el menú.
 
@@ -63,7 +63,7 @@
 - Modify: `src/features/choose/Reveal.tsx` (usa `TitlePicker`), `src/features/choose/Reveal.test.tsx` (sigue en verde)
 
 **Interfaces:**
-- Produces: `TitlePicker({ heading, titles, matching, initial, need, locked, onDone })`: el `Picker` de `Reveal.tsx` con `need` como parámetro (en Top 3 secreto, `Math.min(3, opciones)`) y `locked?: { ids: string[]; label: string }`: esos títulos se ven con el texto `label` (por ejemplo "La eligió Nacho"), deshabilitados, y no cuentan en las opciones para `need`.
+- Produces: `TitlePicker({ heading, titles, matching, initial, need, locked, onDone })`: el `Picker` de `Reveal.tsx` con `need` como parámetro (en Top 3 secreto, `Math.min(3, opciones)`) y `locked?: { ids: string[]; label: string }`: esos títulos se ven con el texto `label` (por ejemplo "La eligió Tomás"), deshabilitados, y no cuentan en las opciones para `need`.
 - [ ] **Step 1: Write the failing tests** en `src/features/choose/TitlePicker.test.tsx`: marca hasta `need`; "Listo (n de need)"; los `locked` se ven con su texto y no se pueden tocar; dos toques seguidos no se pisan.
 - [ ] **Step 2: Run** → FAIL. **Step 3: Implement** y usar `TitlePicker` en `Reveal.tsx`. **Step 4: Run** `npm test` → PASS (Top 3 secreto sigue igual).
 - [ ] **Step 5: Commit** `refactor: selector de títulos compartido`
@@ -80,10 +80,10 @@
 
 Pantallas (partida en `localStorage` con `pelis-tournament-local`: `{ id, players, picks: [string[] | null, string[] | null], active, slots: (string | null)[] | null, winners: string[] }`):
 - **Inicio:** `<h2>Torneo</h2>`, "Elijan 4 cada uno y que se enfrenten de a dos.", filtros con contador, "Empezar" (deshabilitado con menos de 2 títulos: "Hacen falta al menos 2 títulos").
-- **Elegir:** `TitlePicker` con "Turno de Nacho: elegí 4" y `need = min(4, opciones)`; después "Pasale el celu a Pili" / "Listo, soy Pili"; después `TitlePicker` "Turno de Pili: elegí 4" con las de Nacho en `locked` ("La eligió Nacho"). Al terminar se arma el cuadro (`fill` = el resto de "Por ver" que cumple los filtros) y empiezan los duelos. Si el espacio tiene un solo miembro, el otro es "tu pareja".
+- **Elegir:** `TitlePicker` con "Turno de Tomás: elegí 4" y `need = min(4, opciones)`; después "Pasale el celu a Juli" / "Listo, soy Juli"; después `TitlePicker` "Turno de Juli: elegí 4" con las de Tomás en `locked` ("La eligió Tomás"). Al terminar se arma el cuadro (`fill` = el resto de "Por ver" que cumple los filtros) y empiezan los duelos. Si el espacio tiene un solo miembro, el otro es "tu pareja".
 - **Duelo:** `GameTop` con "Terminar"; arriba "Cuartos de final · duelo 2 de 4"; dos cartas (`DuelCard`, botón entero con póster, título, `año · tipo · duración`, hasta 3 géneros, `IMDb x · RT y`, plataformas) una arriba de la otra, con "vs" en el medio; tocar una la hace pasar. "↩️ Deshacer" cuando hay algún ganador elegido. Las dos cartas y el resto entran sin scroll en 390×844 y 393×852 (cada carta con el alto que sobra, el póster a la izquierda).
 - **Ganadora:** "¡Ganó <título>!" con su carta, "↩️ Deshacer" y "Listo" (vuelve al inicio y borra la partida). `none` → "No quedó ninguna candidata en la lista" y "Listo".
-- [ ] **Step 1: Write the failing tests:** inicio y botón con pocos títulos; la elección de los dos con el pase (las de Nacho bloqueadas para Pili); con `random = () => 0.999`, el primer duelo es la primera de Nacho contra la primera de Pili; tocar una carta avanza y un doble toque decide un solo duelo; "Deshacer" vuelve; 7 duelos dan "¡Ganó…!" y "Listo" vuelve al inicio; con una lista de 3 títulos hay un hueco y el torneo termina; un título que se marca visto a mitad pasa a ser hueco; recargar (`unmount` y render) en un duelo sigue en el mismo; `ChooseMenu` con "Torneo" tercero.
+- [ ] **Step 1: Write the failing tests:** inicio y botón con pocos títulos; la elección de los dos con el pase (las de Tomás bloqueadas para Juli); con `random = () => 0.999`, el primer duelo es la primera de Tomás contra la primera de Juli; tocar una carta avanza y un doble toque decide un solo duelo; "Deshacer" vuelve; 7 duelos dan "¡Ganó…!" y "Listo" vuelve al inicio; con una lista de 3 títulos hay un hueco y el torneo termina; un título que se marca visto a mitad pasa a ser hueco; recargar (`unmount` y render) en un duelo sigue en el mismo; `ChooseMenu` con "Torneo" tercero.
 - [ ] **Step 2: Run** → FAIL. **Step 3: Implement** (y la sección 8 de la spec).
 - [ ] **Step 4: Run** `npm test && npm run typecheck && npm run lint && npm run build` → PASS.
 - [ ] **Step 5: Revisión visual** en local a 390×844 y 393×852: un torneo entero, midiendo que las dos cartas y los botones del duelo terminen arriba de las pestañas.
@@ -93,7 +93,7 @@ Pantallas (partida en `localStorage` con `pelis-tournament-local`: `{ id, player
 
 - [ ] **Step 1:** `npm test && npm run typecheck && npm run lint` (no hay cambios en la base ni en las funciones).
 - [ ] **Step 2:** `CI=true WRANGLER_SEND_METRICS=false npm run deploy < /dev/null` y comprobar el bundle publicado.
-- [ ] **Step 3: Prueba de aceptación** (Nacho, en su iPhone con Pili): eligen 4 cada uno pasándose el celular, juegan las tres rondas y queda una ganadora; prueban "Deshacer".
+- [ ] **Step 3: Prueba de aceptación** (Tomás, en su iPhone con Juli): eligen 4 cada uno pasándose el celular, juegan las tres rondas y queda una ganadora; prueban "Deshacer".
 - [ ] **Step 4: Commit** `docs: cierre de la Etapa 10` (notas, "Cierre de la Etapa 10").
 
 **Cierre de la Etapa 10:** de 8 títulos queda un ganador en tres rondas. **No entra** (no adelantar): modo sin internet.

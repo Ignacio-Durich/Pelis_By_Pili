@@ -5,7 +5,7 @@
 **Goal:** Desde un reel (o cualquier link o texto) de otra app, "Compartir → Pelis By Pili" lo guarda en una bandeja de la pareja sin salir de esa app; en la lista aparece "📥 Compartidos" y un toque abre la búsqueda ya hecha, con el link como "de dónde vino".
 
 **Architecture:**
-- **Por qué una bandeja:** iOS no deja que una app web instalada aparezca en el menú Compartir (WebKit no soporta `share_target`), y un Atajo que abre un link lo abre en Safari, que tiene la sesión aparte de la app instalada. Por eso el Atajo no abre la app: manda lo compartido a una función del servidor con una **clave personal**, y la app lo muestra en la bandeja. (Elegido por Nacho el 2026-10-08.)
+- **Por qué una bandeja:** iOS no deja que una app web instalada aparezca en el menú Compartir (WebKit no soporta `share_target`), y un Atajo que abre un link lo abre en Safari, que tiene la sesión aparte de la app instalada. Por eso el Atajo no abre la app: manda lo compartido a una función del servidor con una **clave personal**, y la app lo muestra en la bandeja. (Elegido por Tomás el 2026-10-08.)
 - **Base:** `share_keys` (el hash de la clave de cada uno; nadie la lee desde la app) y `shared_items` (la bandeja de la pareja, en Realtime). La clave se crea con una función `security definer` que la devuelve una sola vez.
 - **Función `share`** (Edge Function, sin sesión): recibe la clave en el encabezado `x-share-key` y lo compartido; busca la clave por su hash y guarda el ítem con la clave de servicio.
 - **App:** en Ajustes, "Atajo para compartir" con la clave y la guía para armar el Atajo; en la Lista, la bandeja; "Agregar" se abre con la búsqueda y la nota ya cargadas.
@@ -22,9 +22,9 @@
 - Pantallas que entran sin scroll en iPhone 13 (390×844) y 15 (393×852) (spec, sección 12).
 - Alcance estricto. **No entra:** revelación simultánea, torneo, modo sin internet; tampoco leer el nombre de la peli del video o del texto del post (el nombre lo escribe la persona en el Atajo, o después en la búsqueda).
 - Cada decisión fuera del plan va a `docs/superpowers/notes/2026-10-decisiones.md`; los menores de la revisión final, a la Etapa 12.
-- **Decisiones confirmadas por Nacho el 2026-10-08:**
+- **Decisiones confirmadas por Tomás el 2026-10-08:**
   1. **El Atajo** recibe "URLs y texto" del menú Compartir, pregunta "¿Qué peli o serie es? (opcional)" y lo manda; termina con la notificación "Guardado en Pelis By Pili". Son 3 toques: Compartir, Pelis By Pili, Listo.
-  2. **Una clave por persona** (así la bandeja dice "lo compartió Pili"). Nacho puede pasarle el Atajo a Pili por iCloud y ella solo cambia la clave.
+  2. **Una clave por persona** (así la bandeja dice "lo compartió Juli"). Tomás puede pasarle el Atajo a Juli por iCloud y ella solo cambia la clave.
   3. **La bandeja es de los dos** y está arriba de "Por ver": "📥 Compartidos (n)". Cada ítem muestra el nombre escrito (si hay), "Reel de Instagram" (o la app que corresponda), quién lo compartió, "Ver el link", "Buscar" y "Descartar".
   4. **"Buscar"** abre Agregar con la búsqueda escrita y "¿De dónde vino?" con `Reel de Instagram · <link>` (si no entra en 200 letras, solo `Reel de Instagram`). El ítem sale de la bandeja cuando se agrega el primer título desde ahí; la pantalla sigue abierta, con la nota, por si el reel nombraba varias.
   5. **Tope de 100 ítems** en la bandeja de la pareja: el 101 se rechaza (para que una clave filtrada no la llene).
@@ -51,11 +51,11 @@
   - `create_share_key() returns text` (`security definer`): `no_couple` sin espacio; genera `encode(extensions.gen_random_bytes(24), 'hex')` (48 caracteres), guarda `encode(extensions.digest(clave, 'sha256'), 'hex')` con `on conflict (user_id) do update` (la anterior deja de valer) y devuelve la clave.
   - `share_key_created_at() returns timestamptz`: la fecha de la clave de quien llama, o `null`.
 
-- [ ] **Step 1: Write the failing tests** en `tests/security/shared.test.ts` (pareja A = Nacho y Pili, pareja C ajena; los ítems se insertan con `adminClient()` hasta que exista la función de la Task 2):
+- [ ] **Step 1: Write the failing tests** en `tests/security/shared.test.ts` (pareja A = Tomás y Juli, pareja C ajena; los ítems se insertan con `adminClient()` hasta que exista la función de la Task 2):
   - `create_share_key` devuelve 48 caracteres hex; en `share_keys` queda el SHA-256 y no la clave; una segunda llamada devuelve otra clave y reemplaza el hash; `share_key_created_at` devuelve una fecha (y `null` antes de crearla); sin espacio, `no_couple`.
   - Nadie lee `share_keys` desde la app (ni la propia fila) ni escribe en ella.
-  - Pili lee los ítems de A y C no; Pili borra uno de A; C no puede borrar (sigue estando); borrar dos veces el mismo no da error; nadie inserta ni actualiza directo.
-  - Realtime: Pili recibe el `INSERT` de un ítem de A con filtro `couple_id=eq.A`; C con el mismo filtro no recibe nada.
+  - Juli lee los ítems de A y C no; Juli borra uno de A; C no puede borrar (sigue estando); borrar dos veces el mismo no da error; nadie inserta ni actualiza directo.
+  - Realtime: Juli recibe el `INSERT` de un ítem de A con filtro `couple_id=eq.A`; C con el mismo filtro no recibe nada.
 - [ ] **Step 2: Run** `npm run test:security -- shared` → FAIL.
 - [ ] **Step 3: Write the migration.**
 - [ ] **Step 4: Run** `npx supabase migration up` y `npm run test:security` → todo en verde.
@@ -75,7 +75,7 @@
 
 - [ ] **Step 1: Write the failing tests:**
   - `lib.test.ts`: un link de Instagram con `?igsh=…` queda sin el parámetro y con origen `Instagram`; "Miren esto https://vm.tiktok.com/abc/ 🔥" da link de TikTok y `body` "Miren esto 🔥"; un link de `youtu.be` es `YouTube`; texto sin link da `url` y `source` `null`; `name` "  Dark  " da `query` "Dark" y "" o "-" dan `null`; todo vacío da `null`; un texto de 600 letras queda en 500.
-  - `tests/security/shared.test.ts` (llamando a `${VITE_SUPABASE_URL}/functions/v1/share` con `fetch`, sin sesión): con la clave de Nacho guarda un ítem de A con `shared_by` Nacho y origen correcto; con la clave vieja (después de crear otra), con una inventada o sin clave, 401; sin contenido, 400; con la clave de alguien que dejó el espacio (borrar su fila de `couple_members` con `adminClient()`), 401; con 100 ítems en la bandeja, 429.
+  - `tests/security/shared.test.ts` (llamando a `${VITE_SUPABASE_URL}/functions/v1/share` con `fetch`, sin sesión): con la clave de Tomás guarda un ítem de A con `shared_by` Tomás y origen correcto; con la clave vieja (después de crear otra), con una inventada o sin clave, 401; sin contenido, 400; con la clave de alguien que dejó el espacio (borrar su fila de `couple_members` con `adminClient()`), 401; con 100 ítems en la bandeja, 429.
 - [ ] **Step 2: Run** `npx vitest run supabase/functions/share` y `npm run test:security -- shared` → FAIL.
 - [ ] **Step 3: Implement** `lib.ts`, `index.ts` (cliente con `SUPABASE_SERVICE_ROLE_KEY`, que Supabase da a las funciones; hash con `crypto.subtle.digest('SHA-256', …)` en hex) y la entrada de `config.toml`. Reiniciar `npx supabase functions serve --env-file .env.local`.
 - [ ] **Step 4: Run** los dos comandos → PASS, y `npm test` completo.
@@ -131,7 +131,7 @@ Sección `<h2>Atajo para compartir</h2>` con: "Guardá en Pelis By Pili lo que v
   - `AddTitle` suma `shared?: SharedItem`: arranca con `query = shared.query ?? ''` y `note = originNote(shared)`; con el primer título agregado borra el ítem (`dismissShared`, sin esperar ni mostrar error) y, con `shared`, no vacía la nota después de agregar.
   - `TitleList`: usa `useShared`, muestra `SharedInbox` arriba de las pestañas Por ver / Vistas y "Buscar" abre `AddTitle` con ese `shared`.
 - [ ] **Step 1: Write the failing tests:**
-  - `SharedInbox.test.tsx`: sin ítems no muestra nada; con dos, "📥 Compartidos (2)"; muestra nombre, "Reel de Instagram · lo compartió Pili" y "Ver el link" con el href; "Buscar" llama a `onSearch` con el ítem; "Descartar" llama a `dismissShared` y, si falla, el aviso.
+  - `SharedInbox.test.tsx`: sin ítems no muestra nada; con dos, "📥 Compartidos (2)"; muestra nombre, "Reel de Instagram · lo compartió Juli" y "Ver el link" con el href; "Buscar" llama a `onSearch` con el ítem; "Descartar" llama a `dismissShared` y, si falla, el aviso.
   - `AddTitle.test.tsx`: con `shared` arranca con la búsqueda y la nota cargadas (y busca); al agregar un resultado llama a `dismissShared(id)` una sola vez aunque se agreguen dos y la nota sigue cargada; sin nombre, la búsqueda arranca vacía.
   - `TitleList.test.tsx`: con un ítem en la bandeja, "Buscar" abre Agregar con su búsqueda.
 - [ ] **Step 2: Run** → FAIL. **Step 3: Implement** y sumar la bandeja a la sección 7 de la spec.
@@ -145,9 +145,9 @@ Sección `<h2>Atajo para compartir</h2>` con: "Guardá en Pelis By Pili lo que v
 - Modify: `docs/superpowers/notes/2026-10-verificacion-fuentes.md` ("Cierre de la Etapa 8").
 
 - [ ] **Step 1:** `npm test && npm run test:security && npm run typecheck`.
-- [ ] **Step 2 (Nacho):** `npx supabase db push`. Después: `npx supabase functions deploy share --use-api --no-verify-jwt`, una corrida de `npm run test:security:remote`, y un `curl` sin `apikey` a la función real para confirmar que el Atajo no necesita más encabezados que `x-share-key` (si los necesita, se suma a la guía).
+- [ ] **Step 2 (Tomás):** `npx supabase db push`. Después: `npx supabase functions deploy share --use-api --no-verify-jwt`, una corrida de `npm run test:security:remote`, y un `curl` sin `apikey` a la función real para confirmar que el Atajo no necesita más encabezados que `x-share-key` (si los necesita, se suma a la guía).
 - [ ] **Step 3:** `CI=true WRANGLER_SEND_METRICS=false npm run deploy < /dev/null` y comprobar el bundle publicado.
-- [ ] **Step 4: Prueba de aceptación** (Nacho, y Pili de prueba): cada uno crea su clave y arma el Atajo con la guía; desde un reel real: Compartir → Pelis By Pili → (nombre o nada) → Listo; en la app aparece en "📥 Compartidos" en los dos celulares; "Buscar" abre la búsqueda hecha y al agregar sale de la bandeja.
+- [ ] **Step 4: Prueba de aceptación** (Tomás, y Juli de prueba): cada uno crea su clave y arma el Atajo con la guía; desde un reel real: Compartir → Pelis By Pili → (nombre o nada) → Listo; en la app aparece en "📥 Compartidos" en los dos celulares; "Buscar" abre la búsqueda hecha y al agregar sale de la bandeja.
 - [ ] **Step 5: Commit** `docs: cierre de la Etapa 8`
 
 **Cierre de la Etapa 8:** desde un reel real se llega a la búsqueda en unos 3 toques (Compartir, Pelis By Pili, Listo; después, "Buscar" en la bandeja). **No entra** (no adelantar): revelación simultánea, torneo ni modo sin internet.

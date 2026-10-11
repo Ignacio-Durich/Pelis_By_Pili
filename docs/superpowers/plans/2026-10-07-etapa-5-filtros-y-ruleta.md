@@ -21,17 +21,17 @@
 - Interfaz en español rioplatense; los textos exactos están en cada tarea.
 - Alcance estricto. **No entra:** modos de a dos (swipe, revelación, torneo), preguntas rápidas del momento, lista sin conexión.
 - Cada decisión fuera de este plan se anota en `docs/superpowers/notes/2026-10-decisiones.md`. Los puntos menores de la revisión final van a la Etapa 12 de la spec.
-- **Decisión confirmada por Nacho el 2026-10-07: un veto por persona en cada sesión de ruleta.**
-  - Debajo del resultado hay un botón por persona: "Veto de Nacho" y "Veto de Pili".
+- **Decisión confirmada por Tomás el 2026-10-07: un veto por persona en cada sesión de ruleta.**
+  - Debajo del resultado hay un botón por persona: "Veto de Tomás" y "Veto de Juli".
   - El título vetado no vuelve a salir en esa sesión, pero sigue en la lista.
   - Sin vetos disponibles, el resultado queda firme.
   - Al salir de la pestaña "Elegir", o al cambiar un filtro, la sesión empieza de nuevo.
-- Decisiones confirmadas por Nacho el 2026-10-07:
+- Decisiones confirmadas por Tomás el 2026-10-07:
   - **Se guarda dónde se puede ver cada título, como lista de nombres de plataformas.** La spec (sección 5) decía que la disponibilidad no se guardaba y se consultaba al abrir el detalle, pero para filtrar por plataforma toda la lista hace falta tenerla. Se guardan solo las de suscripción y las gratis, y se renuevan como mucho cada 7 días. El detalle sigue consultándolas en vivo.
   - **Duración:** las películas usan su duración y las series la de un episodio (TMDB no trae duración promedio, así que se toma la del último episodio emitido). El filtro es un máximo: "Cualquiera", "Hasta 1 h 30", "Hasta 2 h", "Hasta 2 h 30".
   - **Puntaje mínimo de IMDb:** "Cualquiera", "6 o más", "7 o más", "8 o más".
   - **Géneros y plataformas:** se eligen entre los que aparecen en la lista "Por ver"; un título pasa si tiene alguno de los elegidos.
-  - **Con un filtro activo, un título sin ese dato no pasa.** Con "Netflix" elegido aparecen solo los títulos que están en Netflix (pedido de Nacho): ni los de otras plataformas ni los que no tienen plataformas conocidas. Con dos plataformas elegidas, aparecen los que están en alguna de las dos. Sin filtros, se ven todos.
+  - **Con un filtro activo, un título sin ese dato no pasa.** Con "Netflix" elegido aparecen solo los títulos que están en Netflix (pedido de Tomás): ni los de otras plataformas ni los que no tienen plataformas conocidas. Con dos plataformas elegidas, aparecen los que están en alguna de las dos. Sin filtros, se ven todos.
   - **Los filtros aplican a "Por ver" y a la ruleta**, no a "Vistas". No se guardan entre usos de la app.
   - **"Elegir" es una pestaña nueva** de la barra de abajo (Lista, Elegir, Ajustes). Por ahora muestra solo la ruleta; el menú de modos llega cuando haya un segundo modo.
   - **Al vetar, la ruleta gira sola otra vez.** No hay otro "girar de nuevo": así los vetos sí cuentan.
@@ -232,10 +232,10 @@ git add src && git commit -m "feat: filtros de la lista Por ver"
   - **Sin candidatos:** "Ningún título cumple estos filtros" y "Girar" deshabilitado.
   - **Girar:** muestra el resultado con `TitleCard` y el encabezado "Les tocó". El giro no anima si `matchMedia('(prefers-reduced-motion: reduce)')` lo pide; en el test se simula así.
   - **Botones de veto:**
-    - Debajo del resultado están "Veto de Nacho" y "Veto de Pili", y desaparece "Girar".
+    - Debajo del resultado están "Veto de Tomás" y "Veto de Juli", y desaparece "Girar".
     - Con un solo miembro, un solo botón de veto.
   - **Vetar:**
-    - "Veto de Nacho" saca ese título de los candidatos, gira solo otra vez (sale otro título) y el botón queda deshabilitado con el texto "Nacho ya vetó".
+    - "Veto de Tomás" saca ese título de los candidatos, gira solo otra vez (sale otro título) y el botón queda deshabilitado con el texto "Tomás ya vetó".
     - Después del segundo veto no quedan botones habilitados y aparece "No quedan vetos: ¡a ver esta!".
   - **Un veto que deja sin candidatos:** aparece "No quedan títulos con estos filtros" y ningún resultado.
   - **Cambiar un filtro:** se borran el resultado y los vetos, y vuelve "Girar".
@@ -279,7 +279,7 @@ git add src && git commit -m "feat: ruleta con un veto por persona"
   - `docs/superpowers/notes/2026-10-verificacion-fuentes.md`: sección "Cierre de la Etapa 5".
   - `docs/superpowers/specs/2026-10-06-pelis-by-pili-design.md`: aclaración en la sección 5 sobre las plataformas guardadas, y los puntos menores en la Etapa 12.
 
-- [ ] **Step 1: Migración en el proyecto real (Nacho, en su terminal) y despliegue de la función**
+- [ ] **Step 1: Migración en el proyecto real (Tomás, en su terminal) y despliegue de la función**
 
 Run: `npx supabase db push`; después, `npx supabase functions deploy title-detail --use-api` y una sola corrida de `npm run test:security:remote`.
 Expected: todo en verde.
@@ -291,7 +291,7 @@ Antes de publicar, revisar que `dist/` no contenga claves secretas ni `127.0.0.1
 Run: `npm test && npm run test:security && npm run typecheck && npm run build`, y después `npx netlify-cli deploy --prod --no-build --dir=dist`
 Expected: todo en verde, `HTTP/2 200`, y el bundle publicado es el mismo que el local.
 
-- [ ] **Step 3: Prueba de aceptación** (Nacho, y la cuenta de prueba en el celular de su hermana)
+- [ ] **Step 3: Prueba de aceptación** (Tomás, y la cuenta de prueba en un celular prestado)
 
 1. Con 4 o más títulos en "Por ver", después de abrir la app esperar unos segundos a que se completen los datos.
 2. Filtrar por "Películas" y por una plataforma: la lista muestra solo lo que cumple.
@@ -311,7 +311,7 @@ git add docs && git commit -m "docs: cierre de la Etapa 5"
 
 ---
 
-## Cambios pedidos por Nacho después de probar (2026-10-07)
+## Cambios pedidos por Tomás después de probar (2026-10-07)
 
 Se hacen antes de la prueba de aceptación (Task 5, paso 3), que se repite al final con estos cambios.
 
@@ -380,7 +380,7 @@ Se hacen antes de la prueba de aceptación (Task 5, paso 3), que se repite al fi
 
 Después de las Tasks 6 y 7 se repiten los pasos 2 y 3 de la Task 5 (publicar y probar en los celulares).
 
-### Task 8: Cuántos títulos cumplen los filtros (pedido de Nacho, 2026-10-07)
+### Task 8: Cuántos títulos cumplen los filtros (pedido de Tomás, 2026-10-07)
 
 **Files:** Modify `src/features/titles/FiltersPanel.tsx`, `src/features/titles/TitleList.tsx`, `src/features/choose/Roulette.tsx`. Test: `FiltersPanel.test.tsx`, `TitleList.test.tsx`, `Roulette.test.tsx`.
 

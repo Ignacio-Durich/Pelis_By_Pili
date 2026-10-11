@@ -26,12 +26,12 @@
 - Interfaz en español rioplatense; los textos exactos están en cada tarea. Si falta un dato se muestra "—" (spec, sección 9).
 - Alcance estricto. **No entra:** marcar vista, puntaje propio, pestaña "Vistas", filtros y lista sin conexión.
 - Cada decisión fuera de este plan se anota en `docs/superpowers/notes/2026-10-decisiones.md` con su motivo. Los puntos menores que deje la revisión final se suman a la Etapa 12 de la spec.
-- Decisiones de este plan, a confirmar con Nacho:
+- Decisiones de este plan, a confirmar con Tomás:
   - **Puntajes en columnas de `titles`:** se renuevan al abrir el detalle si tienen más de 7 días.
   - **Puntaje de TMDB:** se guarda y se muestra junto a los otros (spec, sección 3: "IMDb, Rotten Tomatoes, Metacritic, TMDB").
   - **Tarjeta de la lista:** muestra "IMDb 8.5 · RT 99%", con "—" si falta alguno (spec, sección 7).
   - **Agregar:** dispara la consulta del detalle en segundo plano, para que la tarjeta tenga puntajes sin abrirla.
-  - **Logo de TMDB en Ajustes:** el archivo oficial se descarga de themoviedb.org (paso con permiso de Nacho).
+  - **Logo de TMDB en Ajustes:** el archivo oficial se descarga de themoviedb.org (paso con permiso de Tomás).
 - Verificado el 2026-10-06 y el 2026-10-07 con las claves reales:
   - Una consulta a `/3/{movie|tv}/{id}?append_to_response=external_ids,watch/providers` trae sinopsis, `vote_average`, el id de IMDb y `results.AR` con `link`, `flatrate`, `rent` y `buy`.
   - OMDb devuelve Rotten Tomatoes para Breaking Bad pero no para Dark ni The Office, y Metacritic falta en las tres series. Un id inexistente responde `{"Response":"False","Error":"Error getting data."}`.
@@ -206,9 +206,9 @@ Expected: PASS, incluidos los de `detail.test.ts`.
 
 - [ ] **Step 4: Secreto y despliegue en el proyecto real**
 
-Nacho crea el secreto `OMDB_API_KEY` en el panel de Supabase (**Edge Functions → Secrets**). Verificar con `npx supabase secrets list` que el nombre aparece.
+Tomás crea el secreto `OMDB_API_KEY` en el panel de Supabase (**Edge Functions → Secrets**). Verificar con `npx supabase secrets list` que el nombre aparece.
 
-Run: `npx supabase db push` (Nacho, en su terminal); después, `npx supabase functions deploy title-detail --use-api` y una sola corrida de `npm run test:security:remote`
+Run: `npx supabase db push` (Tomás, en su terminal); después, `npx supabase functions deploy title-detail --use-api` y una sola corrida de `npm run test:security:remote`
 Expected: la migración y la función se aplican sin errores, y los tests pasan contra el proyecto real.
 
 - [ ] **Step 5: Commit**
@@ -281,9 +281,9 @@ git add src && git commit -m "feat: puntajes y detalle en el cliente"
 - Consumes: `fetchTitleDetail` y `ratings.ts` (Task 4), `TitleCard`, `useMemberName` y `removeTitle`.
 - Produces: `TitleDetail(props: { title: Title; onClose: () => void }): JSX.Element`.
 
-- [ ] **Step 1: Bajar el logo de TMDB (pide permiso a Nacho)**
+- [ ] **Step 1: Bajar el logo de TMDB (pide permiso a Tomás)**
 
-De la página oficial de logos de TMDB (themoviedb.org/about/logos-attribution), bajar el logo SVG rectangular a `public/tmdb-logo.svg`. Antes, decirle a Nacho el nombre del archivo, la fuente y el tamaño, y esperar su OK.
+De la página oficial de logos de TMDB (themoviedb.org/about/logos-attribution), bajar el logo SVG rectangular a `public/tmdb-logo.svg`. Antes, decirle a Tomás el nombre del archivo, la fuente y el tamaño, y esperar su OK.
 
 - [ ] **Step 2: Escribir los tests que fallan** (APIs simuladas)
 
@@ -358,11 +358,11 @@ Antes de publicar, revisar que `dist/` no contenga los nombres ni los valores de
 Run: `npx netlify-cli deploy --prod --no-build --dir=dist`
 Expected: `HTTP/2 200`, y el bundle publicado es el mismo que el local.
 
-- [ ] **Step 3: Prueba de aceptación con Nacho y Pili**
+- [ ] **Step 3: Prueba de aceptación con Tomás y Juli**
 
 1. Los títulos que ya estaban en la lista muestran "IMDb — · RT —" hasta que alguien abre su detalle. Al abrirlo, la tarjeta se actualiza en los dos iPhones.
-2. Nacho agrega una película: la tarjeta muestra IMDb y RT en unos segundos, sin abrirla.
-3. Pili abre una película y una serie: cada una muestra sinopsis, los cuatro puntajes ("—" donde falte), la fecha y dónde verla en Argentina, con "Fuente: JustWatch".
+2. Tomás agrega una película: la tarjeta muestra IMDb y RT en unos segundos, sin abrirla.
+3. Juli abre una película y una serie: cada una muestra sinopsis, los cuatro puntajes ("—" donde falte), la fecha y dónde verla en Argentina, con "Fuente: JustWatch".
 4. Ajustes muestra el logo de TMDB y las tres atribuciones.
 
 Anotar los resultados en las notas.

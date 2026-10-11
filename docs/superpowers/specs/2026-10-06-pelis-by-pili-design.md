@@ -5,7 +5,7 @@ Estado: borrador para revisión
 
 ## 1. Propósito
 
-Una app para dos personas (Nacho y su novia) donde cargar fácilmente películas y series que escuchan, piensan o ven recomendadas en redes sociales o plataformas de streaming, para verlas más adelante. Cuando llega el momento de elegir, la app ayuda a decidir de forma interactiva.
+Una app para dos personas (Tomás y Juli) donde cargar fácilmente películas y series que escuchan, piensan o ven recomendadas en redes sociales o plataformas de streaming, para verlas más adelante. Cuando llega el momento de elegir, la app ayuda a decidir de forma interactiva.
 
 Criterio de éxito: cargar un título en pocos toques desde el celular, ver puntajes útiles (IMDb, Rotten Tomatoes) y decidir qué ver sin discutir veinte minutos. Costo: cero.
 
@@ -59,7 +59,7 @@ Capas del código, cada una con un único trabajo: pantallas; acceso a datos (Su
 - Puntajes externos (guardados al consultarlos): IMDb, Rotten Tomatoes, Metacritic, TMDB, y fecha de última actualización. Así se cuidan las 1.000 consultas diarias de OMDb.
 - Puntaje propio: una fila por persona y título, con nota corta opcional.
 - Sesión de elección: modo usado, candidatas, votos o swipes de cada uno, y resultado.
-- La disponibilidad en plataformas se consulta al abrir el detalle. Desde la etapa 5 (decisión confirmada por Nacho) se guarda además la lista de plataformas de suscripción y gratis de cada título, renovada como mucho cada 7 días, para poder filtrar toda la lista por plataforma.
+- La disponibilidad en plataformas se consulta al abrir el detalle. Desde la etapa 5 (decisión confirmada por Tomás) se guarda además la lista de plataformas de suscripción y gratis de cada título, renovada como mucho cada 7 días, para poder filtrar toda la lista por plataforma.
 
 Seguridad: solo los dos miembros de la pareja pueden leer y modificar los datos del espacio.
 
@@ -83,15 +83,15 @@ Primer uso: la primera persona crea el espacio e invita a la otra con un link. S
 
 El mazo de candidatas sale de la lista "Por ver", no de un catálogo general.
 
-1. Bumble (swipe y match; nombre elegido por Nacho): cada uno desliza sobre un mazo de hasta 30 títulos, con dos celulares o pasándose uno; hay match cuando los dos eligen el mismo. Si hay varios matches, segunda vuelta solo con ellos (decisión de Nacho en la etapa 7, en lugar de la final de a pares).
+1. Bumble (swipe y match; nombre elegido por Tomás): cada uno desliza sobre un mazo de hasta 30 títulos, con dos celulares o pasándose uno; hay match cuando los dos eligen el mismo. Si hay varios matches, segunda vuelta solo con ellos (decisión de Tomás en la etapa 7, en lugar de la final de a pares).
 2. Ruleta con filtros: filtra por película o serie, duración, género, plataforma y puntaje mínimo de IMDb; se gira; con veto.
-3. Torneo de a pares: cada uno elige 4 de "Por ver" pasándose el celular (las del primero se ven y no se repiten), y las 8 se enfrentan de a pares (cuartos, semifinal y final) hasta que queda una; en cuartos, cada duelo es una de cada uno. Cada duelo se decide juntos con un toque, en un solo celular, con dos cartas grandes; se puede deshacer. Si no llegan a 8, se completa al azar con otras de "Por ver" y, si ni así, alguna pasa sola de ronda (decisiones de Nacho en la etapa 10).
+3. Torneo de a pares: cada uno elige 4 de "Por ver" pasándose el celular (las del primero se ven y no se repiten), y las 8 se enfrentan de a pares (cuartos, semifinal y final) hasta que queda una; en cuartos, cada duelo es una de cada uno. Cada duelo se decide juntos con un toque, en un solo celular, con dos cartas grandes; se puede deshacer. Si no llegan a 8, se completa al azar con otras de "Por ver" y, si ni así, alguna pasa sola de ronda (decisiones de Tomás en la etapa 10).
 4. Preguntas rápidas del momento: tiempo disponible, género (uno o varios) y plataforma (una o varias); devuelve las 5 mejores de la lista según esas respuestas y los puntajes.
-5. Revelación simultánea ("Top 3 secreto", nombre elegido por Nacho): cada uno elige 3 títulos de "Por ver" (sin orden) en secreto y se muestran a la vez, después de una cuenta 3, 2, 1; las coincidencias van primero. Una coincidencia gana; con varias, la ruleta entre ellas; sin ninguna, la ruleta entre todas. Con dos celulares el secreto lo cuida la base (la elección del otro no se puede leer hasta la revelación); con uno se pasan el celular sin mostrar lo elegido.
+5. Revelación simultánea ("Top 3 secreto", nombre elegido por Tomás): cada uno elige 3 títulos de "Por ver" (sin orden) en secreto y se muestran a la vez, después de una cuenta 3, 2, 1; las coincidencias van primero. Una coincidencia gana; con varias, la ruleta entre ellas; sin ninguna, la ruleta entre todas. Con dos celulares el secreto lo cuida la base (la elección del otro no se puede leer hasta la revelación); con uno se pasan el celular sin mostrar lo elegido.
 
-Ánimos de las preguntas rápidas (etapa 6; el 2026-10-09 Nacho pidió cambiarlos por los géneros de lo que tienen por ver, los mismos de los filtros, y esto queda solo como historia) y los géneros de TMDB que cuentan para cada uno: 😂 Reírnos (Comedia, Animación, Familia, Kids), 💕 Algo romántico (Romance, Comedia, Música), 😢 Emocionarnos (Drama, Romance, Historia, Música), 💥 Adrenalina (Acción, Aventura, Action & Adventure, Bélica, War & Politics, Western), 🕵️ Intriga (Misterio, Crimen, Suspense), 🚀 Volar la cabeza (Ciencia ficción, Fantasía, Sci-Fi & Fantasy), 👻 Miedo (Terror, Suspense), 🧠 Aprender algo (Documental, Historia) y 😌 Relax (Animación, Comedia, Familia, Documental, Música, Kids, Reality), para antes de dormir o de fondo mientras estudian o trabajan. Tiempos: hasta 1 h 30, 2 h, 2 h 30 o sin apuro. Orden: más ánimos en común, mejor puntaje (IMDb, o TMDB si no hay) y más nuevo; si no llegan a 5 con el ánimo, se completa con el resto y se avisa.
+Ánimos de las preguntas rápidas (etapa 6; el 2026-10-09 Tomás pidió cambiarlos por los géneros de lo que tienen por ver, los mismos de los filtros, y esto queda solo como historia) y los géneros de TMDB que cuentan para cada uno: 😂 Reírnos (Comedia, Animación, Familia, Kids), 💕 Algo romántico (Romance, Comedia, Música), 😢 Emocionarnos (Drama, Romance, Historia, Música), 💥 Adrenalina (Acción, Aventura, Action & Adventure, Bélica, War & Politics, Western), 🕵️ Intriga (Misterio, Crimen, Suspense), 🚀 Volar la cabeza (Ciencia ficción, Fantasía, Sci-Fi & Fantasy), 👻 Miedo (Terror, Suspense), 🧠 Aprender algo (Documental, Historia) y 😌 Relax (Animación, Comedia, Familia, Documental, Música, Kids, Reality), para antes de dormir o de fondo mientras estudian o trabajan. Tiempos: hasta 1 h 30, 2 h, 2 h 30 o sin apuro. Orden: más ánimos en común, mejor puntaje (IMDb, o TMDB si no hay) y más nuevo; si no llegan a 5 con el ánimo, se completa con el resto y se avisa.
 
-Bumble (etapa 7, confirmado por Nacho): el mazo son hasta 30 títulos de "Por ver" que cumplen los filtros de la lista, mezclados al azar e iguales para los dos. Al empezar se elige "📱 Uno" (cada uno desliza el mazo entero y se pasan el celular; la partida queda solo en ese celular) o "📱📱 Dos" (partida compartida en la base, el match aparece en los dos al instante; hace falta que los dos estén en el espacio). La carta muestra póster, año, tipo, duración, géneros, IMDb, Rotten Tomatoes y plataformas, y al tocarla la sinopsis. Los votos se pueden deshacer mientras la vuelta no terminó. Con varios matches hay otra vuelta solo con ellos, hasta 3; si siguen empatados, o en una vuelta nueva no coincide ninguno, decide una ruleta cuyo resultado sale de la partida y la vuelta (los dos celulares ven la misma ganadora).
+Bumble (etapa 7, confirmado por Tomás): el mazo son hasta 30 títulos de "Por ver" que cumplen los filtros de la lista, mezclados al azar e iguales para los dos. Al empezar se elige "📱 Uno" (cada uno desliza el mazo entero y se pasan el celular; la partida queda solo en ese celular) o "📱📱 Dos" (partida compartida en la base, el match aparece en los dos al instante; hace falta que los dos estén en el espacio). La carta muestra póster, año, tipo, duración, géneros, IMDb, Rotten Tomatoes y plataformas, y al tocarla la sinopsis. Los votos se pueden deshacer mientras la vuelta no terminó. Con varios matches hay otra vuelta solo con ellos, hasta 3; si siguen empatados, o en una vuelta nueva no coincide ninguno, decide una ruleta cuyo resultado sale de la partida y la vuelta (los dos celulares ven la misma ganadora).
 
 ## 9. Errores
 
@@ -141,7 +141,7 @@ Cada etapa se construye, se prueba y se cierra antes de empezar la siguiente. Cl
 - No entra: modos de a dos ni preguntas rápidas del momento.
 
 ### Etapa 6 — Preguntas rápidas del momento
-- Entra: tiempo disponible, género y plataforma; devuelve las 5 mejores de la lista (eran 3; Nacho pidió 5 después de probarla).
+- Entra: tiempo disponible, género y plataforma; devuelve las 5 mejores de la lista (eran 3; Tomás pidió 5 después de probarla).
 - Terminada cuando: devuelve 5 opciones coherentes con las respuestas.
 - No entra: sesiones en tiempo real.
 
@@ -151,7 +151,7 @@ Cada etapa se construye, se prueba y se cierra antes de empezar la siguiente. Cl
 - No entra: Atajo de iOS, revelación simultánea ni torneo.
 
 ### Etapa 8 — Atajo de iOS para "Compartir"
-- Entra: el Atajo que aparece en el menú Compartir, más la guía de instalación para los dos iPhone. Como iOS no deja que una app web instalada reciba lo compartido y un Atajo abre los links en Safari (con la sesión aparte), el Atajo guarda lo compartido en una bandeja de la pareja con una clave personal, y en la app un toque abre la búsqueda ya hecha (elegido por Nacho el 2026-10-08).
+- Entra: el Atajo que aparece en el menú Compartir, más la guía de instalación para los dos iPhone. Como iOS no deja que una app web instalada reciba lo compartido y un Atajo abre los links en Safari (con la sesión aparte), el Atajo guarda lo compartido en una bandeja de la pareja con una clave personal, y en la app un toque abre la búsqueda ya hecha (elegido por Tomás el 2026-10-08).
 - Terminada cuando: desde un reel real se llega a la búsqueda en unos 3 toques.
 - No entra: revelación simultánea, torneo ni modo sin internet.
 
@@ -171,7 +171,7 @@ Cada etapa se construye, se prueba y se cierra antes de empezar la siguiente. Cl
 - No entra: nada fuera de la carga y la calificación sin conexión.
 
 ### Etapa 12 — Refinamiento
-Puntos menores que dejaron las revisiones de las etapas anteriores. Se arreglan al final, después de todas las demás etapas (pedido de Nacho, 2026-10-07). Cada uno lleva su test.
+Puntos menores que dejaron las revisiones de las etapas anteriores. Se arreglan al final, después de todas las demás etapas (pedido de Tomás, 2026-10-07). Cada uno lleva su test.
 - Entra, de la etapa 1:
   - "Cerrar sesión" sin internet no hace nada; debería cerrar la sesión en el celular igual (`signOut({ scope: 'local' })`).
   - Si falla "Copiar enlace", no se avisa nada (la promesa rechazada no se maneja).
@@ -239,21 +239,21 @@ Puntos menores que dejaron las revisiones de las etapas anteriores. Se arreglan 
   - Cerrar sesión deja en el celular la lista, la pareja y la bandeja guardadas (con dueño, así que otra cuenta no las ve).
   - Un título anotado sin red puede quedar dos veces en Compartidos si la app se cierra justo entre mandarlo y borrarlo de la cola, o con dos pestañas en la compu.
   - Los pósters guardados son respuestas "opacas" (sin CORS), que ocupan más lugar: sumar `purgeOnQuotaError` o `crossOrigin`.
-- Antes del regalo: borrar la cuenta y el miembro "Pili" de prueba para que la verdadera entre con la invitación. (Hecho el 2026-10-08: Nacho la borró desde el panel; el espacio quedó con Nacho solo y sin partidas abiertas.)
-- Entra, pedido de Nacho (2026-10-08): que todos los modos se puedan jugar con un solo celular, porque a veces usan uno solo de los dos. Bumble ya lo trae desde la etapa 7; la revelación simultánea y el torneo (etapas 9 y 10) conviene diseñarlos con esa opción desde el principio. (Hecho: Bumble, Top 3 secreto y Torneo tienen "📱 Uno".)
-- Entra, pedido de Nacho (2026-10-08): un botón para mandar comentarios sobre la app o reportar errores. Los comentarios quedan guardados en la app (decisión de Nacho, 2026-10-09). (Hecho en la etapa 12: "Comentarios y errores" en Ajustes.)
-- Entra, pedido de Nacho (2026-10-09): un buscador dentro de la lista, para los títulos ya agregados, que busca por nombre, nombre original y director, en la pestaña abierta. (Hecho en la etapa 12.)
+- Antes del regalo: borrar la cuenta y el miembro "Juli" de prueba para que la verdadera entre con la invitación. (Hecho el 2026-10-08: Tomás la borró desde el panel; el espacio quedó con Tomás solo y sin partidas abiertas.)
+- Entra, pedido de Tomás (2026-10-08): que todos los modos se puedan jugar con un solo celular, porque a veces usan uno solo de los dos. Bumble ya lo trae desde la etapa 7; la revelación simultánea y el torneo (etapas 9 y 10) conviene diseñarlos con esa opción desde el principio. (Hecho: Bumble, Top 3 secreto y Torneo tienen "📱 Uno".)
+- Entra, pedido de Tomás (2026-10-08): un botón para mandar comentarios sobre la app o reportar errores. Los comentarios quedan guardados en la app (decisión de Tomás, 2026-10-09). (Hecho en la etapa 12: "Comentarios y errores" en Ajustes.)
+- Entra, pedido de Tomás (2026-10-09): un buscador dentro de la lista, para los títulos ya agregados, que busca por nombre, nombre original y director, en la pestaña abierta. (Hecho en la etapa 12.)
 - Terminada cuando: cada punto tiene su test y está arreglado, o hay una decisión anotada de por qué se deja.
 - No entra: funciones nuevas, salvo jugar con un solo celular, el botón de comentarios y el buscador de la lista.
 
-Decisiones de orden: las etapas 0 a 4 son lo imprescindible para usar la app de verdad; los modos de un solo celular (ruleta y preguntas) van antes que los de a dos; el Atajo de iOS va después del swipe y match por decisión de Nacho, aunque técnicamente solo depende del buscador de la etapa 2.
+Decisiones de orden: las etapas 0 a 4 son lo imprescindible para usar la app de verdad; los modos de un solo celular (ruleta y preguntas) van antes que los de a dos; el Atajo de iOS va después del swipe y match por decisión de Tomás, aunque técnicamente solo depende del buscador de la etapa 2.
 
 ## 12. Puntos a verificar al construir
 
 - Con una clave real de OMDb: si devuelve Rotten Tomatoes para películas, y confirmar que para series no lo hace (un reporte de la comunidad dice que no, por razones legales; sin fecha clara).
 - Con una clave real de TMDB: si hay datos de plataformas para Argentina (consultar la lista de regiones disponibles).
 - Límites de los planes gratuitos de Supabase y del hosting, en especial si pausan proyectos inactivos.
-- Los celulares son un iPhone 13 (Nacho, 390×844) y un iPhone 15 (Pili, 393×852), con la app instalada en la pantalla de inicio. Cada pantalla de juego tiene que entrar sin scroll en los dos, con la muesca, la barra de inicio y las pestañas de la app (pedido de Nacho en la etapa 7). Revisar a 390×844 y 393×852 antes de publicar.
+- Los celulares son un iPhone 13 (Tomás, 390×844) y un iPhone 15 (Juli, 393×852), con la app instalada en la pantalla de inicio. Cada pantalla de juego tiene que entrar sin scroll en los dos, con la muesca, la barra de inicio y las pestañas de la app (pedido de Tomás en la etapa 7). Revisar a 390×844 y 393×852 antes de publicar.
 
 ## 13. Inspiración
 
