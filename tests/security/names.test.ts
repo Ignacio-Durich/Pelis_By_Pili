@@ -18,15 +18,15 @@ beforeAll(async () => {
 afterAll(cleanup)
 
 test('a member sets their own name and the partner reads it', async () => {
-  const { error } = await A.client.rpc('set_display_name', { p_name: '  Nacho ' })
+  const { error } = await A.client.rpc('set_display_name', { p_name: '  Tomás ' })
   expect(error).toBeNull()
-  expect(await nameOf(B, A)).toBe('Nacho')
+  expect(await nameOf(B, A)).toBe('Tomás')
 })
 
 test("the name only changes the caller's row", async () => {
-  await B.client.rpc('set_display_name', { p_name: 'Pili' })
-  expect(await nameOf(A, B)).toBe('Pili')
-  expect(await nameOf(A, A)).toBe('Nacho')
+  await B.client.rpc('set_display_name', { p_name: 'Juli' })
+  expect(await nameOf(A, B)).toBe('Juli')
+  expect(await nameOf(A, A)).toBe('Tomás')
 })
 
 test('invalid names are rejected', async () => {
@@ -34,7 +34,7 @@ test('invalid names are rejected', async () => {
     const { error } = await A.client.rpc('set_display_name', { p_name })
     expect(error?.message).toBe('invalid_name')
   }
-  expect(await nameOf(A, A)).toBe('Nacho')
+  expect(await nameOf(A, A)).toBe('Tomás')
 })
 
 test('non-members cannot set a name', async () => {
@@ -50,7 +50,7 @@ test('outsiders cannot read names', async () => {
 test('no direct updates', async () => {
   const { error } = await A.client.from('couple_members').update({ display_name: 'Otro' }).eq('user_id', A.id)
   expect(error).not.toBeNull()
-  expect(await nameOf(B, A)).toBe('Nacho')
+  expect(await nameOf(B, A)).toBe('Tomás')
 })
 
 test('anonymous clients cannot call set_display_name', async () => {
@@ -59,6 +59,6 @@ test('anonymous clients cannot call set_display_name', async () => {
 })
 
 test('tabs and line breaks around a name are trimmed too', async () => {
-  expect((await A.client.rpc('set_display_name', { p_name: '\tNacho\n' })).error).toBeNull()
-  expect(await nameOf(B, A)).toBe('Nacho')
+  expect((await A.client.rpc('set_display_name', { p_name: '\tTomás\n' })).error).toBeNull()
+  expect(await nameOf(B, A)).toBe('Tomás')
 })

@@ -25,7 +25,7 @@ test('getMyCouple is null without rows', async () => {
 test('getMyCouple returns the members with their names', async () => {
   db.select.mockResolvedValue({
     data: [
-      { couple_id: 'c1', user_id: 'u1', display_name: 'Nacho' },
+      { couple_id: 'c1', user_id: 'u1', display_name: 'Tomás' },
       { couple_id: 'c1', user_id: 'u2', display_name: null },
     ],
     error: null,
@@ -34,7 +34,7 @@ test('getMyCouple returns the members with their names', async () => {
     coupleId: 'c1',
     memberCount: 2,
     members: [
-      { userId: 'u1', displayName: 'Nacho' },
+      { userId: 'u1', displayName: 'Tomás' },
       { userId: 'u2', displayName: null },
     ],
   })
@@ -43,8 +43,8 @@ test('getMyCouple returns the members with their names', async () => {
 
 test('setDisplayName calls set_display_name', async () => {
   db.rpc.mockResolvedValue({ data: null, error: null })
-  await setDisplayName('Pili')
-  expect(db.rpc).toHaveBeenCalledWith('set_display_name', { p_name: 'Pili' })
+  await setDisplayName('Juli')
+  expect(db.rpc).toHaveBeenCalledWith('set_display_name', { p_name: 'Juli' })
 })
 
 test('getMyCouple maps a fetch failure to network', async () => {

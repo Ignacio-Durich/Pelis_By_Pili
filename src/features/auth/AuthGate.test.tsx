@@ -42,7 +42,7 @@ function renderGate() {
 
 async function goToCodeStep() {
   renderGate()
-  fireEvent.change(await screen.findByLabelText('Email'), { target: { value: 'nacho@gmail.com' } })
+  fireEvent.change(await screen.findByLabelText('Email'), { target: { value: 'tomas@gmail.com' } })
   fireEvent.click(screen.getByRole('button', { name: 'Enviarme el código' }))
   return screen.findByLabelText('Ingresá el código de 6 dígitos que te llegó por email')
 }
@@ -63,7 +63,7 @@ test('without a session shows the email form', async () => {
 
 test('after sending the email asks for the 6-digit code', async () => {
   expect(await goToCodeStep()).toBeInTheDocument()
-  expect(api.requestCode).toHaveBeenCalledWith('nacho@gmail.com')
+  expect(api.requestCode).toHaveBeenCalledWith('tomas@gmail.com')
 })
 
 test('the code field keeps only digits and submits at 6', async () => {
@@ -72,7 +72,7 @@ test('the code field keeps only digits and submits at 6', async () => {
   expect(field).toHaveValue('123')
   expect(api.verifyCode).not.toHaveBeenCalled()
   fireEvent.change(field, { target: { value: '123456' } })
-  expect(api.verifyCode).toHaveBeenCalledWith('nacho@gmail.com', '123456')
+  expect(api.verifyCode).toHaveBeenCalledWith('tomas@gmail.com', '123456')
 })
 
 test('a wrong code shows Código incorrecto o vencido', async () => {
@@ -85,7 +85,7 @@ test('a wrong code shows Código incorrecto o vencido', async () => {
 test('rate_limited shows the wait message', async () => {
   api.requestCode.mockRejectedValue(new AuthError('rate_limited'))
   renderGate()
-  fireEvent.change(await screen.findByLabelText('Email'), { target: { value: 'nacho@gmail.com' } })
+  fireEvent.change(await screen.findByLabelText('Email'), { target: { value: 'tomas@gmail.com' } })
   fireEvent.click(screen.getByRole('button', { name: 'Enviarme el código' }))
   expect(await screen.findByText('Pediste muchos códigos, esperá unos minutos')).toBeInTheDocument()
 })

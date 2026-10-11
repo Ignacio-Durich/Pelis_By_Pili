@@ -11,7 +11,7 @@ vi.mock('../titles/titlesApi', async (importOriginal) => ({
 vi.mock('../titles/detailApi', () => ({ fetchTitleDetail: api.fetchTitleDetail }))
 vi.mock('../../lib/supabase', () => ({ supabase: {} }))
 
-import { nacho, withCouple } from '../../test/providers'
+import { tomas, withCouple } from '../../test/providers'
 import { makeTitle } from '../../test/titles'
 import { NO_FILTERS, type Filters } from '../titles/filters'
 import { Roulette } from './Roulette'
@@ -77,12 +77,12 @@ test('spinning shows a result that matches the filters, with a veto button per p
   expect(screen.getByRole('heading', { name: 'Les tocó' })).toBeInTheDocument()
   expect(resultName()).toBe('Primera')
   expect(screen.queryByRole('button', { name: 'Girar' })).not.toBeInTheDocument()
-  expect(screen.getByRole('button', { name: 'Veto de Nacho' })).toBeEnabled()
-  expect(screen.getByRole('button', { name: 'Veto de Pili' })).toBeEnabled()
+  expect(screen.getByRole('button', { name: 'Veto de Tomás' })).toBeEnabled()
+  expect(screen.getByRole('button', { name: 'Veto de Juli' })).toBeEnabled()
 })
 
 test('with one member there is one veto button', async () => {
-  renderRoulette(NO_FILTERS, [nacho])
+  renderRoulette(NO_FILTERS, [tomas])
   await screen.findByText('Hay 3 títulos que cumplen los filtros')
   spin()
   expect(screen.getAllByRole('button', { name: /^Veto de/ })).toHaveLength(1)
@@ -92,12 +92,12 @@ test('each person vetoes once, the vetoed title never returns, and then the resu
   renderRoulette()
   await screen.findByText('Hay 3 títulos que cumplen los filtros')
   spin()
-  fireEvent.click(screen.getByRole('button', { name: 'Veto de Nacho' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Veto de Tomás' }))
   expect(resultName()).toBe('Segunda')
-  expect(screen.getByRole('button', { name: 'Nacho ya vetó' })).toBeDisabled()
-  fireEvent.click(screen.getByRole('button', { name: 'Veto de Pili' }))
+  expect(screen.getByRole('button', { name: 'Tomás ya vetó' })).toBeDisabled()
+  fireEvent.click(screen.getByRole('button', { name: 'Veto de Juli' }))
   expect(resultName()).toBe('Tercera')
-  expect(screen.getByRole('button', { name: 'Pili ya vetó' })).toBeDisabled()
+  expect(screen.getByRole('button', { name: 'Juli ya vetó' })).toBeDisabled()
   expect(screen.getByText('No quedan vetos: ¡a ver esta!')).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Girar' })).not.toBeInTheDocument()
 })
@@ -106,7 +106,7 @@ test('a veto that leaves no candidates says so', async () => {
   renderRoulette({ ...NO_FILTERS, platforms: ['Prime Video'] })
   await screen.findByText('1 de 3 títulos cumple los filtros')
   spin()
-  fireEvent.click(screen.getByRole('button', { name: 'Veto de Nacho' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Veto de Tomás' }))
   expect(screen.getByText('No quedan títulos con estos filtros')).toBeInTheDocument()
   expect(screen.queryByRole('heading', { name: 'Les tocó' })).not.toBeInTheDocument()
 })
@@ -115,26 +115,26 @@ test('changing a filter starts a new session', async () => {
   renderRoulette()
   await screen.findByText('Hay 3 títulos que cumplen los filtros')
   spin()
-  fireEvent.click(screen.getByRole('button', { name: 'Veto de Nacho' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Veto de Tomás' }))
   fireEvent.click(screen.getByRole('button', { name: /^Filtros/ }))
   fireEvent.click(screen.getByRole('button', { name: 'Películas' }))
   expect(screen.queryByRole('heading', { name: 'Les tocó' })).not.toBeInTheDocument()
   spin()
-  expect(screen.getByRole('button', { name: 'Veto de Nacho' })).toBeEnabled()
+  expect(screen.getByRole('button', { name: 'Veto de Tomás' })).toBeEnabled()
 })
 
 test('if the partner removes the result, it is cleared without spending vetoes', async () => {
   renderRoulette()
   await screen.findByText('Hay 3 títulos que cumplen los filtros')
   spin()
-  fireEvent.click(screen.getByRole('button', { name: 'Veto de Nacho' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Veto de Tomás' }))
   expect(resultName()).toBe('Segunda')
   api.listTitles.mockResolvedValue([a, c, watched])
   await act(async () => notify())
   expect(screen.getByText('Ese título ya no está en Por ver. Giren de nuevo.')).toBeInTheDocument()
   spin()
   expect(resultName()).toBe('Tercera')
-  expect(screen.getByRole('button', { name: 'Nacho ya vetó' })).toBeDisabled()
+  expect(screen.getByRole('button', { name: 'Tomás ya vetó' })).toBeDisabled()
 })
 
 test('Ver detalle opens the detail and Volver comes back to the same result', async () => {
@@ -186,7 +186,7 @@ test('vetoing spins the same wheel again, animated', async () => {
   const rotor = screen.getByTestId('wheel-rotor')
   fireEvent.transitionEnd(rotor)
   const landed = rotor.style.transform
-  fireEvent.click(screen.getByRole('button', { name: 'Veto de Nacho' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Veto de Tomás' }))
   expect(screen.getByText('Girando…')).toBeInTheDocument()
   // La misma rueda (no una nueva): si se recreara, aparecería ya en su posición final, sin animar.
   expect(screen.getByTestId('wheel-rotor')).toBe(rotor)
@@ -250,7 +250,7 @@ test('after running out, a title added by the partner can be spun', async () => 
   renderRoulette({ ...NO_FILTERS, platforms: ['Prime Video'] })
   await screen.findByText('1 de 3 títulos cumple los filtros')
   spin()
-  fireEvent.click(screen.getByRole('button', { name: 'Veto de Nacho' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Veto de Tomás' }))
   expect(screen.getByText('No quedan títulos con estos filtros')).toBeInTheDocument()
   api.listTitles.mockResolvedValue([a, b, c, makeTitle({ id: 'n', tmdbId: 9, title: 'Nueva', streaming: ['Prime Video'] })])
   await act(async () => notify())

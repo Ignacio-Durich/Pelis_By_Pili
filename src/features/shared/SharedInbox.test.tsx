@@ -42,10 +42,10 @@ test('it shows how many there are and each item with its name, source, who and l
   renderInbox([reel, note])
   expect(screen.getByText('📥 Compartidos (2)')).toBeInTheDocument()
   expect(screen.getByText('Parásitos')).toBeInTheDocument()
-  expect(screen.getByText('Reel de Instagram · lo compartió Pili')).toBeInTheDocument()
+  expect(screen.getByText('Reel de Instagram · lo compartió Juli')).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Ver el link' })).toHaveAttribute('href', reel.url)
   expect(screen.getByText('La que dijo Juan')).toBeInTheDocument()
-  expect(screen.getByText('lo compartió Nacho')).toBeInTheDocument()
+  expect(screen.getByText('lo compartió Tomás')).toBeInTheDocument()
   expect(screen.getAllByRole('link')).toHaveLength(1)
 })
 

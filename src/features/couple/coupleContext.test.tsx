@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
-import { nacho, pili, withCouple } from '../../test/providers'
+import { tomas, juli, withCouple } from '../../test/providers'
 import { useMemberName } from './coupleContext'
 
 function Names({ ids }: { ids: (string | null)[] }) {
@@ -9,6 +9,6 @@ function Names({ ids }: { ids: (string | null)[] }) {
 }
 
 test('useMemberName returns the member name, or alguien when unknown', () => {
-  render(withCouple(<Names ids={['u2', 'u1', 'u9', null]} />, [nacho, pili]))
-  expect(screen.getByText('Pili, Nacho, alguien, alguien')).toBeInTheDocument()
+  render(withCouple(<Names ids={['u2', 'u1', 'u9', null]} />, [tomas, juli]))
+  expect(screen.getByText('Juli, Tomás, alguien, alguien')).toBeInTheDocument()
 })

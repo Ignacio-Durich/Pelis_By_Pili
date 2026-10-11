@@ -1,5 +1,5 @@
 -- Comentarios y errores desde Ajustes. Se guardan acá y la app no los puede leer:
--- Nacho los ve en el panel de Supabase (o pidiéndolos por SQL).
+-- Tomás los ve en el panel de Supabase (o pidiéndolos por SQL).
 
 create table public.feedback (
   id uuid primary key default gen_random_uuid(),

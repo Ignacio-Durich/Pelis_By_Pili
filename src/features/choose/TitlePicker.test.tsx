@@ -18,8 +18,8 @@ test('marks up to need and Listo sends them in order', () => {
 
 test('locked titles show who chose them, cannot be picked and do not count', () => {
   const onDone = vi.fn()
-  render(<TitlePicker heading="Elegí 4" titles={titles} matching={titles} initial={[]} need={4} locked={{ ids: ['a', 'b'], label: 'La eligió Nacho' }} onDone={onDone} />)
-  expect(screen.getAllByText('La eligió Nacho')).toHaveLength(2)
+  render(<TitlePicker heading="Elegí 4" titles={titles} matching={titles} initial={[]} need={4} locked={{ ids: ['a', 'b'], label: 'La eligió Tomás' }} onDone={onDone} />)
+  expect(screen.getAllByText('La eligió Tomás')).toHaveLength(2)
   expect(screen.getByRole('button', { name: /Peli A/ })).toBeDisabled()
   for (const l of ['c', 'd', 'e']) press(l)
   fireEvent.click(screen.getByRole('button', { name: 'Listo (3 de 3)' }))

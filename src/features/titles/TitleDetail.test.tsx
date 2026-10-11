@@ -73,7 +73,7 @@ test('shows what is saved right away, while the detail loads', () => {
   expect(screen.getByRole('heading', { name: 'Parásitos' })).toBeInTheDocument()
   expect(screen.getByText('Original: 기생충')).toBeInTheDocument()
   expect(screen.getByText('2019 · Película')).toBeInTheDocument()
-  expect(screen.getByText('La agregó Pili')).toBeInTheDocument()
+  expect(screen.getByText('La agregó Juli')).toBeInTheDocument()
   expect(screen.getByText('De dónde vino: un reel')).toBeInTheDocument()
   expect(screen.getByText('IMDb 8.5')).toBeInTheDocument()
   expect(screen.getByText('Metacritic —')).toBeInTheDocument()
@@ -202,8 +202,8 @@ test('a watched title shows the date, both scores and my score editor', () => {
   renderDetail(watched)
   expect(screen.getByText('Vista el 7/10/2026')).toBeInTheDocument()
   expect(screen.getByRole('heading', { name: 'Nuestros puntajes' })).toBeInTheDocument()
-  expect(screen.getByText('Nacho: todavía no puntuó')).toBeInTheDocument()
-  expect(screen.getByText('Pili: 6,5')).toBeInTheDocument()
+  expect(screen.getByText('Tomás: todavía no puntuó')).toBeInTheDocument()
+  expect(screen.getByText('Juli: 6,5')).toBeInTheDocument()
   expect(screen.getByText('Muy buena')).toBeInTheDocument()
   expect(screen.getByRole('heading', { name: 'Tu puntaje' })).toBeInTheDocument()
   expect(screen.queryByText('Márquenla como vista para puntuarla.')).not.toBeInTheDocument()
@@ -212,7 +212,7 @@ test('a watched title shows the date, both scores and my score editor', () => {
 test('my score editor starts with my own score', () => {
   api.fetchTitleDetail.mockReturnValue(new Promise(() => {}))
   renderDetail({ ...watched, scores: [...watched.scores, { userId: 'u1', score: 9, note: null, updatedAt: '' }] })
-  expect(screen.getByText('Nacho: 9')).toBeInTheDocument()
+  expect(screen.getByText('Tomás: 9')).toBeInTheDocument()
   expect(screen.getByLabelText('Del 1 al 10')).toHaveValue('9')
 })
 

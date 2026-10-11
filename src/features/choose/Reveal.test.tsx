@@ -25,7 +25,7 @@ vi.mock('./revealApi', async (importOriginal) => ({
 }))
 vi.mock('../../lib/supabase', () => ({ supabase: {} }))
 
-import { nacho, withCouple } from '../../test/providers'
+import { tomas, withCouple } from '../../test/providers'
 import { makeTitle } from '../../test/titles'
 import { NO_FILTERS } from '../titles/filters'
 import { seededIndex } from './bumbleLogic'
@@ -76,7 +76,7 @@ async function changeGame(session: RevealSession) {
 }
 
 test('asks how many phones; two phones need the partner and one needs a title', async () => {
-  const { unmount } = renderReveal([nacho])
+  const { unmount } = renderReveal([tomas])
   expect(await screen.findByRole('heading', { name: 'Top 3 secreto' })).toBeInTheDocument()
   expect(screen.getByText('Cada uno elige 3 en secreto y se muestran a la vez.')).toBeInTheDocument()
   expect(screen.getByRole('button', { name: '📱📱 Dos' })).toBeDisabled()
@@ -110,7 +110,7 @@ test('picking: up to three, then Listo sends them', async () => {
 
 test('after choosing it waits, and the choice can be changed', async () => {
   await renderGame(game({ ready: ['u1'], picks: [{ userId: 'u1', titleIds: ['a', 'b', 'c'] }] }))
-  expect(screen.getByText('Listo. Esperando a Pili…')).toBeInTheDocument()
+  expect(screen.getByText('Listo. Esperando a Juli…')).toBeInTheDocument()
   press('Cambiar mi elección')
   expect(screen.getByRole('button', { name: /Peli B/ })).toHaveAttribute('aria-pressed', 'true')
   expect(screen.getByRole('button', { name: 'Listo (3 de 3)' })).toBeEnabled()
@@ -118,15 +118,15 @@ test('after choosing it waits, and the choice can be changed', async () => {
 
 test('it shows when the partner already chose, never what', async () => {
   await renderGame(game({ ready: ['u2'] }))
-  expect(screen.getByText('Pili ya eligió')).toBeInTheDocument()
+  expect(screen.getByText('Juli ya eligió')).toBeInTheDocument()
 })
 
 test('the reveal shows the matches first and one match wins', async () => {
   await renderGame(game({ ready: ['u1'], picks: [{ userId: 'u1', titleIds: ['a', 'b', 'c'] }] }))
   await changeGame(game({ ready: ['u1', 'u2'], revealed: true, picks: [{ userId: 'u2', titleIds: ['c', 'd', 'e'] }, { userId: 'u1', titleIds: ['a', 'b', 'c'] }] }))
   expect(screen.getByRole('heading', { name: 'Coinciden' })).toBeInTheDocument()
-  expect(screen.getByRole('heading', { name: 'Eligió Nacho' })).toBeInTheDocument()
-  expect(screen.getByRole('heading', { name: 'Eligió Pili' })).toBeInTheDocument()
+  expect(screen.getByRole('heading', { name: 'Eligió Tomás' })).toBeInTheDocument()
+  expect(screen.getByRole('heading', { name: 'Eligió Juli' })).toBeInTheDocument()
   expect(screen.getByText('¡Ganó Peli C!')).toBeInTheDocument()
   await act(async () => press('Listo'))
   expect(api.finishReveal).toHaveBeenCalledWith('s1', 'c')
@@ -161,16 +161,16 @@ test('one phone: the first chooses, passes the phone without showing, the second
   const first = renderReveal()
   await screen.findByText('¿Cuántos celulares van a usar?')
   press('📱 Uno')
-  expect(screen.getByText('Turno de Nacho: elegí tus 3')).toBeInTheDocument()
+  expect(screen.getByText('Turno de Tomás: elegí tus 3')).toBeInTheDocument()
   pick('a', 'b', 'c')
   press('Listo (3 de 3)')
-  expect(screen.getByText('Pasale el celu a Pili')).toBeInTheDocument()
+  expect(screen.getByText('Pasale el celu a Juli')).toBeInTheDocument()
   expect(screen.queryByText('Peli A')).not.toBeInTheDocument()
   first.unmount()
   renderReveal()
-  expect(await screen.findByText('Pasale el celu a Pili')).toBeInTheDocument()
-  press('Listo, soy Pili')
-  expect(screen.getByText('Turno de Pili: elegí tus 3')).toBeInTheDocument()
+  expect(await screen.findByText('Pasale el celu a Juli')).toBeInTheDocument()
+  press('Listo, soy Juli')
+  expect(screen.getByText('Turno de Juli: elegí tus 3')).toBeInTheDocument()
   expect(screen.getByRole('button', { name: /Peli A/ })).toHaveAttribute('aria-pressed', 'false')
   pick('c', 'd', 'e')
   press('Listo (3 de 3)')
