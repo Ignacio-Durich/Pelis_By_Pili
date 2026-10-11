@@ -9,6 +9,18 @@ It's an installable web app (PWA) built mobile-first for iPhone, and it's in dai
 
 **Live:** https://pelis-by-pili.con-amor-nacho.workers.dev (private and invite-only, so you'll only see the sign-in screen).
 
+<p align="center">
+  <img src="docs/screenshots/list-to-watch.jpg" width="30%" alt="To-watch list with posters, runtime, director, IMDb and Rotten Tomatoes scores">
+  <img src="docs/screenshots/list-watched.jpg" width="30%" alt="Watched list with each person's own rating">
+  <img src="docs/screenshots/choose.jpg" width="30%" alt="The five ways to decide what to watch">
+</p>
+<p align="center">
+  <img src="docs/screenshots/bumble.jpg" width="30%" alt="Bumble: a title card to swipe yes or no">
+  <img src="docs/screenshots/roulette.jpg" width="30%" alt="Roulette result, with a veto for each person">
+  <img src="docs/screenshots/themes.jpg" width="30%" alt="Settings with the color theme picker">
+</p>
+<p align="center"><sub>Real screenshots from an iPhone, with the two people's names changed.</sub></p>
+
 ## Features
 
 - **One shared list** of movies and series ("to watch" and "watched"), synced in real time between both phones.
