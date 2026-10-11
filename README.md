@@ -1,65 +1,93 @@
 # Pelis By Pili 🎬
 
-App para dos personas: cargar las películas y series que te recomiendan, verlas con sus puntajes y decidir juntos qué ver sin discutir veinte minutos.
+[![CI](https://github.com/Ignacio-Durich/Pelis_By_Pili/actions/workflows/ci.yml/badge.svg)](https://github.com/Ignacio-Durich/Pelis_By_Pili/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Web instalable (PWA) pensada primero para iPhone. App en producción: https://pelis-by-pili.con-amor-nacho.workers.dev
+A movie and TV watchlist for two. Save what friends, reels and streaming apps recommend, see how it rates, and decide together what to watch tonight without arguing for twenty minutes.
 
-## Qué hace
+It's an installable web app (PWA) built mobile-first for iPhone, and it's in daily use by the two people it was made for. The app is in Spanish, and so are the commits and docs.
 
-- **Una lista compartida** de películas y series ("Por ver" / "Vistas"), en tiempo real entre los dos.
-- **Agregar** buscando por título (TMDB), o desde el menú Compartir de iOS con un Atajo que deja el título en una bandeja "📥 Compartidos".
-- **Detalle** con sinopsis, puntajes (IMDb, Rotten Tomatoes, Metacritic, TMDB), dónde verla en Argentina y el puntaje de cada uno.
-- **Cinco modos para elegir qué ver**, siempre sobre la lista "Por ver":
-  - **Bumble**: swipe y match, con uno o dos celulares.
-  - **Ruleta** con filtros (tipo, duración, género, plataforma, IMDb mínimo) y veto.
-  - **Torneo** de a pares, hasta que queda una.
-  - **Preguntas rápidas**: tiempo, género y plataforma → las 5 mejores.
-  - **Top 3 secreto**: cada uno elige en secreto y se revela a la vez.
-- **Sin internet**: abre con lo último guardado, y se puede marcar como vista, puntuar o anotar un título; se sincroniza al volver la conexión.
-- Espacio de **dos personas**, login por código al email (sin contraseña) y 15 temas de color.
+**Live:** https://pelis-by-pili.con-amor-nacho.workers.dev (private and invite-only, so you'll only see the sign-in screen).
 
-## Stack
+## Features
 
-React 19 + TypeScript + Vite (PWA) · Supabase (auth, Postgres con RLS, Realtime y Edge Functions en Deno) · TMDB y OMDb detrás de funciones del servidor, para no exponer las claves · Vitest · Cloudflare Workers (archivos estáticos).
+- **One shared list** of movies and series ("to watch" and "watched"), synced in real time between both phones.
+- **Add in a tap** by searching TMDB, or straight from the iOS Share menu: an iOS Shortcut drops the title into a shared inbox.
+- **Title detail:** synopsis, IMDb, Rotten Tomatoes, Metacritic and TMDB scores, where to stream it in Argentina, and each person's own rating and note.
+- **Five ways to decide what to watch,** all drawn from the "to watch" list:
+  - **Bumble:** swipe and match on one phone or two, with a run-off round when there are several matches.
+  - **Roulette:** filter by type, runtime, genre, platform and minimum IMDb score, spin, and veto.
+  - **Tournament:** each person picks four, then the eight face off in brackets until one is left.
+  - **Quick questions:** answer how much time you have, which genres and which platforms, and get the top 5.
+  - **Secret top 3:** each person picks in secret and both picks are revealed at once. With two phones, the database keeps the other pick unreadable until the reveal.
+- **Works offline:** it opens with the last saved list, lets you mark as watched, rate or jot down a title, and syncs in order when the connection comes back.
+- **Sign-in with an emailed 6-digit code** (no passwords), a couple space capped at two people, and 15 color themes.
 
-## Empezar
+## How it was built
 
-Requiere Node y una cuenta de Supabase, TMDB y OMDb (todas gratis).
+I designed the product and made the calls (every off-plan decision is in the [decisions log](docs/superpowers/notes/2026-10-decisiones.md)). The code was written with [Claude Code](https://claude.com/claude-code), following a deliberate workflow:
+
+1. **Spec first.** One [design document](docs/superpowers/specs/2026-10-06-pelis-by-pili-design.md) sets scope, data, screens, error handling and **13 stages**. Each stage lists what's in, what's out, and when it counts as done.
+2. **A plan per stage.** Every stage got its own [implementation plan](docs/superpowers/plans/) before any code, and was built, tested and closed before the next one started.
+3. **Test-driven.** Each feature and fix starts with a failing test. There are 480+ unit and component tests (Vitest and Testing Library).
+4. **Security tested against a real database.** A separate suite runs against local Supabase and against production. It proves that someone outside the couple can't read or change anything, that a third person can't join, and that a secret pick stays secret.
+5. **Review and real-device acceptance.** Each stage ended with a whole-branch code review and an acceptance test on both iPhones ([verification notes](docs/superpowers/notes/2026-10-verificacion-fuentes.md)). The leftover minor issues were collected and fixed in a final refinement stage.
+
+## Architecture
+
+```
+iPhone / browser (React PWA, offline queue + cached posters)
+        │
+        ├── Supabase Auth ── email code sign-in
+        ├── Postgres + RLS ── all data, scoped to the couple; Realtime for live sync
+        └── Edge Functions (Deno) ── tmdb-search · title-detail · share
+                 │
+                 └── TMDB (search, posters, platforms) · OMDb (IMDb / RT / Metacritic)
+```
+
+- **API keys never reach the browser.** TMDB and OMDb are called only from Edge Functions, and `npm run deploy` refuses to publish if a secret key name or value shows up in `dist/`.
+- **Authorization lives in the database.** Row-level security scopes every table to the couple. The two-person limit and the secret top 3 are enforced in SQL, not just in the UI.
+- **Free-tier friendly.** External scores are cached with a timestamp to stay under OMDb's 1,000 requests a day. Hosting is static files on Cloudflare Workers.
+
+## Tech stack
+
+React 19 · TypeScript · Vite · vite-plugin-pwa · Supabase (Auth, Postgres, RLS, Realtime, Edge Functions) · TMDB and OMDb APIs · Vitest · Testing Library · oxlint · Cloudflare Workers
+
+## Running it locally
+
+You'll need Node and free accounts on Supabase, TMDB and OMDb.
 
 ```bash
 npm install
-cp .env.example .env.local   # y completar las claves (nunca se versiona)
+cp .env.example .env.local   # fill in your keys (never committed)
 npm run dev
 ```
 
-## Scripts
-
-| Comando | Qué hace |
+| Command | What it does |
 |---|---|
-| `npm run dev` | Servidor de desarrollo |
-| `npm test` | Tests de la app |
-| `npm run typecheck` / `npm run lint` | TypeScript y oxlint |
-| `npm run test:security` | Tests de seguridad (RLS) contra Supabase local (`npx supabase start`, con `.env.test.local`) |
-| `npm run test:security:remote` | Los mismos tests contra el Supabase de `.env.local` |
-| `npm run build` | Compila a `dist/` |
-| `npm run deploy` | Build → revisión de que `dist/` no filtre claves → `wrangler deploy` |
+| `npm run dev` | Dev server |
+| `npm test` | Unit and component tests |
+| `npm run typecheck` / `npm run lint` | TypeScript and oxlint |
+| `npm run test:security` | Security suite against local Supabase (`npx supabase start`, uses `.env.test.local`) |
+| `npm run test:security:remote` | Same suite against the Supabase project in `.env.local` |
+| `npm run deploy` | Build → check `dist/` for leaked secrets → `wrangler deploy` |
 
-## Estructura
+New tables need explicit `GRANT`s in their migration, `service_role` included: production doesn't grant them automatically, and only the remote security suite catches it.
+
+## Project structure
 
 ```
-src/features/   auth, couple, titles, choose (los modos), shared, settings
-supabase/       migrations/ y functions/ (tmdb-search, title-detail, share)
-tests/security/ pruebas de que una persona ajena a la pareja no ve nada
-scripts/        revisión previa al deploy y verificaciones
-docs/           diseño, planes por etapa y decisiones
+src/features/   auth, couple, titles, choose (the five modes), shared, settings
+supabase/       migrations/ and functions/ (tmdb-search, title-detail, share)
+tests/security/ the database-level security suite
+scripts/        pre-deploy leak check and verification scripts
+docs/           spec, per-stage plans, decisions and verification notes
 ```
 
-El diseño completo está en [`docs/superpowers/specs/2026-10-06-pelis-by-pili-design.md`](docs/superpowers/specs/2026-10-06-pelis-by-pili-design.md) y las decisiones que se tomaron por el camino en [`docs/superpowers/notes/2026-10-decisiones.md`](docs/superpowers/notes/2026-10-decisiones.md).
+## Attributions
 
-## Tablas nuevas en Supabase
+This product uses the [TMDB](https://www.themoviedb.org) API but is not endorsed or certified by TMDB. Streaming availability comes from JustWatch via TMDB. Scores come from [OMDb](https://www.omdbapi.com) (CC BY-NC 4.0), which isn't affiliated with IMDb. Personal, non-commercial use.
 
-En producción las tablas nuevas no reciben permisos solas: cada migración con una tabla nueva debe incluir sus `GRANT` explícitos (incluido `service_role`). Solo los tests contra el remoto lo detectan (`npm run test:security:remote`).
+## License
 
-## Atribuciones
-
-Datos de [TMDB](https://www.themoviedb.org) (este producto usa la API de TMDB pero no está avalado ni certificado por TMDB), plataformas de JustWatch vía TMDB, y puntajes de [OMDb](https://www.omdbapi.com) (CC BY-NC 4.0, sin afiliación con IMDb). Uso personal y no comercial.
+The code is [MIT](LICENSE). Data from TMDB, JustWatch and OMDb stays under their own terms.
