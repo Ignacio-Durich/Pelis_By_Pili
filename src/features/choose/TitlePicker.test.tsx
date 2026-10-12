@@ -42,3 +42,9 @@ test('with nothing to choose Listo stays disabled', () => {
   render(<TitlePicker heading="Elegí tus 3" titles={[]} matching={[]} initial={[]} need={3} onDone={vi.fn()} />)
   expect(screen.getByRole('button', { name: /^Listo/ })).toBeDisabled()
 })
+
+test('each option shows how long it lasts', () => {
+  const long = makeTitle({ id: 'l', tmdbId: 50, title: 'Peli L', runtime: 135 })
+  render(<TitlePicker heading="Elegí 4" titles={[long]} matching={[long]} initial={[]} need={4} onDone={vi.fn()} />)
+  expect(screen.getByRole('button', { name: /Peli L/ })).toHaveTextContent('2 h 15')
+})
