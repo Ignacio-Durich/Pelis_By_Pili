@@ -42,7 +42,7 @@ export function TitlePicker({ heading, titles, matching, initial, need, locked, 
         {options.map((t) => (
           <li key={t.id}>
             <button className="result" aria-pressed={picked.includes(t.id)} disabled={isLocked(t.id)} onClick={() => toggle(t.id)}>
-              <TitleCard title={t.title} originalTitle={t.originalTitle} year={t.year} mediaType={t.mediaType} posterPath={t.posterPath}>
+              <TitleCard title={t.title} originalTitle={t.originalTitle} year={t.year} mediaType={t.mediaType} posterPath={t.posterPath} seasons={t.seasons} runtime={t.runtime}>
                 {isLocked(t.id) && <small>{locked!.label}</small>}
               </TitleCard>
             </button>
