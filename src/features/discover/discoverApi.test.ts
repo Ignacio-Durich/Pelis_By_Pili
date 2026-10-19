@@ -98,3 +98,14 @@ test('fetchPlatforms reads the couple platforms', async () => {
   single.mockResolvedValue({ data: null, error: { message: 'x' } })
   await expect(fetchPlatforms('c1')).rejects.toMatchObject({ kind: 'network' })
 })
+
+test('dismissing or recovering a title forgets the saved Descubrir', async () => {
+  invoke.mockResolvedValue({ data: empty, error: null })
+  rpc.mockResolvedValue({ data: null, error: null })
+  await fetchDiscover('k1')
+  await dismissTitle('movie', 27205)
+  await fetchDiscover('k1')
+  await undismissTitle('movie', 27205)
+  await fetchDiscover('k1')
+  expect(invoke).toHaveBeenCalledTimes(3)
+})

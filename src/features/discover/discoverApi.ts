@@ -58,14 +58,16 @@ export async function fetchPlatforms(coupleId: string): Promise<number[]> {
 const call = (name: string, args: Record<string, unknown>) =>
   callRpc<void, DiscoverErrorKind>(name, args, ['no_couple', 'invalid_platforms', 'invalid_title'], (kind) => new DiscoverError(kind))
 
-// Con otras plataformas cambian las recomendaciones: lo guardado ya no vale.
-export const setPlatforms = async (ids: number[]) => {
-  await call('set_platforms', { p_ids: ids })
+// Con otras plataformas, o un título descartado (o recuperado), lo guardado ya no vale.
+const callAndForget = async (name: string, args: Record<string, unknown>) => {
+  await call(name, args)
   forgetDiscover()
 }
 
+export const setPlatforms = (ids: number[]) => callAndForget('set_platforms', { p_ids: ids })
+
 export const dismissTitle = (mediaType: 'movie' | 'tv', tmdbId: number) =>
-  call('dismiss_title', { p_media_type: mediaType, p_tmdb_id: tmdbId })
+  callAndForget('dismiss_title', { p_media_type: mediaType, p_tmdb_id: tmdbId })
 
 export const undismissTitle = (mediaType: 'movie' | 'tv', tmdbId: number) =>
-  call('undismiss_title', { p_media_type: mediaType, p_tmdb_id: tmdbId })
+  callAndForget('undismiss_title', { p_media_type: mediaType, p_tmdb_id: tmdbId })
