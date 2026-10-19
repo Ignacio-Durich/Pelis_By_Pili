@@ -8,6 +8,7 @@ import {
   hasNewSeason,
   inOrder,
   LONG_RUNNING_GENRES,
+  memberSeeds,
   mergePlatformResults,
   parseRequest,
   pickSeeds,
@@ -90,16 +91,20 @@ async function discover(
   const today = day(new Date())
   const since = day(new Date(Date.now() - 90 * 24 * 60 * 60 * 1000))
 
-  // Semillas: las vistas con puntaje (de quienes se pida), con el peso de su promedio.
-  const seedsOf = (userIds: string[]): SeedOf[] =>
-    pickSeeds(
-      data.titles.flatMap((t) => {
-        const weight = seedWeight(data.scores.filter((s) => s.title_id === t.id && userIds.includes(s.user_id)).map((s) => Number(s.score)))
-        return t.status === 'watched' && weight !== null ? [{ key: keyOf(t.media_type, t.tmdb_id), title: t.title, weight, mediaType: t.media_type, tmdbId: t.tmdb_id }] : []
-      }),
-    )
-  const both = seedsOf(data.members.map((m) => m.user_id))
-  const each = data.members.map((m) => ({ ...m, seeds: seedsOf([m.user_id]) })).filter((m) => m.seeds.length)
+  // Semillas de los dos: las vistas con puntaje, con el peso del promedio. Las de cada uno salen de
+  // estas mismas (con sus propios puntajes), así se piden a TMDB 50 títulos como mucho.
+  const keyOfTitle = new Map(data.titles.map((t) => [t.id, keyOf(t.media_type, t.tmdb_id)]))
+  const watchedTitles = data.titles.filter((t) => t.status === 'watched')
+  const scored = (userIds: string[]) => data.scores.filter((s) => userIds.includes(s.user_id)).map((s) => ({ key: keyOfTitle.get(s.title_id)!, score: Number(s.score) }))
+  const everyScore = scored(data.members.map((m) => m.user_id))
+  const both = pickSeeds(
+    watchedTitles.flatMap((t) => {
+      const key = keyOf(t.media_type, t.tmdb_id)
+      const weight = seedWeight(everyScore.filter((s) => s.key === key).map((s) => s.score))
+      return weight === null ? [] : [{ key, title: t.title, weight, mediaType: t.media_type, tmdbId: t.tmdb_id }]
+    }),
+  )
+  const each = data.members.map((m) => ({ ...m, seeds: memberSeeds(both, scored([m.user_id])) })).filter((m) => m.seeds.length)
 
   // Cada semilla se pide una sola vez aunque la usen varias secciones, y todas arrancan ya.
   const asked = new Map<string, Promise<TmdbItem[] | null>>()
