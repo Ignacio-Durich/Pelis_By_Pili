@@ -32,6 +32,7 @@ It's an installable web app (PWA) built mobile-first for iPhone, and it's in dai
   - **Tournament:** each person picks four, then the eight face off in brackets until one is left.
   - **Quick questions:** answer how much time you have, which genres and which platforms, and get the top 5.
   - **Secret top 3:** each person picks in secret and both picks are revealed at once. With two phones, the database keeps the other pick unreadable until the reveal.
+- **Discover:** recommendations weighted by what you both watched and how you rated it ("for both" and "just for you"), new releases in theaters and on your own streaming platforms (including new seasons of shows you already watched), and "similar to this" on every watched title. "Not interested" hides a title for good, with undo.
 - **Works offline:** it opens with the last saved list, lets you mark as watched, rate or jot down a title, and syncs in order when the connection comes back.
 - **Sign-in with an emailed 6-digit code** (no passwords), a couple space capped at two people, and 15 color themes.
 
@@ -41,7 +42,7 @@ I designed the product and made the calls (every off-plan decision is in the [de
 
 1. **Spec first.** One [design document](docs/superpowers/specs/2026-10-06-pelis-by-pili-design.md) sets scope, data, screens, error handling and **13 stages**. Each stage lists what's in, what's out, and when it counts as done.
 2. **A plan per stage.** Every stage got its own [implementation plan](docs/superpowers/plans/) before any code, and was built, tested and closed before the next one started.
-3. **Test-driven.** Each feature and fix starts with a failing test. There are 480+ unit and component tests (Vitest and Testing Library).
+3. **Test-driven.** Each feature and fix starts with a failing test. There are 550+ unit and component tests (Vitest and Testing Library).
 4. **Security tested against a real database.** A separate suite runs against local Supabase and against production. It proves that someone outside the couple can't read or change anything, that a third person can't join, and that a secret pick stays secret.
 5. **Review and real-device acceptance.** Each stage ended with a whole-branch code review and an acceptance test on both iPhones ([verification notes](docs/superpowers/notes/2026-10-verificacion-fuentes.md)). The leftover minor issues were collected and fixed in a final refinement stage.
 
@@ -52,7 +53,7 @@ iPhone / browser (React PWA, offline queue + cached posters)
         │
         ├── Supabase Auth ── email code sign-in
         ├── Postgres + RLS ── all data, scoped to the couple; Realtime for live sync
-        └── Edge Functions (Deno) ── tmdb-search · title-detail · share
+        └── Edge Functions (Deno) ── tmdb-search · title-detail · share · recommendations
                  │
                  └── TMDB (search, posters, platforms) · OMDb (IMDb / RT / Metacritic)
 ```
@@ -89,8 +90,8 @@ New tables need explicit `GRANT`s in their migration, `service_role` included: p
 ## Project structure
 
 ```
-src/features/   auth, couple, titles, choose (the five modes), shared, settings
-supabase/       migrations/ and functions/ (tmdb-search, title-detail, share)
+src/features/   auth, couple, titles, choose (the five modes), discover, shared, settings
+supabase/       migrations/ and functions/ (tmdb-search, title-detail, share, recommendations)
 tests/security/ the database-level security suite
 scripts/        pre-deploy leak check and verification scripts
 docs/           spec, per-stage plans, decisions and verification notes
