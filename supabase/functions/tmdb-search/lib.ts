@@ -185,6 +185,20 @@ export function pickPerson(byLanguage: Record<Language, unknown[]>, query: strin
 // Programas de entrevistas, noticias y reality: ahí aparecen como invitados, no son "lo suyo".
 const NOT_THEIR_WORK = [10767, 10763, 10764]
 
+// Un título de TMDB con el formato de los resultados de búsqueda.
+export function toSearchResult(i: TmdbItem, mediaType: 'movie' | 'tv'): SearchResult {
+  const date = i.release_date ?? i.first_air_date
+  return {
+    tmdbId: i.id,
+    mediaType,
+    title: i.title ?? i.name ?? '',
+    originalTitle: i.original_title ?? i.original_name ?? '',
+    year: date ? Number(date.slice(0, 4)) : null,
+    posterPath: i.poster_path ?? null,
+    overview: i.overview ?? '',
+  }
+}
+
 // Director: las películas que dirigió y las series que creó (no los capítulos sueltos que dirigió).
 // Actor: sin las veces que hace de sí mismo y, en series, si estuvo en varios capítulos. Lo más
 // votado primero (lo conocido antes que lo que está de moda). Hasta 100: la app muestra de a 20.
@@ -202,18 +216,7 @@ export function personTitles(credits: { cast?: unknown[]; crew?: unknown[] }, ro
   return [...unique.values()]
     .sort((a, b) => (b.vote_count ?? 0) - (a.vote_count ?? 0) || (b.popularity ?? 0) - (a.popularity ?? 0))
     .slice(0, 100)
-    .map((i) => {
-      const date = i.release_date ?? i.first_air_date
-      return {
-        tmdbId: i.id,
-        mediaType: i.media_type as 'movie' | 'tv',
-        title: i.title ?? i.name ?? '',
-        originalTitle: i.original_title ?? i.original_name ?? '',
-        year: date ? Number(date.slice(0, 4)) : null,
-        posterPath: i.poster_path ?? null,
-        overview: i.overview ?? '',
-      }
-    })
+    .map((i) => toSearchResult(i, i.media_type as 'movie' | 'tv'))
 }
 
 export type DetailsRequest = { mediaType: 'movie' | 'tv'; tmdbId: number }[]
