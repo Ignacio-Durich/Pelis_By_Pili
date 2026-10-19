@@ -110,6 +110,7 @@ type Discover = {
   forEach: { userId: string; name: string; results: Recommendation[] }[]
   inTheaters: Recommendation[]
   onPlatforms: Recommendation[] | null
+  platformNames: string[] // las plataformas elegidas, para mostrarlas bajo el subtítulo
 }
 ```
 
