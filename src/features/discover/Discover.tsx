@@ -86,7 +86,7 @@ export function Discover() {
     ]
     return (
       <>
-        <div className="segmented">
+        <div className="segmented fit">
           {options.map((o) => (
             <button key={o.id} aria-pressed={current === o.id} onClick={() => setSection(o.id)}>
               {o.label}
