@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { fallbackQueries, mergeSearches, parseDetailsRequest, parseQuery, pickPerson, personTitles, similarity } from './lib.ts'
+import { fallbackQueries, mergeSearches, parseDetailsRequest, parseQuery, pickPerson, personTitles, searchExtra, similarity } from './lib.ts'
 
 const homeAlone = { media_type: 'movie', id: 771, original_title: 'Home Alone', release_date: '1990-11-16', poster_path: '/h.jpg', popularity: 50 }
 const none = { 'es-MX': [], 'es-AR': [], 'en-US': [] }
@@ -187,4 +187,18 @@ test('parseDetailsRequest: up to 20 movies or series by id', () => {
     expect(parseDetailsRequest(body)).toBeNull()
   }
   expect(parseDetailsRequest({ details: Array.from({ length: 21 }, (_, i) => ({ mediaType: 'movie', tmdbId: i + 1 })) })).toBeNull()
+})
+
+test('personTitles: up to 100, so the list can grow with "Ver más"', () => {
+  const crew = Array.from({ length: 130 }, (_, i) => ({ media_type: 'movie', id: i + 1, job: 'Director', title: `Peli ${i}`, vote_count: i, genre_ids: [] }))
+  expect(personTitles({ crew }, 'director')).toHaveLength(100)
+})
+
+test('searchExtra: director, seasons, runtime and the IMDb score', () => {
+  const movie = { runtime: 103, imdb_id: 'tt0099785', credits: { crew: [{ job: 'Director', name: 'Chris Columbus' }] } }
+  const omdb = { Ratings: [{ Source: 'Internet Movie Database', Value: '7.7/10' }] }
+  expect(searchExtra(movie, omdb)).toEqual({ director: 'Chris Columbus', seasons: null, runtime: 103, imdb: '7.7/10' })
+  const series = { number_of_seasons: 5, created_by: [{ name: 'Vince Gilligan' }], last_episode_to_air: { runtime: 47 } }
+  expect(searchExtra(series, null)).toEqual({ director: 'Vince Gilligan', seasons: 5, runtime: 47, imdb: null })
+  expect(searchExtra(movie, { Response: 'False', Error: 'Request limit reached!' }).imdb).toBeNull()
 })

@@ -1,4 +1,6 @@
 // Lógica pura de la búsqueda (sin APIs de Deno), para poder testearla con Vitest.
+import { isOmdbLimit, summarizeOmdb } from '../_shared/omdb.ts'
+import { pickDirector, pickRuntime, pickSeasons } from '../_shared/people.ts'
 
 // El idioma cambia con qué nombres compara TMDB: buscar en los tres encuentra el título
 // por su nombre latino, el de España o el inglés.
@@ -185,7 +187,7 @@ const NOT_THEIR_WORK = [10767, 10763, 10764]
 
 // Director: las películas que dirigió y las series que creó (no los capítulos sueltos que dirigió).
 // Actor: sin las veces que hace de sí mismo y, en series, si estuvo en varios capítulos. Lo más
-// votado primero (lo conocido antes que lo que está de moda).
+// votado primero (lo conocido antes que lo que está de moda). Hasta 100: la app muestra de a 20.
 export function personTitles(credits: { cast?: unknown[]; crew?: unknown[] }, role: Person['role']): SearchResult[] {
   const items = (
     role === 'director'
@@ -199,7 +201,7 @@ export function personTitles(credits: { cast?: unknown[]; crew?: unknown[] }, ro
   const unique = new Map(items.map((i) => [`${i.media_type}:${i.id}`, i]))
   return [...unique.values()]
     .sort((a, b) => (b.vote_count ?? 0) - (a.vote_count ?? 0) || (b.popularity ?? 0) - (a.popularity ?? 0))
-    .slice(0, 20)
+    .slice(0, 100)
     .map((i) => {
       const date = i.release_date ?? i.first_air_date
       return {
@@ -224,4 +226,19 @@ export function parseDetailsRequest(body: unknown): DetailsRequest | null {
     (d) => (d?.mediaType === 'movie' || d?.mediaType === 'tv') && Number.isInteger(d?.tmdbId) && d.tmdbId > 0,
   )
   return valid ? list.map((d) => ({ mediaType: d.mediaType, tmdbId: d.tmdbId })) : null
+}
+
+export type Extra = { director: string | null; seasons: number | null; runtime: number | null; imdb: string | null }
+
+// Lo que se suma a cada resultado: del detalle de TMDB y, si OMDb respondió, el puntaje de IMDb.
+type Details = Parameters<typeof pickDirector>[0] & Parameters<typeof pickSeasons>[0] & Parameters<typeof pickRuntime>[0]
+type Omdb = Parameters<typeof summarizeOmdb>[0] & Parameters<typeof isOmdbLimit>[0]
+
+export function searchExtra(details: Details, omdb: Omdb | null): Extra {
+  return {
+    director: pickDirector(details),
+    seasons: pickSeasons(details),
+    runtime: pickRuntime(details),
+    imdb: omdb && !isOmdbLimit(omdb) ? summarizeOmdb(omdb).imdb : null,
+  }
 }
