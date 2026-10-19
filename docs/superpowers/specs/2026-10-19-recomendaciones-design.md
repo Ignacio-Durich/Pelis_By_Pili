@@ -81,7 +81,8 @@ Tres modos:
 - **Para los dos**: las 30 mejores con los pesos de los dos.
 - **Especiales para cada uno**: la misma cuenta con los puntajes de esa persona, sin las 30 de "Para los dos". Reusa las respuestas de TMDB ya pedidas. Si la persona no puntuó nada, la sección no viene.
 - **En cines**: `/movie/now_playing` con `region=AR` (2 páginas), por popularidad, sin lo que ya está en la lista ni lo descartado (sin mínimo de votos: los estrenos todavía tienen pocos). Hasta 30.
-- **En sus plataformas**: `/discover/movie` y `/discover/tv` con `watch_region=AR` y `with_watch_monetization_types=flatrate`, una consulta por plataforma elegida para saber en cuál está cada título. Películas: estrenadas en los últimos 90 días (`primary_release_date.gte`). Series: con algún episodio emitido en los últimos 90 días (`air_date.gte`), así entran las temporadas nuevas de series viejas (pedido de Tomás, 2026-10-19); sin programas de entrevistas, noticias, reality ni telenovelas (géneros 10767, 10763, 10764 y 10766), que emiten todas las semanas. Una serie que se estrenó antes de esos 90 días lleva la marca `newSeason` y la tarjeta dice "Temporada nueva". Se mezclan, se sacan repetidos (si está en dos, se nombran las dos), se saca lo que ya está en la lista y lo descartado, y se ordenan por popularidad. Hasta 30. Si no eligieron plataformas, viene `null` y la app invita a elegirlas en Ajustes.
+- **En sus plataformas**: `/discover/movie` y `/discover/tv` con `watch_region=AR` y `with_watch_monetization_types=flatrate`, una consulta por plataforma elegida para saber en cuál está cada título. Películas: estrenadas en los últimos 90 días (`primary_release_date.gte`). Series: con algún episodio emitido en los últimos 90 días (`air_date.gte`), así entran las temporadas nuevas de series viejas (pedido de Tomás, 2026-10-19); sin programas de entrevistas, noticias, reality ni telenovelas (géneros 10767, 10763, 10764 y 10766), que emiten todas las semanas. Una serie que se estrenó antes de esos 90 días lleva la marca `newSeason` y la tarjeta dice "Temporada nueva".
+  - **Series que ya vieron** (están en "Vistas"): no se sacan si salió una temporada nueva después de marcarlas como vistas (pedido de Tomás, 2026-10-19). Para saberlo, se pide su detalle a TMDB (`/tv/{id}`, una consulta por cada serie vista que aparezca): entra si la temporada más reciente ya emitida empezó después de `watched_at`. Vienen con `newSeason: true` y `watchedTitleId` (el id del título en su lista). Las series en "Por ver" siguen afuera. Se mezclan, se sacan repetidos (si está en dos, se nombran las dos), se saca lo que ya está en la lista y lo descartado, y se ordenan por popularidad. Hasta 30. Si no eligieron plataformas, viene `null` y la app invita a elegirlas en Ajustes.
 
 Límite conocido: TMDB no dice cuándo llegó un título a una plataforma, solo cuándo se estrenó. Una película de hace un año que recién llegó a Netflix no aparece en Novedades.
 
@@ -99,10 +100,11 @@ Cada título con el formato de los resultados de búsqueda (`SearchResult`), má
 - `genres`: nombres de los géneros (mapa fijo de los IDs de TMDB en `lib.ts`; los IDs de TMDB no cambian);
 - `because`: hasta dos nombres de semillas (solo en las secciones por gusto);
 - `platforms`: nombres de las plataformas (solo en "En sus plataformas");
-- `newSeason`: `true` si es una serie vieja con episodios nuevos (solo en "En sus plataformas").
+- `newSeason`: `true` si es una serie vieja con episodios nuevos (solo en "En sus plataformas");
+- `watchedTitleId`: el id en su lista, si es una serie que ya vieron y tiene temporada nueva.
 
 ```ts
-type Recommendation = SearchResult & { genres: string[]; because?: string[]; platforms?: string[]; newSeason?: boolean }
+type Recommendation = SearchResult & { genres: string[]; because?: string[]; platforms?: string[]; newSeason?: boolean; watchedTitleId?: string }
 type Discover = {
   forBoth: Recommendation[]
   forEach: { userId: string; name: string; results: Recommendation[] }[]
@@ -131,6 +133,7 @@ type Discover = {
 **Tarjeta de recomendación.**
 - Como en Agregar: póster, título, año y tipo, duración, director, IMDb. Debajo, "Porque vieron …" o la plataforma (y "Temporada nueva" si corresponde), según la sección.
 - Tocarla la agrega a "Por ver" y muestra "✓ Agregada · tocala de nuevo para sacarla". Se agrega con una nota de origen: "De Descubrir" o "Parecida a <título>".
+- Una serie que ya vieron con temporada nueva no se agrega: dice "Ya la vieron · salió una temporada nueva" y tocarla abre su ficha. No tiene "No me interesa".
 - Debajo, dos botones chicos: **Ver detalle** (despliega la sinopsis completa y los géneros; pasa a "Ocultar detalle") y **No me interesa** (la tarjeta pasa a "Descartada · Deshacer" hasta salir de la pantalla).
 
 **Memoria.** Las recomendaciones quedan en memoria mientras la app está abierta. Se vuelven a pedir solas si cambió algo que las afecta: la lista de vistas o algún puntaje. Lo que agregan o descartan desaparece en el momento, sin volver a calcular.
