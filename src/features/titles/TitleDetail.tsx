@@ -208,7 +208,7 @@ export function TitleDetail({
         </>
       )}
 
-      {title.status === 'watched' && <SimilarTitles title={title} titles={titles} />}
+      {title.status === 'watched' && <SimilarTitles key={title.id} title={title} titles={titles} />}
 
       {removeFailed && <p role="alert">No se pudo quitar. Probá de nuevo.</p>}
       <button className="remove" disabled={busy} onClick={remove}>
