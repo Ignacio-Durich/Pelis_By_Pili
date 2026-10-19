@@ -88,7 +88,7 @@ Límite conocido: TMDB no dice cuándo llegó un título a una plataforma, solo 
 
 ### `{ similarTo: <id del título> }` → Parecidas a esta
 
-El título tiene que estar en la lista del espacio (lo comprueba RLS). Primera página de `/{tipo}/{id}/recommendations`; si viene vacía, `/{tipo}/{id}/similar`. Sin lo que ya está en la lista ni lo descartado, y sin mínimo de votos. Hasta 20, en el orden de TMDB.
+El título tiene que estar en la lista del espacio (lo comprueba RLS). Primera página de `/{tipo}/{id}/recommendations`; si viene vacía, `/{tipo}/{id}/similar`. Sin lo que ya está en la lista ni lo descartado, y sin mínimo de votos. Hasta 20, las más votadas primero (con empate, en el orden de TMDB): TMDB a veces pone primero títulos poco conocidos (pedido de Tomás, 2026-10-19).
 
 ### `{ providers: true }` → plataformas para Ajustes
 

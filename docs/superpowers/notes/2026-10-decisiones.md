@@ -231,7 +231,7 @@ Decisiones tomadas al hacerla:
 - **Una ya agregada no ofrece "No me interesa".**
 - **Orden de "En sus plataformas":** primero las series que ya vieron con temporada nueva, después los estrenos y al final las temporadas nuevas de series viejas; dentro de cada grupo, por popularidad. En la revisión en pantalla, las que emiten todo el año (La Ley y el Orden, Los Simpson) tapaban los estrenos. Las ventanas de 90 días terminan hoy: lo anunciado a futuro no entra.
 - **Selector de Descubrir:** cada opción del ancho de su nombre, para que "Para los dos" no se parta en dos renglones; con nombres largos pasa a otra fila. Se ve siempre, aunque no haya puntajes, para que Novedades quede a mano.
-- **"Parecidas a esta" en el orden de TMDB**, como dice el diseño, aunque para algunos títulos TMDB devuelve cosas flojas (El origen → El pago, La Torre Oscura).
+- **"Parecidas a esta" ordenadas por cantidad de votos** (pedido de Tomás): en el orden de TMDB salían primero títulos flojos (El origen → El pago, La Torre Oscura) y más abajo Tenet y Oblivion.
 - **`TitleDetail` recibe la lista como opcional:** la Ruleta, las Preguntas y Bumble lo abren solo para títulos por ver, donde "Parecidas a esta" no aparece.
 - **Test de búsqueda corregido:** los detalles de búsqueda ya traían duración e IMDb (cambio anterior) y el test de seguridad esperaba solo director y temporadas.
 

@@ -132,6 +132,11 @@ export function byPopularity(items: Entries, exclude: Set<string>, limit: number
   return inOrder([...items].sort((a, b) => (b.item.popularity ?? 0) - (a.item.popularity ?? 0)), exclude, limit)
 }
 
+// Las más conocidas primero (más votos en TMDB); con empate queda el orden de TMDB (sort es estable).
+export function byVotes(items: Entries, exclude: Set<string>, limit: number): Recommendation[] {
+  return inOrder([...items].sort((a, b) => (b.item.vote_count ?? 0) - (a.item.vote_count ?? 0)), exclude, limit)
+}
+
 // Una serie que se estrenó antes de la ventana de novedades y sigue emitiendo: temporada nueva.
 export function isNewSeasonSeries(item: TmdbItem, since: string): boolean {
   return !!item.first_air_date && item.first_air_date < since

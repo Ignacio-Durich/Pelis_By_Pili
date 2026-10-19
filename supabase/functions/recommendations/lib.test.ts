@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest'
 import {
   byPopularity,
+  byVotes,
   genreNames,
   hasNewSeason,
   inOrder,
@@ -113,4 +114,15 @@ test('toProviderOptions joins movie and tv providers by display priority, up to 
   const movie = [{ provider_id: 8, provider_name: 'Netflix', logo_path: '/n.png', display_priority: 2 }]
   const tv = [{ provider_id: 8, provider_name: 'Netflix', logo_path: '/n.png', display_priority: 2 }, { provider_id: 337, provider_name: 'Disney Plus', logo_path: null, display_priority: 1 }]
   expect(toProviderOptions(movie, tv)).toEqual([{ id: 337, name: 'Disney Plus', logoPath: null }, { id: 8, name: 'Netflix', logoPath: '/n.png' }])
+})
+
+test('byVotes puts the best-known first (most votes), keeping TMDB order on ties, without the excluded and up to the limit', () => {
+  const items = [
+    { item: { id: 1, title: 'El pago', vote_count: 2147 }, mediaType: 'movie' as const },
+    { item: { id: 2, title: 'Tenet', vote_count: 11653 }, mediaType: 'movie' as const },
+    { item: { id: 3, title: 'Sin votos' }, mediaType: 'movie' as const },
+    { item: { id: 4, title: 'Oblivion', vote_count: 11930 }, mediaType: 'movie' as const },
+    { item: { id: 5, title: 'Empate', vote_count: 2147 }, mediaType: 'movie' as const },
+  ]
+  expect(byVotes(items, new Set(['movie:4']), 3).map((r) => r.tmdbId)).toEqual([2, 1, 5])
 })
