@@ -1,7 +1,18 @@
-import { act, fireEvent, render, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 
-const api = vi.hoisted(() => ({ fetchTitleDetail: vi.fn(), removeTitle: vi.fn(), setWatched: vi.fn(), setMyScore: vi.fn() }))
+const api = vi.hoisted(() => ({
+  fetchTitleDetail: vi.fn(),
+  removeTitle: vi.fn(),
+  setWatched: vi.fn(),
+  setMyScore: vi.fn(),
+  fetchSimilar: vi.fn(),
+}))
+vi.mock('../discover/discoverApi', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../discover/discoverApi')>()),
+  fetchSimilar: api.fetchSimilar,
+}))
+vi.mock('./searchApi', () => ({ searchDetails: vi.fn().mockResolvedValue({}) }))
 vi.mock('./detailApi', () => ({ fetchTitleDetail: api.fetchTitleDetail }))
 vi.mock('./titlesApi', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./titlesApi')>()),
@@ -58,7 +69,10 @@ const fresh: Detail = {
 
 const onClose = vi.fn()
 
-beforeEach(() => vi.resetAllMocks())
+beforeEach(() => {
+  vi.resetAllMocks()
+  api.fetchSimilar.mockResolvedValue([])
+})
 afterEach(() => vi.restoreAllMocks())
 
 const onChanged = vi.fn()
@@ -255,4 +269,16 @@ test('Reintentar shows Cargando el detalle… while it retries', async () => {
   fireEvent.click(await screen.findByRole('button', { name: 'Reintentar' }))
   expect(screen.getByText('Cargando el detalle…')).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Reintentar' })).not.toBeInTheDocument()
+})
+
+test('a watched title shows Parecidas a esta, a to-watch one does not ask for it', async () => {
+  api.fetchTitleDetail.mockReturnValue(new Promise(() => {}))
+  api.fetchSimilar.mockResolvedValue([])
+  renderDetail()
+  expect(screen.queryByRole('heading', { name: 'Parecidas a esta' })).not.toBeInTheDocument()
+  expect(api.fetchSimilar).not.toHaveBeenCalled()
+  cleanup()
+  renderDetail({ ...parasitos, status: 'watched', watchedAt: '2026-10-07T12:00:00Z' })
+  expect(screen.getByRole('heading', { name: 'Parecidas a esta' })).toBeInTheDocument()
+  await waitFor(() => expect(api.fetchSimilar).toHaveBeenCalledWith('t1'))
 })

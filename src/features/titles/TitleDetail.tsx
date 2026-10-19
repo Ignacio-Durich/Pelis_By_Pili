@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useUserId } from '../auth/sessionContext'
 import { useCouple, useMemberName } from '../couple/coupleContext'
+import { SimilarTitles } from '../discover/SimilarTitles'
 import { fetchTitleDetail, type Provider, type TitleDetail as Detail } from './detailApi'
 import { MyScore } from './MyScore'
 import { formatScore, imdbScore, metacriticScore, ratingsDate, rtScore, tmdbScore } from './ratings'
@@ -17,7 +18,18 @@ const groups = [
 ] as const
 
 // onChanged: después de cada cambio la lista se vuelve a pedir, sin esperar a Realtime.
-export function TitleDetail({ title, onClose, onChanged }: { title: Title; onClose: () => void; onChanged: () => void }) {
+// titles: la lista, para que "Parecidas a esta" no ofrezca lo que ya está.
+export function TitleDetail({
+  title,
+  titles = [],
+  onClose,
+  onChanged,
+}: {
+  title: Title
+  titles?: Title[]
+  onClose: () => void
+  onChanged: () => void
+}) {
   const nameOf = useMemberName()
   const { members } = useCouple()
   const userId = useUserId()
@@ -195,6 +207,8 @@ export function TitleDetail({ title, onClose, onChanged }: { title: Title; onClo
           <small>Fuente: JustWatch</small>
         </>
       )}
+
+      {title.status === 'watched' && <SimilarTitles title={title} titles={titles} />}
 
       {removeFailed && <p role="alert">No se pudo quitar. Probá de nuevo.</p>}
       <button className="remove" disabled={busy} onClick={remove}>

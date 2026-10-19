@@ -63,7 +63,7 @@ export function TitleList({ filters, onFiltersChange }: { filters: Filters; onFi
     }
   }
 
-  if (selected) return <TitleDetail title={selected} onClose={() => backToList(() => setSelectedId(null))} onChanged={load} />
+  if (selected) return <TitleDetail title={selected} titles={titles ?? []} onClose={() => backToList(() => setSelectedId(null))} onChanged={load} />
   if (adding)
     return <AddTitle coupleId={coupleId} titles={titles ?? []} shared={adding.shared} onClose={() => backToList(() => setAdding(false))} />
 
