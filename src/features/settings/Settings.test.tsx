@@ -12,6 +12,11 @@ vi.mock('../shared/sharedApi', async (importOriginal) => ({
   createShareKey: api.createShareKey,
   shareKeyCreatedAt: api.shareKeyCreatedAt,
 }))
+vi.mock('../discover/discoverApi', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../discover/discoverApi')>()),
+  fetchProviders: vi.fn().mockResolvedValue([]),
+  fetchPlatforms: vi.fn().mockResolvedValue([]),
+}))
 vi.mock('../../lib/supabase', () => ({ supabase: {} }))
 
 import { tomas, juli, withCouple } from '../../test/providers'

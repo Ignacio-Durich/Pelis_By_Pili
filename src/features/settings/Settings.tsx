@@ -7,6 +7,7 @@ import { buildInviteLink } from '../couple/invite'
 import { coupleMessages } from '../couple/messages'
 import { ShareShortcut } from '../shared/ShareShortcut'
 import { Feedback } from './Feedback'
+import { Platforms } from './Platforms'
 import { ThemePicker } from './ThemePicker'
 
 export function Settings() {
@@ -64,6 +65,7 @@ export function Settings() {
         <p>{`Son dos personas en este espacio${together}`}</p>
       )}
       <ThemePicker />
+      <Platforms />
       <ShareShortcut />
       <Feedback />
       <button onClick={() => signOut()}>Cerrar sesión</button>
