@@ -483,6 +483,18 @@ test('the list search looks only in the open tab', async () => {
   expect(screen.getByRole('searchbox', { name: 'Buscar en la lista' })).toHaveValue('nolan')
 })
 
+test('the ✕ empties the list search', async () => {
+  api.listTitles.mockResolvedValue([nolanPorVer, otra])
+  renderList()
+  const search = await screen.findByRole('searchbox', { name: 'Buscar en la lista' })
+  fireEvent.change(search, { target: { value: 'nolan' } })
+  expect(screen.queryByText('Amélie')).not.toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: 'Borrar lo escrito' }))
+  expect(search).toHaveValue('')
+  expect(search).toHaveFocus()
+  expect(screen.getByText('Amélie')).toBeInTheDocument()
+})
+
 test('in Por ver the list search adds to the filters', async () => {
   api.listTitles.mockResolvedValue([nolanPorVer, otra])
   renderList({ ...NO_FILTERS, platforms: ['Netflix'] })

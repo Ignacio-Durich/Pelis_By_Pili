@@ -191,10 +191,38 @@ button.remove {
 }
 
 .list-search {
+  margin-bottom: 12px;
+}
+
+.list-search input {
   display: block;
   width: 100%;
   box-sizing: border-box;
-  margin-bottom: 12px;
+}
+
+/* Buscador con la ✕ propia encima, abajo a la derecha (a la altura del campo). */
+.search-field {
+  position: relative;
+}
+
+.search-field input {
+  padding-right: 48px;
+}
+
+.search-field input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+}
+
+.search-clear {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  background: none;
+  color: var(--faint);
+  font-weight: normal;
 }
 
 button.add {
