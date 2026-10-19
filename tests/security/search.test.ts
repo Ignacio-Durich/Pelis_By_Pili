@@ -67,12 +67,12 @@ test('a director or actor name brings what they made', async () => {
   expect(darin.person?.results.some((r) => r.tmdbId === 25376)).toBe(true)
 })
 
-test('details gives who directed or created each result and the seasons of a series', async () => {
+test('details gives who directed or created each result, the seasons of a series and the runtime', async () => {
   const { data } = await client.functions.invoke('tmdb-search', {
     body: { details: [{ mediaType: 'movie', tmdbId: 157336 }, { mediaType: 'tv', tmdbId: 1396 }] },
   })
-  expect(data.details['movie:157336']).toEqual({ director: 'Christopher Nolan', seasons: null })
-  expect(data.details['tv:1396']).toEqual({ director: 'Vince Gilligan', seasons: 5 })
+  expect(data.details['movie:157336']).toMatchObject({ director: 'Christopher Nolan', seasons: null, runtime: 169 })
+  expect(data.details['tv:1396']).toMatchObject({ director: 'Vince Gilligan', seasons: 5 })
 })
 
 test('anonymous callers cannot ask for details', async () => {
