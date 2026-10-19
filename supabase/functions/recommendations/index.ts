@@ -131,8 +131,8 @@ async function discover(
       calls.get('watch/providers/tv', 'watch_region=AR&language=es-MX'),
       ...data.platforms.map(async (id) => {
         const [movies, series] = await Promise.all([
-          calls.get('discover/movie', `${where(id)}&primary_release_date.gte=${since}`),
-          calls.get('discover/tv', `${where(id)}&air_date.gte=${since}&without_genres=${encodeURIComponent(LONG_RUNNING_GENRES.join('|'))}`),
+          calls.get('discover/movie', `${where(id)}&primary_release_date.gte=${since}&primary_release_date.lte=${today}`),
+          calls.get('discover/tv', `${where(id)}&air_date.gte=${since}&air_date.lte=${today}&without_genres=${encodeURIComponent(LONG_RUNNING_GENRES.join('|'))}`),
         ])
         return { id, movies: movies && items(movies), series: series && items(series) }
       }),
@@ -176,7 +176,7 @@ Deno.serve(async (req) => {
   if (error || data?.claims.role !== 'authenticated') return json(401, { error: 'unauthorized' })
   // Con su sesión, RLS deja ver solo los miembros de su espacio.
   const asUser = createClient(url, anonKey, { global: { headers: { Authorization: `Bearer ${token}` } } })
-  const { data: members } = await asUser.from('couple_members').select('user_id, couple_id, display_name')
+  const { data: members } = await asUser.from('couple_members').select('user_id, couple_id, display_name').order('joined_at')
   if (!members?.length) return json(403, { error: 'no_couple' })
 
   const request = parseRequest(await req.json().catch(() => null))
