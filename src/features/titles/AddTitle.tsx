@@ -4,6 +4,7 @@ import { useMemberName } from '../couple/coupleContext'
 import { dismissShared, originNote, type SharedItem } from '../shared/sharedApi'
 import { ClearSearch } from './ClearSearch'
 import { fetchTitleDetail } from './detailApi'
+import { imdbScore } from './ratings'
 import { searchDetails, searchTitles, type Extra, type SearchResponse, type SearchResult } from './searchApi'
 import { TitleCard } from './TitleCard'
 import { addTitle, removeTitle, TitleError, type Title } from './titlesApi'
@@ -29,6 +30,8 @@ export function AddTitle({ coupleId, titles, onClose, shared }: Props) {
   const searchInput = useRef<HTMLInputElement>(null)
   // null = todavía no se buscó nada
   const [results, setResults] = useState<SearchResponse | null>(null)
+  // De un director o actor se ven de a 20.
+  const [personShown, setPersonShown] = useState(20)
   // Director y temporadas de los resultados (llegan un momento después).
   const [extras, setExtras] = useState<Record<string, Extra>>({})
   const [searching, setSearching] = useState(false)
@@ -54,6 +57,7 @@ export function AddTitle({ coupleId, titles, onClose, shared }: Props) {
         (found) => {
           if (latest.current !== q) return
           setResults(found)
+          setPersonShown(20)
           setSearching(false)
         },
         () => {
@@ -68,14 +72,14 @@ export function AddTitle({ coupleId, titles, onClose, shared }: Props) {
 
   useEffect(() => {
     if (!results) return
-    const shown = [...(results.person?.results ?? []), ...results.results].slice(0, 20)
+    const shown = [...(results.person?.results.slice(0, personShown) ?? []), ...results.results]
     if (shown.length === 0) return
     searchDetails(shown.map(({ mediaType, tmdbId }) => ({ mediaType, tmdbId }))).then(
       (found) => setExtras((map) => ({ ...map, ...found })),
-      // Sin director ni temporadas los resultados igual sirven.
+      // Sin estos datos los resultados igual sirven.
       () => {},
     )
-  }, [results])
+  }, [results, personShown])
 
   useEffect(() => {
     const update = () => setOnline(navigator.onLine)
@@ -173,7 +177,12 @@ export function AddTitle({ coupleId, titles, onClose, shared }: Props) {
       {active && results?.person && (
         <>
           <h3>{`${results.person.role === 'director' ? 'De' : 'Con'} ${results.person.name}`}</h3>
-          {resultList(results.person.results)}
+          {resultList(results.person.results.slice(0, personShown))}
+          {results.person.results.length > personShown && (
+            <button className="secondary" onClick={() => setPersonShown((n) => n + 20)}>
+              {`Ver más de ${results.person.name}`}
+            </button>
+          )}
           {results.results.length > 0 && <h3>Títulos</h3>}
         </>
       )}
@@ -204,7 +213,9 @@ export function AddTitle({ coupleId, titles, onClose, shared }: Props) {
                   posterPath={r.posterPath}
                   director={extras[key]?.director}
                   seasons={extras[key]?.seasons}
+                  runtime={extras[key]?.runtime}
                 >
+                  {extras[key]?.imdb && <small>{`IMDb ${imdbScore(extras[key].imdb)}`}</small>}
                   {r.overview && <small className="overview">{r.overview}</small>}
                   {status && <small>{status}</small>}
                 </TitleCard>

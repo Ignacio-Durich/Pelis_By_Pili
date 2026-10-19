@@ -28,7 +28,7 @@ test('rejects when the function fails, and does not remember the failure', async
   await expect(searchTitles('falla')).resolves.toEqual({ results: [], person: null })
 })
 
-test('searchDetails asks only for what it does not know yet, up to 20', async () => {
+test('searchDetails asks only for what it does not know yet, 20 at a time', async () => {
   invoke.mockResolvedValue({ data: { details: { 'movie:1': { director: 'A', seasons: null } } }, error: null })
   const one = { mediaType: 'movie' as const, tmdbId: 1 }
   expect(await searchDetails([one])).toEqual({ 'movie:1': { director: 'A', seasons: null } })
@@ -39,4 +39,5 @@ test('searchDetails asks only for what it does not know yet, up to 20', async ()
   const many = Array.from({ length: 25 }, (_, i) => ({ mediaType: 'tv' as const, tmdbId: i + 100 }))
   await searchDetails(many)
   expect(invoke.mock.calls[1][1].body.details).toHaveLength(20)
+  expect(invoke.mock.calls[2][1].body.details).toHaveLength(5)
 })

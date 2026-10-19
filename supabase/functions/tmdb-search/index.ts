@@ -1,8 +1,9 @@
 // Edge Function (Deno): busca en TMDB en tres idiomas sin exponer la clave al navegador.
 // Con { query } busca títulos (y, si lo escrito es un director o actor, lo suyo); con { details }
-// devuelve director y temporadas de los resultados, en un segundo pedido para no demorar la búsqueda.
+// devuelve director, temporadas, duración y puntaje de IMDb de los resultados, en un segundo pedido
+// para no demorar la búsqueda.
 import { createClient } from 'npm:@supabase/supabase-js@2.117.2'
-import { pickDirector, pickSeasons } from '../_shared/people.ts'
+import { pickImdbId } from '../_shared/people.ts'
 import {
   fallbackQueries,
   mergeSearches,
@@ -11,6 +12,7 @@ import {
   personTitles,
   pickPerson,
   SEARCH_LANGUAGES,
+  searchExtra,
   type DetailsRequest,
 } from './lib.ts'
 
@@ -62,8 +64,17 @@ async function search(query: string) {
 async function details(list: DetailsRequest) {
   const entries = await Promise.all(
     list.map(async ({ mediaType, tmdbId }) => {
-      const data = await tmdb(`${mediaType}/${tmdbId}`, mediaType === 'movie' ? 'append_to_response=credits' : '').catch(() => null)
-      return [`${mediaType}:${tmdbId}`, data && { director: pickDirector(data), seasons: pickSeasons(data) }] as const
+      const data = await tmdb(`${mediaType}/${tmdbId}`, `append_to_response=${mediaType === 'movie' ? 'credits' : 'external_ids'}`).catch(() => null)
+      if (!data) return [`${mediaType}:${tmdbId}`, null] as const
+      // ponytail: una consulta a OMDb por resultado (límite 1000 por día, compartido con title-detail);
+      // si se agota, los resultados salen sin IMDb. Guardar los puntajes en una tabla si alguna vez pasa.
+      const imdbId = pickImdbId(data)
+      const omdb = imdbId
+        ? await fetch(`https://www.omdbapi.com/?i=${imdbId}&apikey=${Deno.env.get('OMDB_API_KEY')}`, { signal: AbortSignal.timeout(8000) })
+            .then((r) => (r.ok ? r.json() : null))
+            .catch(() => null)
+        : null
+      return [`${mediaType}:${tmdbId}`, searchExtra(data, omdb)] as const
     }),
   )
   return { details: Object.fromEntries(entries.filter(([, d]) => d)) }

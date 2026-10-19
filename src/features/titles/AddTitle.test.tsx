@@ -150,6 +150,39 @@ test('results fill in who directed them and the seasons a moment later', async (
   expect(screen.getByText('Creada por Alguien')).toBeInTheDocument()
 })
 
+test('results also show how long they last and the IMDb score', async () => {
+  api.searchTitles.mockResolvedValue(found([angelito, sinDatos]))
+  api.searchDetails.mockResolvedValue({
+    'movie:771': { director: 'Chris Columbus', seasons: null, runtime: 103, imdb: '7.7/10' },
+    'tv:9': { director: null, seasons: 2, runtime: 45, imdb: null },
+  })
+  renderAdd()
+  await typeQuery('algo')
+  expect(screen.getByText('1990 · Película · 1 h 43')).toBeInTheDocument()
+  expect(screen.getByText('IMDb 7.7')).toBeInTheDocument()
+  expect(screen.getByText('Serie · 2 temporadas · 45 min')).toBeInTheDocument()
+  expect(screen.getAllByText(/^IMDb/)).toHaveLength(1)
+})
+
+test('a director or actor with many titles shows 20 and Ver más adds 20 more', async () => {
+  const many = Array.from({ length: 45 }, (_, i) => ({ ...angelito, tmdbId: 1000 + i, title: `Obra ${i}` }))
+  api.searchTitles.mockResolvedValue(found([angelito], { name: 'Ricardo Darín', role: 'actor', results: many }))
+  renderAdd()
+  await typeQuery('darin')
+  expect(screen.getAllByRole('button', { name: /^Obra/ })).toHaveLength(20)
+  expect(api.searchDetails).toHaveBeenLastCalledWith([...many.slice(0, 20), angelito].map(({ mediaType, tmdbId }) => ({ mediaType, tmdbId })))
+  fireEvent.click(screen.getByRole('button', { name: 'Ver más de Ricardo Darín' }))
+  expect(screen.getAllByRole('button', { name: /^Obra/ })).toHaveLength(40)
+  await act(async () => {})
+  expect(api.searchDetails).toHaveBeenLastCalledWith([...many.slice(0, 40), angelito].map(({ mediaType, tmdbId }) => ({ mediaType, tmdbId })))
+  fireEvent.click(screen.getByRole('button', { name: 'Ver más de Ricardo Darín' }))
+  expect(screen.getAllByRole('button', { name: /^Obra/ })).toHaveLength(45)
+  expect(screen.queryByRole('button', { name: /^Ver más/ })).not.toBeInTheDocument()
+  await typeQuery('nolan')
+  await typeQuery('darin')
+  expect(screen.getAllByRole('button', { name: /^Obra/ })).toHaveLength(20)
+})
+
 test('if the details fail, the results stay as they are', async () => {
   api.searchTitles.mockResolvedValue(found([angelito]))
   api.searchDetails.mockRejectedValue(new Error('502'))
