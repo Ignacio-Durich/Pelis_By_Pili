@@ -158,9 +158,13 @@ export function mergePlatformResults(
       }
     }
   }
+  // Primero las series que ya vieron, después los estrenos y al final las temporadas nuevas de series
+  // viejas (las que emiten todo el año taparían los estrenos); dentro de cada grupo, por popularidad.
+  const group = (key: string, { item, mediaType }: { item: TmdbItem; mediaType: MediaType }) =>
+    options.watched.has(key) ? 0 : mediaType === 'tv' && isNewSeasonSeries(item, options.since) ? 2 : 1
   return [...found.entries()]
     .filter(([key]) => options.watched.has(key) || !options.exclude.has(key))
-    .sort(([, a], [, b]) => (b.item.popularity ?? 0) - (a.item.popularity ?? 0))
+    .sort(([ka, a], [kb, b]) => group(ka, a) - group(kb, b) || (b.item.popularity ?? 0) - (a.item.popularity ?? 0))
     .slice(0, options.limit)
     .map(([key, { item, mediaType, platforms }]) => {
       const watchedTitleId = options.watched.get(key)

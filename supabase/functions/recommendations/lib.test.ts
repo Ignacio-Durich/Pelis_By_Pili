@@ -87,7 +87,7 @@ test('isNewSeasonSeries: a series that premiered before the window', () => {
   expect(isNewSeasonSeries({ id: 1, first_air_date: '2019-01-01' }, '2026-07-21')).toBe(true)
   expect(isNewSeasonSeries({ id: 1, first_air_date: '2026-09-01' }, '2026-07-21')).toBe(false)
 })
-test('mergePlatformResults names every platform, marks new seasons, keeps watched series for checking and sorts by popularity', () => {
+test('mergePlatformResults names every platform, marks new seasons, keeps watched series for checking and puts watched series first, then premieres, then old series, each by popularity', () => {
   const nueva = { id: 5, name: 'Nueva', first_air_date: '2026-09-01', popularity: 10 }
   const vieja = { id: 6, name: 'Vieja', first_air_date: '2019-01-01', popularity: 30 }
   const vista = { id: 7, name: 'Vista', first_air_date: '2018-01-01', popularity: 20 }
@@ -97,10 +97,10 @@ test('mergePlatformResults names every platform, marks new seasons, keeps watche
     { exclude: new Set(['tv:7']), watched: new Map([['tv:7', 'title-7']]), since: '2026-07-21', limit: 30 },
   )
   expect(merged.map((r) => [r.tmdbId, r.platforms, r.newSeason ?? false, r.watchedTitleId])).toEqual([
-    [6, ['Netflix', 'Max'], true, undefined],
-    [8, ['Netflix'], false, undefined],
     [7, ['Netflix'], true, 'title-7'],
+    [8, ['Netflix'], false, undefined],
     [5, ['Netflix'], false, undefined],
+    [6, ['Netflix', 'Max'], true, undefined],
   ])
 })
 test('hasNewSeason: the latest season already aired started after it was marked watched', () => {
