@@ -239,6 +239,16 @@ Puntos menores que dejaron las revisiones de las etapas anteriores. Se arreglan 
   - Cerrar sesión deja en el celular la lista, la pareja y la bandeja guardadas (con dueño, así que otra cuenta no las ve).
   - Un título anotado sin red puede quedar dos veces en Compartidos si la app se cierra justo entre mandarlo y borrarlo de la cola, o con dos pestañas en la compu.
   - Los pósters guardados son respuestas "opacas" (sin CORS), que ocupan más lugar: sumar `purgeOnQuotaError` o `crossOrigin`.
+- Entra, de la etapa 13 (recomendaciones, 2026-10-19):
+  - Si TMDB falla con las semillas pero responde la cartelera, la respuesta incompleta queda en memoria hasta cerrar la app.
+  - Dos personas cambiando las plataformas a la vez: gana el último toque. Una plataforma elegida que sale de las 30 que lista TMDB ya no se puede desmarcar.
+  - Al volver a Descubrir sin conexión no se muestra lo guardado en memoria.
+  - "En cines" o "En sus plataformas" vacías no muestran ningún texto; si fallan los nombres de las plataformas, la sección queda vacía sin aviso.
+  - La función de recomendaciones lee hasta 1000 filas sin orden (con más títulos, alguno de la lista podría volver a recomendarse), da 403 en vez de 500 si falla la lectura de miembros y no registra las fallas de TMDB; "Parecidas a esta" lee tablas que no usa.
+  - Con más de 50 vistas puntuadas, el puntaje de cada uno fuera de las 50 semillas de los dos no cuenta.
+  - Tarjetas: un solo aviso arriba de la lista, lejos de la tarjeta que falló; los botones chicos miden 36 px; la clave de las tarjetas repite la de Agregar.
+  - "Cargando" y "Sin conexión" de Descubrir no se anuncian (`role="status"`); si la lista nunca cargó y no hay copia guardada, Descubrir queda en "Buscando recomendaciones…".
+  - Tests que faltan: orden de entrada y casos vacío, null y 30 de `set_platforms`; `no_couple` de descartar y deshacer; anónimo como `42501`; tope y empate de `toProviderOptions`; 502 y secciones de cada uno en la función; pedidos simultáneos de Descubrir; errores de "sacar" y "deshacer"; posición de "Parecidas a esta" antes de "Quitar". Mocks de `TitleDetail.test` y `Settings.test` que `resetAllMocks` deja vacíos.
 - Antes del regalo: borrar la cuenta y el miembro "Juli" de prueba para que la verdadera entre con la invitación. (Hecho el 2026-10-08: Tomás la borró desde el panel; el espacio quedó con Tomás solo y sin partidas abiertas.)
 - Entra, pedido de Tomás (2026-10-08): que todos los modos se puedan jugar con un solo celular, porque a veces usan uno solo de los dos. Bumble ya lo trae desde la etapa 7; la revelación simultánea y el torneo (etapas 9 y 10) conviene diseñarlos con esa opción desde el principio. (Hecho: Bumble, Top 3 secreto y Torneo tienen "📱 Uno".)
 - Entra, pedido de Tomás (2026-10-08): un botón para mandar comentarios sobre la app o reportar errores. Los comentarios quedan guardados en la app (decisión de Tomás, 2026-10-09). (Hecho en la etapa 12: "Comentarios y errores" en Ajustes.)

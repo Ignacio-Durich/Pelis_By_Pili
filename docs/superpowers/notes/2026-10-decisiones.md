@@ -218,3 +218,20 @@ Decisiones tomadas al hacerla:
 - El trigger de la bandeja usa `for update`; `for no key update` evitaría frenar un instante los votos y altas de esa pareja.
 - El tope de 20 comentarios por día no tiene lock: dos envíos al mismo tiempo pueden dar 21.
 - Cerrar sesión sin red con el token vencido tarda unos segundos sin mostrar nada.
+
+# Etapa 13 — Recomendaciones (2026-10-19)
+
+Pedido desde Comentarios. Diseño: `docs/superpowers/specs/2026-10-19-recomendaciones-design.md`; plan: `docs/superpowers/plans/2026-10-19-recomendaciones.md`. Rama `etapa-13-recomendaciones`.
+
+Decisiones tomadas al hacerla:
+
+- **Semillas de cada uno:** "Especiales para Tomás/Juli" usan las mismas 50 semillas que "Para los dos" (con el puntaje de cada uno), así las consultas a TMDB no pasan de 50 por apertura.
+- **Lo que ya está en la lista no se ofrece**, aunque Descubrir venga de memoria: lo agregado no reaparece al volver a la pestaña.
+- **"No me interesa", "Deshacer" y cambiar las plataformas** borran lo guardado de Descubrir; la próxima vez se pide de nuevo.
+- **Una ya agregada no ofrece "No me interesa".**
+- **Orden de "En sus plataformas":** primero las series que ya vieron con temporada nueva, después los estrenos y al final las temporadas nuevas de series viejas; dentro de cada grupo, por popularidad. En la revisión en pantalla, las que emiten todo el año (La Ley y el Orden, Los Simpson) tapaban los estrenos. Las ventanas de 90 días terminan hoy: lo anunciado a futuro no entra.
+- **Selector de Descubrir:** cada opción del ancho de su nombre, para que "Para los dos" no se parta en dos renglones; con nombres largos pasa a otra fila. Se ve siempre, aunque no haya puntajes, para que Novedades quede a mano.
+- **"Parecidas a esta" en el orden de TMDB**, como dice el diseño, aunque para algunos títulos TMDB devuelve cosas flojas (El origen → El pago, La Torre Oscura).
+- **`TitleDetail` recibe la lista como opcional:** la Ruleta, las Preguntas y Bumble lo abren solo para títulos por ver, donde "Parecidas a esta" no aparece.
+- **Test de búsqueda corregido:** los detalles de búsqueda ya traían duración e IMDb (cambio anterior) y el test de seguridad esperaba solo director y temporadas.
+

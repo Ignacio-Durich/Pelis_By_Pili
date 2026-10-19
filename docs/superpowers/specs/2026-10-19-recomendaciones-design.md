@@ -117,7 +117,7 @@ type Discover = {
 ### Costo y errores
 
 - Descubrir: una consulta a TMDB por título visto con puntaje (24 hoy, hasta 50), más 2 de cines y 2 por plataforma. TMDB no tiene límite diario.
-- Ninguna consulta a OMDb en la función. La duración y el IMDb de las tarjetas se piden con `searchDetails`, como en Agregar, solo para las que están a la vista: unas 50 consultas de OMDb por apertura de Descubrir (de las 1.000 por día; hoy se gastan unas 125).
+- Ninguna consulta a OMDb en la función. La duración y el IMDb de las tarjetas se piden con `searchDetails`, como en Agregar, solo para las que están a la vista: unas 50 consultas de OMDb por apertura de Descubrir (de las 1.000 por día; hoy se gastan unas 125). "Parecidas a esta" suma hasta 10 por cada ficha de una vista que se abre (las que `searchDetails` ya tiene en memoria no se vuelven a pedir).
 - Si falla la consulta de una semilla o de una plataforma, se sigue sin ella. Si falla todo, responde 502.
 - Las semillas se limitan a 50 (las de mayor peso, en valor absoluto; decisión de Tomás, 2026-10-19) para que la espera no crezca con la lista de vistas.
 
