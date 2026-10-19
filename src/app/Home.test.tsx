@@ -41,6 +41,12 @@ test('the Ajustes tab shows Settings', async () => {
   expect(await screen.findByRole('heading', { name: 'Por ver' })).toBeInTheDocument()
 })
 
+test('the tab bar has Lista, Descubrir, Elegir and Ajustes in that order', () => {
+  renderHome(2)
+  const tabs = screen.getByRole('navigation').querySelectorAll('button')
+  expect([...tabs].map((b) => b.textContent)).toEqual(['Lista', 'Descubrir', 'Elegir', 'Ajustes'])
+})
+
 test('the bottom bar has Lista, Elegir and Ajustes, and filters are shared', async () => {
   renderHome(2)
   for (const name of ['Lista', 'Elegir', 'Ajustes']) expect(screen.getByRole('button', { name })).toBeInTheDocument()
