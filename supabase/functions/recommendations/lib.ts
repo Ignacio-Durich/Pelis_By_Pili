@@ -197,11 +197,19 @@ export function hasNewSeason(
 
 type TmdbProvider = { provider_id: number; provider_name: string; logo_path: string | null; display_priority?: number }
 
-// Plataformas de películas y de series, unidas y por prioridad, hasta 30.
+// Las conocidas en Argentina, en este orden: la prioridad de TMDB para AR deja HBO Max en el
+// puesto 34, detrás de plataformas chicas. (Netflix, Prime Video, Disney Plus, HBO Max, Paramount
+// Plus, Apple TV, MUBI, Crunchyroll, Mercado Play, Claro video, Movistar TV, DIRECTV GO, ViX, Pluto TV.)
+const KNOWN_PROVIDERS = [8, 119, 337, 1899, 531, 350, 11, 283, 2302, 167, 339, 467, 457, 300]
+const rank = (id: number) => (KNOWN_PROVIDERS.includes(id) ? KNOWN_PROVIDERS.indexOf(id) : KNOWN_PROVIDERS.length)
+
+// Plataformas de películas y de series, unidas: primero las conocidas y después el resto por
+// prioridad, sin los canales que se contratan dentro de otra ("… Amazon Channel"), hasta 30.
 export function toProviderOptions(movie: unknown[], tv: unknown[]): ProviderOption[] {
   const unique = new Map(([...movie, ...tv] as TmdbProvider[]).map((p) => [p.provider_id, p]))
   return [...unique.values()]
-    .sort((a, b) => (a.display_priority ?? 999) - (b.display_priority ?? 999))
+    .filter((p) => !/\bchannel\b/i.test(p.provider_name))
+    .sort((a, b) => rank(a.provider_id) - rank(b.provider_id) || (a.display_priority ?? 999) - (b.display_priority ?? 999))
     .slice(0, 30)
-    .map((p) => ({ id: p.provider_id, name: p.provider_name, logoPath: p.logo_path ?? null }))
+    .map((p) => ({ id: p.provider_id, name: p.provider_name.trim(), logoPath: p.logo_path ?? null }))
 }
