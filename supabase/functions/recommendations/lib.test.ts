@@ -64,6 +64,11 @@ test('inOrder keeps the order and byPopularity sorts, both without the excluded 
   expect(inOrder(items, new Set(['movie:2']), 5).map((r) => r.tmdbId)).toEqual([1, 3])
   expect(byPopularity(items, new Set(['movie:1']), 1).map((r) => r.tmdbId)).toEqual([2])
 })
+test('inOrder and byPopularity keep one entry per title when pages overlap', () => {
+  const items = [{ id: 1, popularity: 5 }, { id: 2, popularity: 9 }, { id: 1, popularity: 5 }].map((item) => ({ item, mediaType: 'movie' as const }))
+  expect(inOrder(items, new Set(), 5).map((r) => r.tmdbId)).toEqual([1, 2])
+  expect(byPopularity(items, new Set(), 5).map((r) => r.tmdbId)).toEqual([2, 1])
+})
 test('isNewSeasonSeries: a series that premiered before the window', () => {
   expect(isNewSeasonSeries({ id: 1, first_air_date: '2019-01-01' }, '2026-07-21')).toBe(true)
   expect(isNewSeasonSeries({ id: 1, first_air_date: '2026-09-01' }, '2026-07-21')).toBe(false)

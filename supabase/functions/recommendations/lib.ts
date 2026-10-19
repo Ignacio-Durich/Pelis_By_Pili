@@ -105,9 +105,16 @@ export function rankRecommendations(
 type Entries = { item: TmdbItem; mediaType: MediaType }[]
 
 // En el orden de TMDB, sin lo que ya está en la lista ni lo descartado (sin mínimo de votos).
+// Si dos páginas se superponen, queda la primera aparición de cada título.
 export function inOrder(items: Entries, exclude: Set<string>, limit: number): Recommendation[] {
+  const seen = new Set<string>()
   return items
-    .filter(({ item, mediaType }) => !exclude.has(keyOf(mediaType, item.id)))
+    .filter(({ item, mediaType }) => {
+      const key = keyOf(mediaType, item.id)
+      if (exclude.has(key) || seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
     .slice(0, limit)
     .map(({ item, mediaType }) => toRecommendation(item, mediaType))
 }
