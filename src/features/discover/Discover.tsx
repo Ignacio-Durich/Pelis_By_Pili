@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useOnline } from '../../lib/useOnline'
 import { useCouple } from '../couple/coupleContext'
 import { TitleDetail } from '../titles/TitleDetail'
 import { useTitles } from '../titles/useTitles'
@@ -13,7 +14,7 @@ export function Discover() {
   const [data, setData] = useState<DiscoverData | null>(null)
   const [failed, setFailed] = useState(false)
   const [attempt, setAttempt] = useState(0)
-  const [online, setOnline] = useState(() => navigator.onLine)
+  const online = useOnline()
   // 'both', 'news' o el id de un miembro.
   const [section, setSection] = useState('both')
   // Una sola lista de ocultas para todas las secciones: el mismo título no aparece en dos lados.
@@ -22,16 +23,6 @@ export function Discover() {
 
   // Mientras no cambie lo visto ni los puntajes, fetchDiscover devuelve lo que ya tiene.
   const key = titles ? discoverKey(titles) : null
-
-  useEffect(() => {
-    const update = () => setOnline(navigator.onLine)
-    window.addEventListener('online', update)
-    window.addEventListener('offline', update)
-    return () => {
-      window.removeEventListener('online', update)
-      window.removeEventListener('offline', update)
-    }
-  }, [])
 
   useEffect(() => {
     if (key === null || !online) return

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { enqueue } from '../../lib/offline'
+import { useOnline } from '../../lib/useOnline'
 import { useMemberName } from '../couple/coupleContext'
 import { dismissShared, originNote, type SharedItem } from '../shared/sharedApi'
 import { ClearSearch } from './ClearSearch'
@@ -41,7 +42,7 @@ export function AddTitle({ coupleId, titles, onClose, shared }: Props) {
   const [added, setAdded] = useState<Record<string, string>>({})
   const [addError, setAddError] = useState<keyof typeof addMessages | null>(null)
   const owner = usePendingOwner()
-  const [online, setOnline] = useState(() => navigator.onLine)
+  const online = useOnline()
   const [savedForLater, setSavedForLater] = useState(false)
   // La última consulta: una respuesta que llega tarde para una consulta vieja se descarta.
   const latest = useRef('')
@@ -80,16 +81,6 @@ export function AddTitle({ coupleId, titles, onClose, shared }: Props) {
       () => {},
     )
   }, [results, personShown])
-
-  useEffect(() => {
-    const update = () => setOnline(navigator.onLine)
-    window.addEventListener('online', update)
-    window.addEventListener('offline', update)
-    return () => {
-      window.removeEventListener('online', update)
-      window.removeEventListener('offline', update)
-    }
-  }, [])
 
   // Sin poder buscar, el nombre queda en el celular y al volver la conexión va a Compartidos.
   function saveForLater() {
