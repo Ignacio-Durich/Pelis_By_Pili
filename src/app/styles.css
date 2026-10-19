@@ -1000,3 +1000,47 @@ button.theme-option[aria-pressed='true'] {
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+/* Tarjetas de Descubrir: la tarjeta y, debajo, "Ver detalle" y "No me interesa". */
+.title-list li.rec-item {
+  flex-wrap: wrap;
+}
+
+.rec-item > button.result {
+  flex-basis: 100%;
+}
+
+.rec-actions {
+  display: flex;
+  gap: 8px;
+  flex-basis: 100%;
+}
+
+button.small {
+  font-size: 13px;
+  min-height: 36px;
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: inherit;
+  font-weight: normal;
+}
+
+.rec-detail {
+  flex-basis: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rec-detail p {
+  margin: 0;
+}
+
+.rec-detail small {
+  color: var(--muted);
+}
+
+.rec-dismissed {
+  color: var(--muted);
+}
