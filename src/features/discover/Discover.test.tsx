@@ -9,6 +9,7 @@ const api = vi.hoisted(() => ({
   invoke: vi.fn(),
   dismissTitle: vi.fn(),
   undismissTitle: vi.fn(),
+  fetchSimilar: vi.fn(),
 }))
 vi.mock('../titles/titlesApi', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../titles/titlesApi')>()),
@@ -23,6 +24,7 @@ vi.mock('./discoverApi', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./discoverApi')>()),
   dismissTitle: api.dismissTitle,
   undismissTitle: api.undismissTitle,
+  fetchSimilar: api.fetchSimilar,
 }))
 
 import { withCouple } from '../../test/providers'
@@ -75,6 +77,7 @@ beforeEach(() => {
   api.searchDetails.mockResolvedValue({})
   api.invoke.mockResolvedValue({ data, error: null })
   api.dismissTitle.mockResolvedValue(undefined)
+  api.fetchSimilar.mockResolvedValue([])
 })
 
 test('shows Para los dos first, then each member by name and Novedades', async () => {

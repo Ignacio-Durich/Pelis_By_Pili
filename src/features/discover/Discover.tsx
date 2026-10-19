@@ -50,7 +50,7 @@ export function Discover() {
   }, [key, online, attempt])
 
   const opened = titles?.find((t) => t.id === openId)
-  if (opened) return <TitleDetail title={opened} onClose={() => setOpenId(null)} onChanged={load} />
+  if (opened) return <TitleDetail title={opened} titles={titles ?? []} onClose={() => setOpenId(null)} onChanged={load} />
 
   function onHide(recKey: string, hide: boolean) {
     setHidden((set) => {
