@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { enqueue } from '../../lib/offline'
 import { useMemberName } from '../couple/coupleContext'
 import { dismissShared, originNote, type SharedItem } from '../shared/sharedApi'
+import { ClearSearch } from './ClearSearch'
 import { fetchTitleDetail } from './detailApi'
 import { searchDetails, searchTitles, type Extra, type SearchResponse, type SearchResult } from './searchApi'
 import { TitleCard } from './TitleCard'
@@ -25,6 +26,7 @@ export function AddTitle({ coupleId, titles, onClose, shared }: Props) {
   const [note, setNote] = useState(shared ? originNote(shared) : '')
   // El ítem compartido sale de la bandeja con el primer título agregado desde él.
   const dismissed = useRef(false)
+  const searchInput = useRef<HTMLInputElement>(null)
   // null = todavía no se buscó nada
   const [results, setResults] = useState<SearchResponse | null>(null)
   // Director y temporadas de los resultados (llegan un momento después).
@@ -139,16 +141,20 @@ export function AddTitle({ coupleId, titles, onClose, shared }: Props) {
         Volver
       </button>
       <h2>Agregar</h2>
-      <label>
-        Buscar película o serie
-        <input
-          type="search"
-          maxLength={100}
-          placeholder="En español o en inglés"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-      </label>
+      <div className="search-field">
+        <label>
+          Buscar película o serie
+          <input
+            ref={searchInput}
+            type="search"
+            maxLength={100}
+            placeholder="En español o en inglés"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </label>
+        <ClearSearch value={query} onClear={() => setQuery('')} input={searchInput} />
+      </div>
       <label>
         ¿De dónde vino? (opcional)
         <input maxLength={200} placeholder="Ej.: un reel, una recomendación" value={note} onChange={(e) => setNote(e.target.value)} />

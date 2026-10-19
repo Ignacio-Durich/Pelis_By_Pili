@@ -69,6 +69,19 @@ test('shows the search and note fields and Volver', () => {
   expect(onClose).toHaveBeenCalled()
 })
 
+test('the ✕ empties the search and leaves the cursor there for the next one', async () => {
+  api.searchTitles.mockResolvedValue(found([angelito]))
+  renderAdd()
+  expect(screen.queryByRole('button', { name: 'Borrar lo escrito' })).not.toBeInTheDocument()
+  await typeQuery('angelito')
+  fireEvent.click(screen.getByRole('button', { name: 'Borrar lo escrito' }))
+  const search = screen.getByLabelText('Buscar película o serie')
+  expect(search).toHaveValue('')
+  expect(search).toHaveFocus()
+  expect(screen.queryByText('Mi pobre angelito')).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Borrar lo escrito' })).not.toBeInTheDocument()
+})
+
 test('searches once, 300 ms after the last key, and not with one letter', async () => {
   api.searchTitles.mockResolvedValue(found([angelito]))
   renderAdd()
