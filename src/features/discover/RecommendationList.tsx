@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { useMemberName } from '../couple/coupleContext'
 import { fetchTitleDetail } from '../titles/detailApi'
 import { imdbScore } from '../titles/ratings'
 import { searchDetails, type Extra } from '../titles/searchApi'
@@ -30,7 +29,6 @@ const messages = {
 const joinNames = (names: string[]) => (names.length < 2 ? names.join('') : `${names.slice(0, -1).join(', ')} y ${names[names.length - 1]}`)
 
 export function RecommendationList({ coupleId, items, titles, originNote, hidden, onHide, onOpenWatched }: Props) {
-  const nameOf = useMemberName()
   const [shown, setShown] = useState(10)
   const [extras, setExtras] = useState<Record<string, Extra>>({})
   const [open, setOpen] = useState<Set<string>>(new Set())
@@ -41,9 +39,13 @@ export function RecommendationList({ coupleId, items, titles, originNote, hidden
   const [dismissed, setDismissed] = useState<Set<string>>(new Set())
   const [error, setError] = useState<keyof typeof messages | null>(null)
 
+  const existing = new Map(titles.map((t) => [recKey(t), t]))
+  // Lo que ya está en la lista no se ofrece (salvo lo recién agregado acá, que se puede sacar, y las
+  // series vistas con temporada nueva). Con Descubrir guardado en memoria, lo agregado no vuelve.
   const available = items.filter((r) => {
     const key = recKey(r)
-    return !hidden.has(key) || key in added || dismissed.has(key)
+    if (key in added || dismissed.has(key)) return true
+    return !hidden.has(key) && (!existing.has(key) || !!r.watchedTitleId)
   })
   const visible = available.slice(0, shown)
   // Los datos extra se piden solo para lo que se ve (searchDetails guarda lo ya pedido).
@@ -109,7 +111,6 @@ export function RecommendationList({ coupleId, items, titles, originNote, hidden
       return next
     })
 
-  const existing = new Map(titles.map((t) => [recKey(t), t]))
 
   return (
     <>
@@ -127,23 +128,20 @@ export function RecommendationList({ coupleId, items, titles, originNote, hidden
               </li>
             )
           }
-          const inList = existing.get(key)
           const justAdded = key in added
           const watchedSeries = !!r.watchedTitleId
           const status = watchedSeries
             ? 'Ya la vieron · salió una temporada nueva'
             : justAdded
               ? '✓ Agregada · tocala de nuevo para sacarla'
-              : inList
-                ? `Ya está en la lista (la agregó ${nameOf(inList.addedBy)})`
-                : null
+              : null
           const extra = extras[key]
           const detailOpen = open.has(key)
           return (
             <li key={key} className="rec-item">
               <button
                 className="result"
-                disabled={watchedSeries ? false : (!!inList && !justAdded) || busyKey !== null}
+                disabled={!watchedSeries && busyKey !== null}
                 onClick={() => (watchedSeries ? onOpenWatched?.(r.watchedTitleId!) : justAdded ? takeOut(r) : add(r))}
               >
                 <TitleCard
@@ -168,7 +166,7 @@ export function RecommendationList({ coupleId, items, titles, originNote, hidden
                   <button className="small" aria-expanded={detailOpen} onClick={() => toggleDetail(key)}>
                     {detailOpen ? 'Ocultar detalle' : 'Ver detalle'}
                   </button>
-                  {!inList && !justAdded && (
+                  {!justAdded && (
                     <button className="small" disabled={busyKey !== null} onClick={() => dismiss(r)}>
                       No me interesa
                     </button>

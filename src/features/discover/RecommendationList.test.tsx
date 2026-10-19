@@ -134,11 +134,9 @@ test('if adding fails for another reason it says to try again', async () => {
   expect(await screen.findByRole('alert')).toHaveTextContent('No se pudo agregar. Probá de nuevo.')
 })
 
-test('a title already in the list is not offered for adding nor for dismissing', () => {
+test('a title already in the list is not offered', () => {
   renderList([argentina], { titles: [makeTitle({ id: 't2', tmdbId: 935, title: 'Argentina, 1985' })] })
-  expect(screen.getByRole('button', { name: /Argentina, 1985/ })).toBeDisabled()
-  expect(screen.getByText(/Ya está en la lista/)).toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'No me interesa' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: /Argentina, 1985/ })).not.toBeInTheDocument()
 })
 
 test('No me interesa replaces the card with Deshacer, and Deshacer brings it back', async () => {
