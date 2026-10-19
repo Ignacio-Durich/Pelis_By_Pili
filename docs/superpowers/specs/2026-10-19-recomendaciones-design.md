@@ -92,7 +92,7 @@ El título tiene que estar en la lista del espacio (lo comprueba RLS). Primera p
 
 ### `{ providers: true }` → plataformas para Ajustes
 
-`/watch/providers/movie` y `/watch/providers/tv` con `watch_region=AR`, unidas, ordenadas por `display_priority`, hasta 30, con nombre y logo. Así la clave de TMDB no sale del servidor.
+`/watch/providers/movie` y `/watch/providers/tv` con `watch_region=AR`, unidas y sin los canales que se contratan dentro de otra ("… Amazon Channel", "… Apple TV Channel"). Primero van las conocidas en Argentina (Netflix, Prime Video, Disney Plus, HBO Max, Paramount Plus, Apple TV, MUBI, Crunchyroll, Mercado Play, Claro video, Movistar TV, DIRECTV GO, ViX, Pluto TV) y después el resto por `display_priority`, porque TMDB deja a HBO Max en el puesto 34 (pedido de Tomás, 2026-10-19). Hasta 30, con nombre y logo. Así la clave de TMDB no sale del servidor.
 
 ### Qué devuelve
 
