@@ -33,7 +33,7 @@ No incluye:
 | Dónde | Pestaña "Descubrir" y "Parecidas a esta" en la ficha de cada vista |
 | En qué se basan | Todo lo visto; pesa más lo que puntuaron mejor, y lo que puntuaron mal aleja lo parecido |
 | Por persona | "Especiales para Tomás" y "Especiales para Juli", con los puntajes de cada uno |
-| Novedades | En cines (cartelera de Argentina) y en sus plataformas (estrenos de los últimos 90 días) |
+| Novedades | En cines (cartelera de Argentina) y en sus plataformas (películas estrenadas y series con episodios nuevos en los últimos 90 días, incluidas las temporadas nuevas de series viejas) |
 | Plataformas | Las eligen una vez en Ajustes, para el espacio de los dos |
 | Descartar | "No me interesa", vale para los dos y no vuelve; con "Deshacer" mientras siguen en la pantalla |
 | Detalle | "Ver detalle" despliega la sinopsis completa y los géneros en la tarjeta, sin consultas nuevas |
@@ -81,7 +81,7 @@ Tres modos:
 - **Para los dos**: las 30 mejores con los pesos de los dos.
 - **Especiales para cada uno**: la misma cuenta con los puntajes de esa persona, sin las 30 de "Para los dos". Reusa las respuestas de TMDB ya pedidas. Si la persona no puntuó nada, la sección no viene.
 - **En cines**: `/movie/now_playing` con `region=AR` (2 páginas), por popularidad, sin lo que ya está en la lista ni lo descartado (sin mínimo de votos: los estrenos todavía tienen pocos). Hasta 30.
-- **En sus plataformas**: `/discover/movie` y `/discover/tv` con `watch_region=AR`, `with_watch_monetization_types=flatrate`, estrenados en los últimos 90 días, una consulta por plataforma elegida para saber en cuál está cada título. Se mezclan, se sacan repetidos (si está en dos, se nombran las dos), se saca lo que ya está en la lista y lo descartado, y se ordenan por popularidad. Hasta 30. Si no eligieron plataformas, viene `null` y la app invita a elegirlas en Ajustes.
+- **En sus plataformas**: `/discover/movie` y `/discover/tv` con `watch_region=AR` y `with_watch_monetization_types=flatrate`, una consulta por plataforma elegida para saber en cuál está cada título. Películas: estrenadas en los últimos 90 días (`primary_release_date.gte`). Series: con algún episodio emitido en los últimos 90 días (`air_date.gte`), así entran las temporadas nuevas de series viejas (pedido de Tomás, 2026-10-19); sin programas de entrevistas, noticias, reality ni telenovelas (géneros 10767, 10763, 10764 y 10766), que emiten todas las semanas. Una serie que se estrenó antes de esos 90 días lleva la marca `newSeason` y la tarjeta dice "Temporada nueva". Se mezclan, se sacan repetidos (si está en dos, se nombran las dos), se saca lo que ya está en la lista y lo descartado, y se ordenan por popularidad. Hasta 30. Si no eligieron plataformas, viene `null` y la app invita a elegirlas en Ajustes.
 
 Límite conocido: TMDB no dice cuándo llegó un título a una plataforma, solo cuándo se estrenó. Una película de hace un año que recién llegó a Netflix no aparece en Novedades.
 
@@ -98,10 +98,11 @@ El título tiene que estar en la lista del espacio (lo comprueba RLS). Primera p
 Cada título con el formato de los resultados de búsqueda (`SearchResult`), más:
 - `genres`: nombres de los géneros (mapa fijo de los IDs de TMDB en `lib.ts`; los IDs de TMDB no cambian);
 - `because`: hasta dos nombres de semillas (solo en las secciones por gusto);
-- `platforms`: nombres de las plataformas (solo en "En sus plataformas").
+- `platforms`: nombres de las plataformas (solo en "En sus plataformas");
+- `newSeason`: `true` si es una serie vieja con episodios nuevos (solo en "En sus plataformas").
 
 ```ts
-type Recommendation = SearchResult & { genres: string[]; because?: string[]; platforms?: string[] }
+type Recommendation = SearchResult & { genres: string[]; because?: string[]; platforms?: string[]; newSeason?: boolean }
 type Discover = {
   forBoth: Recommendation[]
   forEach: { userId: string; name: string; results: Recommendation[] }[]
@@ -128,7 +129,7 @@ type Discover = {
 - Estados: "Buscando recomendaciones…"; sin vistas con puntaje: "Cuando marquen títulos como vistos y les pongan puntaje, acá van a aparecer recomendaciones"; sin conexión: el mismo aviso que en Agregar; error: "No se pudieron cargar las recomendaciones" con "Reintentar".
 
 **Tarjeta de recomendación.**
-- Como en Agregar: póster, título, año y tipo, duración, director, IMDb. Debajo, "Porque vieron …" o la plataforma, según la sección.
+- Como en Agregar: póster, título, año y tipo, duración, director, IMDb. Debajo, "Porque vieron …" o la plataforma (y "Temporada nueva" si corresponde), según la sección.
 - Tocarla la agrega a "Por ver" y muestra "✓ Agregada · tocala de nuevo para sacarla". Se agrega con una nota de origen: "De Descubrir" o "Parecida a <título>".
 - Debajo, dos botones chicos: **Ver detalle** (despliega la sinopsis completa y los géneros; pasa a "Ocultar detalle") y **No me interesa** (la tarjeta pasa a "Descartada · Deshacer" hasta salir de la pantalla).
 
@@ -157,6 +158,6 @@ Las pantallas tienen que verse bien a 390×844 y 393×852. Descubrir y la ficha 
 ## 9. Puntos a verificar al construir
 
 - Que `/movie/now_playing?region=AR` traiga la cartelera de Argentina y no la de otro país.
-- Que `/discover` con `watch_region=AR` y `with_watch_providers` devuelva títulos para las plataformas de Argentina, y con qué fecha conviene filtrar las series (`first_air_date` deja afuera las temporadas nuevas de series viejas).
+- Que `/discover` con `watch_region=AR` y `with_watch_providers` devuelva títulos para las plataformas de Argentina, y que `air_date.gte` en series traiga las que tuvieron episodios en ese rango (incluidas temporadas nuevas de series viejas).
 - Cuánto tarda Descubrir con 24 semillas; si pasa de 3 segundos, bajar el tope de semillas.
 - Consumo real de OMDb los primeros días; si se acerca al límite, guardar los puntajes de IMDb en una tabla y consultar OMDb una sola vez por título.
