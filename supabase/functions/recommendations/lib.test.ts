@@ -5,6 +5,7 @@ import {
   hasNewSeason,
   inOrder,
   isNewSeasonSeries,
+  memberSeeds,
   mergePlatformResults,
   parseRequest,
   pickSeeds,
@@ -30,6 +31,19 @@ test('pickSeeds keeps the 50 with the largest weight, good or bad', () => {
   const picked = pickSeeds(seeds)
   expect(picked).toHaveLength(50)
   expect(picked.map((s) => Math.abs(s.weight))).not.toContain(0)
+})
+test('memberSeeds never goes beyond the seeds picked for both, even with more than 50 scored titles', () => {
+  const all = Array.from({ length: 120 }, (_, i) => ({ key: `movie:${i}`, title: `T${i}`, weight: i % 2 ? i / 10 : -i / 10 }))
+  const both = pickSeeds(all)
+  // Tomás puntuó los 120; Juli solo los pares.
+  const tomas = memberSeeds(both, all.map((s) => ({ key: s.key, score: 9 })))
+  const juli = memberSeeds(both, all.filter((_, i) => i % 2 === 0).map((s) => ({ key: s.key, score: 2 })))
+  const picked = new Set(both.map((s) => s.key))
+  for (const seeds of [tomas, juli]) expect(seeds.every((s) => picked.has(s.key))).toBe(true)
+  expect(tomas).toHaveLength(50)
+  expect(juli.length).toBeLessThan(50)
+  expect(tomas[0].weight).toBe(4)
+  expect(juli[0].weight).toBe(-3)
 })
 test('rankRecommendations: several favorites push a title up, a bad one pushes it down, with why', () => {
   const a = { id: 1, title: 'Uno', vote_count: 500 }, b = { id: 2, title: 'Dos', vote_count: 500 }, c = { id: 3, title: 'Tres', vote_count: 500 }

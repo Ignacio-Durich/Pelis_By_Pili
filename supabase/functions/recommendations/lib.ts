@@ -55,6 +55,15 @@ export function pickSeeds<T extends { weight: number }>(seeds: T[], max = 50): T
   return [...seeds].sort((a, b) => Math.abs(b.weight) - Math.abs(a.weight)).slice(0, max)
 }
 
+// Las semillas de uno: solo entre las ya elegidas para los dos (así TMDB se consulta por 50 títulos
+// como mucho en total), con el peso de sus propios puntajes. Sin puntaje suyo, no hay semilla.
+export function memberSeeds<T extends Seed>(both: T[], scores: { key: string; score: number }[]): T[] {
+  return both.flatMap((seed) => {
+    const weight = seedWeight(scores.filter((s) => s.key === seed.key).map((s) => s.score))
+    return weight === null ? [] : [{ ...seed, weight }]
+  })
+}
+
 // IDs de géneros de TMDB (películas y series), en es-MX. No cambian.
 const GENRES: Record<number, string> = {
   28: 'Acción', 12: 'Aventura', 16: 'Animación', 35: 'Comedia', 80: 'Crimen', 99: 'Documental', 18: 'Drama',
