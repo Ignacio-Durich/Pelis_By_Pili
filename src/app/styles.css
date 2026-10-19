@@ -1044,3 +1044,43 @@ button.small {
 .rec-dismissed {
   color: var(--muted);
 }
+
+/* Ajustes → Nuestras plataformas: dos columnas, logo y nombre; la elegida lleva el acento. */
+.platforms {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.platforms-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+button.platform-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 8px;
+  font-size: 14px;
+  font-weight: normal;
+  text-align: left;
+  color: var(--text);
+  background: var(--surface);
+  border: 2px solid transparent;
+}
+
+button.platform-option[aria-pressed='true'] {
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+button.platform-option img {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  object-fit: cover;
+}

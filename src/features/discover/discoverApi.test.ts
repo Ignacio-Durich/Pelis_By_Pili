@@ -109,3 +109,12 @@ test('dismissing or recovering a title forgets the saved Descubrir', async () =>
   await fetchDiscover('k1')
   expect(invoke).toHaveBeenCalledTimes(3)
 })
+
+test('saving the platforms forgets the saved Descubrir', async () => {
+  invoke.mockResolvedValue({ data: empty, error: null })
+  rpc.mockResolvedValue({ data: null, error: null })
+  await fetchDiscover('k1')
+  await setPlatforms([8])
+  await fetchDiscover('k1')
+  expect(invoke).toHaveBeenCalledTimes(2)
+})
