@@ -5,7 +5,7 @@ import { imdbScore } from '../titles/ratings'
 import { searchDetails, type Extra } from '../titles/searchApi'
 import { TitleCard } from '../titles/TitleCard'
 import { addTitle, removeTitle, TitleError, type Title } from '../titles/titlesApi'
-import { dismissTitle, undismissTitle, type Recommendation } from './discoverApi'
+import { dismissTitle, recKey, undismissTitle, type Recommendation } from './discoverApi'
 
 type Props = {
   coupleId: string
@@ -25,9 +25,6 @@ const messages = {
   undismiss: 'No se pudo deshacer. Probá de nuevo.',
 }
 
-// La usa el padre para las claves de hidden y onHide.
-// oxlint-disable-next-line react/only-export-components
-export const recKey = (r: { mediaType: string; tmdbId: number }) => `${r.mediaType}:${r.tmdbId}`
 
 // "A", "A y B", "A, B y C"
 const joinNames = (names: string[]) => (names.length < 2 ? names.join('') : `${names.slice(0, -1).join(', ')} y ${names[names.length - 1]}`)
@@ -171,7 +168,7 @@ export function RecommendationList({ coupleId, items, titles, originNote, hidden
                   <button className="small" aria-expanded={detailOpen} onClick={() => toggleDetail(key)}>
                     {detailOpen ? 'Ocultar detalle' : 'Ver detalle'}
                   </button>
-                  {!justAdded && (
+                  {!inList && !justAdded && (
                     <button className="small" disabled={busyKey !== null} onClick={() => dismiss(r)}>
                       No me interesa
                     </button>

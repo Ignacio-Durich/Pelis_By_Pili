@@ -20,6 +20,9 @@ export function discoverKey(titles: Title[]): string {
 // Se guarda un solo resultado (el de la última key) mientras la app está abierta.
 let saved: { key: string; promise: Promise<Discover> } | null = null
 
+// La clave de una recomendación: la usan las tarjetas y el padre (hidden, onHide).
+export const recKey = (r: { mediaType: string; tmdbId: number }) => `${r.mediaType}:${r.tmdbId}`
+
 export const forgetDiscover = () => {
   saved = null
 }
