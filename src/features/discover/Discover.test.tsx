@@ -118,11 +118,28 @@ test('without platforms Novedades invites to choose them in Ajustes', async () =
   expect(screen.getByText('Peli en cines')).toBeInTheDocument()
 })
 
-test('nothing watched with scores shows the empty text', async () => {
+test('nothing watched with scores shows the empty text inside Para los dos, with the selector still there', async () => {
   api.invoke.mockResolvedValue({ data: { ...data, forBoth: [], forEach: [] }, error: null })
   renderDiscover()
   expect(await screen.findByText('Cuando marquen títulos como vistos y les pongan puntaje, acá van a aparecer recomendaciones')).toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Novedades' })).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Para los dos' })).toHaveAttribute('aria-pressed', 'true')
+  expect(screen.getByRole('button', { name: 'Novedades' })).toBeInTheDocument()
+})
+
+test('with empty forBoth and forEach, Novedades can still be opened', async () => {
+  api.invoke.mockResolvedValue({ data: { ...data, forBoth: [], forEach: [] }, error: null })
+  renderDiscover()
+  fireEvent.click(await screen.findByRole('button', { name: 'Novedades' }))
+  expect(screen.getByRole('heading', { name: 'En cines' })).toBeInTheDocument()
+  expect(screen.getByText('Peli en cines')).toBeInTheDocument()
+  expect(screen.queryByText(/Cuando marquen títulos/)).not.toBeInTheDocument()
+})
+
+test('a member whose results are empty shows the empty text in their section', async () => {
+  api.invoke.mockResolvedValue({ data: { ...data, forEach: [{ userId: 'u1', name: 'Tomás', results: [] }] }, error: null })
+  renderDiscover()
+  fireEvent.click(await screen.findByRole('button', { name: 'Tomás' }))
+  expect(screen.getByText(/Cuando marquen títulos/)).toBeInTheDocument()
 })
 
 test('shows loading while it searches', async () => {

@@ -65,9 +65,11 @@ export function Discover() {
     />
   )
 
+  // Una sección por gusto sin resultados lo explica ahí adentro, así Novedades sigue a mano.
+  const taste = (items: Recommendation[]) =>
+    items.length === 0 ? <p>Cuando marquen títulos como vistos y les pongan puntaje, acá van a aparecer recomendaciones</p> : list(items)
+
   function content(d: DiscoverData) {
-    if (d.forBoth.length === 0 && d.forEach.length === 0)
-      return <p>Cuando marquen títulos como vistos y les pongan puntaje, acá van a aparecer recomendaciones</p>
     // Un miembro que ya no tiene opción (cambió lo puntuado) vuelve a "Para los dos".
     const current = section === 'news' || d.forEach.some((m) => m.userId === section) ? section : 'both'
     const options = [
@@ -99,7 +101,7 @@ export function Discover() {
             )}
           </>
         ) : (
-          list(current === 'both' ? d.forBoth : (d.forEach.find((m) => m.userId === current)?.results ?? []))
+          taste(current === 'both' ? d.forBoth : (d.forEach.find((m) => m.userId === current)?.results ?? []))
         )}
       </>
     )
