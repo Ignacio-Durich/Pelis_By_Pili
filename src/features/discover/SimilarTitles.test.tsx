@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, expect, test, vi } from 'vitest'
 
 const api = vi.hoisted(() => ({
@@ -79,4 +79,30 @@ test('if it fails it says so with Reintentar, which asks again', async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }))
   expect(await screen.findByRole('button', { name: /Interestelar/ })).toBeInTheDocument()
   expect(api.fetchSimilar).toHaveBeenCalledTimes(2)
+})
+
+test('offline it asks for nothing and says so; coming back online it fetches', async () => {
+  api.fetchSimilar.mockResolvedValue([rec(1, 'Interestelar')])
+  Object.defineProperty(navigator, 'onLine', { value: false, configurable: true })
+  renderSimilar()
+  expect(screen.getByText('Sin conexión: no se pueden buscar parecidas ahora.')).toBeInTheDocument()
+  expect(api.fetchSimilar).not.toHaveBeenCalled()
+  Object.defineProperty(navigator, 'onLine', { value: true, configurable: true })
+  act(() => {
+    window.dispatchEvent(new Event('online'))
+  })
+  expect(await screen.findByRole('button', { name: /Interestelar/ })).toBeInTheDocument()
+  expect(api.fetchSimilar).toHaveBeenCalledWith('t7')
+  expect(screen.queryByText(/Sin conexión/)).not.toBeInTheDocument()
+})
+
+test('the origin note is trimmed to 200 characters for a very long title', async () => {
+  const interestelar = rec(1, 'Interestelar')
+  api.fetchSimilar.mockResolvedValue([interestelar])
+  render(withCouple(<SimilarTitles title={{ ...origen, title: 'Juli '.repeat(100) }} titles={[origen]} />))
+  fireEvent.click(await screen.findByRole('button', { name: /Interestelar/ }))
+  await waitFor(() => expect(api.addTitle).toHaveBeenCalled())
+  const note = api.addTitle.mock.calls[0][2] as string
+  expect(note).toHaveLength(200)
+  expect(note.startsWith('Parecida a Juli')).toBe(true)
 })

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useOnline } from '../../lib/useOnline'
 import { useCouple } from '../couple/coupleContext'
 import type { Title } from '../titles/titlesApi'
 import { fetchSimilar, type Recommendation } from './discoverApi'
@@ -10,9 +11,11 @@ export function SimilarTitles({ title, titles }: { title: Title; titles: Title[]
   const [items, setItems] = useState<Recommendation[] | null>(null)
   const [failed, setFailed] = useState(false)
   const [attempt, setAttempt] = useState(0)
+  const online = useOnline()
   const [hidden, setHidden] = useState<Set<string>>(new Set())
 
   useEffect(() => {
+    if (!online) return
     let current = true
     fetchSimilar(title.id).then(
       (r) => {
@@ -25,7 +28,7 @@ export function SimilarTitles({ title, titles }: { title: Title; titles: Title[]
     return () => {
       current = false
     }
-  }, [title.id, attempt])
+  }, [title.id, online, attempt])
 
   function onHide(key: string, hide: boolean) {
     setHidden((set) => {
@@ -39,7 +42,8 @@ export function SimilarTitles({ title, titles }: { title: Title; titles: Title[]
   return (
     <>
       <h3>Parecidas a esta</h3>
-      {failed ? (
+      {!online && <p className="offline-note">Sin conexión: no se pueden buscar parecidas ahora.</p>}
+      {failed && online ? (
         <>
           <p role="alert">No se pudieron cargar las parecidas</p>
           <button
@@ -52,7 +56,7 @@ export function SimilarTitles({ title, titles }: { title: Title; titles: Title[]
           </button>
         </>
       ) : items === null ? (
-        <p>Buscando parecidas…</p>
+        online && <p>Buscando parecidas…</p>
       ) : items.length === 0 ? (
         <p>TMDB no tiene parecidas para este título</p>
       ) : (
@@ -60,7 +64,8 @@ export function SimilarTitles({ title, titles }: { title: Title; titles: Title[]
           coupleId={coupleId}
           items={items}
           titles={titles}
-          originNote={() => `Parecida a ${title.title}`}
+          // La base acepta como mucho 200 caracteres en la nota de origen.
+          originNote={() => `Parecida a ${title.title}`.slice(0, 200)}
           hidden={hidden}
           onHide={onHide}
         />
