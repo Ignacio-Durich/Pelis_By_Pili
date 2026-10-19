@@ -5,8 +5,8 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.117.2'
 import {
   byPopularity,
+  byVotes,
   hasNewSeason,
-  inOrder,
   LONG_RUNNING_GENRES,
   memberSeeds,
   mergePlatformResults,
@@ -80,7 +80,8 @@ async function similar(calls: Calls, title: Title, exclude: Set<string>) {
   let found = items(await calls.get(`${base}/recommendations`, 'language=es-MX&page=1'))
   if (!found.length) found = items(await calls.get(`${base}/similar`, 'language=es-MX&page=1'))
   calls.check()
-  return { results: inOrder(found.map((item) => ({ item, mediaType: title.media_type })), exclude, 20) }
+  // TMDB a veces pone primero títulos poco conocidos: suben los que más votos tienen (pedido de Tomás).
+  return { results: byVotes(found.map((item) => ({ item, mediaType: title.media_type })), exclude, 20) }
 }
 
 async function discover(
