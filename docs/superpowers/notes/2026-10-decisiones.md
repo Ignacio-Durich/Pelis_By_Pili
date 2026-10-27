@@ -235,3 +235,6 @@ Decisiones tomadas al hacerla:
 - **`TitleDetail` recibe la lista como opcional:** la Ruleta, las Preguntas y Bumble lo abren solo para títulos por ver, donde "Parecidas a esta" no aparece.
 - **Test de búsqueda corregido:** los detalles de búsqueda ya traían duración e IMDb (cambio anterior) y el test de seguridad esperaba solo director y temporadas.
 
+# Tráiler (2026-10-27)
+
+Pedido desde Comentarios. "▶ Ver tráiler" debajo de la sinopsis abre YouTube. Se elige entre los videos de TMDB: primero en español latino, después cualquier español y después inglés; un tráiler antes que un teaser y uno oficial antes que otro. Si TMDB no tiene ninguno, abre la búsqueda "<título> <año> tráiler" en YouTube, así el botón siempre lleva a algún lado.

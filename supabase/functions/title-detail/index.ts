@@ -12,6 +12,7 @@ import {
   pickOverview,
   pickRuntime,
   pickSeasons,
+  pickTrailer,
   streamingNames,
   tmdbScoreOf,
   toProviders,
@@ -61,7 +62,7 @@ Deno.serve(async (req) => {
   let details
   try {
     details = await getJson(
-      `https://api.themoviedb.org/3/${title.media_type}/${title.tmdb_id}?language=es-AR&append_to_response=external_ids,watch/providers,translations,credits&api_key=${Deno.env.get('TMDB_API_KEY')}`,
+      `https://api.themoviedb.org/3/${title.media_type}/${title.tmdb_id}?language=es-AR&append_to_response=external_ids,watch/providers,translations,credits,videos&include_video_language=es,en&api_key=${Deno.env.get('TMDB_API_KEY')}`,
     )
   } catch {
     return json(502, { error: 'upstream' })
@@ -114,6 +115,7 @@ Deno.serve(async (req) => {
     ratings,
     ratingsStale: stale,
     providers,
+    trailer: pickTrailer(details),
   }
   return json(200, body)
 })

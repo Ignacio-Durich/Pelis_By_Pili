@@ -176,6 +176,18 @@ export function TitleDetail({
         <>
           <h3>Sinopsis</h3>
           <p>{detail.overview || 'Sin sinopsis'}</p>
+          {/* Si TMDB no tiene tráiler, se busca en YouTube. */}
+          <a
+            className="trailer"
+            href={
+              detail.trailer ??
+              `https://www.youtube.com/results?search_query=${encodeURIComponent([title.title, title.year, 'tráiler'].filter(Boolean).join(' '))}`
+            }
+            target="_blank"
+            rel="noreferrer"
+          >
+            ▶ Ver tráiler
+          </a>
         </>
       )}
 

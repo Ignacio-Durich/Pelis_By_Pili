@@ -10,7 +10,7 @@ export type StoredRatings = {
   tmdb: number | null
   updatedAt: string | null
 }
-export type TitleDetail = { overview: string; ratings: StoredRatings; ratingsStale: boolean; providers: Providers | null }
+export type TitleDetail = { overview: string; ratings: StoredRatings; ratingsStale: boolean; providers: Providers | null; trailer: string | null }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const WEEK_MS = 7 * 86_400_000
@@ -103,6 +103,26 @@ export function streamingNames(providers: Providers | null): string[] {
 
 // Las usa también la búsqueda (director, temporadas, duración e IMDb de los resultados).
 export { pickDirector, pickImdbId, pickRuntime, pickSeasons } from '../_shared/people.ts'
+
+type Video = { key?: string; site?: string; type?: string; official?: boolean; iso_639_1?: string; iso_3166_1?: string }
+const LATIN = ['AR', 'MX', 'CO', 'CL', 'PE', 'UY', 'US', '419']
+
+// El tráiler de YouTube: primero en español latino, después en cualquier español y después en inglés;
+// a igual idioma, un tráiler antes que un teaser y uno oficial antes que otro. Sin tráiler ni teaser, null.
+export function pickTrailer(details: { videos?: { results?: Video[] } }): string | null {
+  const language = (v: Video) =>
+    v.iso_639_1 === 'es' ? (LATIN.includes(v.iso_3166_1 ?? '') ? 0 : 1) : v.iso_639_1 === 'en' ? 2 : 3
+  const best = (details.videos?.results ?? [])
+    .filter((v) => v.site === 'YouTube' && v.key && (v.type === 'Trailer' || v.type === 'Teaser'))
+    .sort(
+      (a, b) =>
+        language(a) - language(b) ||
+        Number(b.type === 'Trailer') - Number(a.type === 'Trailer') ||
+        Number(!!b.official) - Number(!!a.official),
+    )[0]
+  return best ? `https://www.youtube.com/watch?v=${best.key}` : null
+}
+
 
 type SavedDetails = { runtime: number | null; genres: string[]; streaming: string[]; director: string | null; seasons: number | null }
 

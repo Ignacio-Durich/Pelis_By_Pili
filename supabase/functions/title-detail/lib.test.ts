@@ -10,6 +10,7 @@ import {
   pickOverview,
   pickRuntime,
   pickSeasons,
+  pickTrailer,
   streamingNames,
   tmdbScoreOf,
   toProviders,
@@ -188,4 +189,14 @@ test('clampDetails drops impossible runtimes and seasons and cuts long lists', (
   expect(clampDetails({ ...base, genres: Array.from({ length: 25 }, (_, i) => `g${i}`) }).genres).toHaveLength(20)
   expect(clampDetails({ ...base, streaming: Array.from({ length: 60 }, (_, i) => `p${i}`) }).streaming).toHaveLength(50)
   expect(clampDetails({ ...base, director: 'x'.repeat(400) }).director).toHaveLength(300)
+})
+
+test('pickTrailer prefers a Latin American Spanish trailer, then any Spanish, then English; official first; a teaser if there is no trailer', () => {
+  const v = (key: string, iso_639_1: string, iso_3166_1: string, type: string, official = false, site = 'YouTube') => ({ key, iso_639_1, iso_3166_1, type, official, site })
+  expect(pickTrailer({ videos: { results: [v('en1', 'en', 'US', 'Trailer', true), v('es1', 'es', 'ES', 'Trailer'), v('mx1', 'es', 'MX', 'Trailer')] } })).toBe('https://www.youtube.com/watch?v=mx1')
+  expect(pickTrailer({ videos: { results: [v('en1', 'en', 'US', 'Trailer'), v('es1', 'es', 'ES', 'Trailer')] } })).toBe('https://www.youtube.com/watch?v=es1')
+  expect(pickTrailer({ videos: { results: [v('a', 'en', 'US', 'Trailer'), v('b', 'en', 'US', 'Trailer', true)] } })).toBe('https://www.youtube.com/watch?v=b')
+  expect(pickTrailer({ videos: { results: [v('clip', 'es', 'MX', 'Clip'), v('teaser', 'en', 'US', 'Teaser')] } })).toBe('https://www.youtube.com/watch?v=teaser')
+  expect(pickTrailer({ videos: { results: [v('vimeo', 'en', 'US', 'Trailer', true, 'Vimeo'), v('clip', 'en', 'US', 'Clip')] } })).toBeNull()
+  expect(pickTrailer({})).toBeNull()
 })

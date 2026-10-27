@@ -65,6 +65,7 @@ const fresh: Detail = {
     buy: [],
     free: [],
   },
+  trailer: 'https://www.youtube.com/watch?v=5xH0HfJHsaY',
 }
 
 const onClose = vi.fn()
@@ -120,6 +121,19 @@ test('an empty synopsis says so and stale ratings show the notice', async () => 
   renderDetail()
   expect(await screen.findByText('Sin sinopsis')).toBeInTheDocument()
   expect(screen.getByText('Hoy no se pudieron actualizar los puntajes')).toBeInTheDocument()
+})
+
+test('Ver tráiler opens the YouTube trailer, or a YouTube search when TMDB has none', async () => {
+  api.fetchTitleDetail.mockResolvedValue(fresh)
+  renderDetail()
+  expect(await screen.findByRole('link', { name: '▶ Ver tráiler' })).toHaveAttribute('href', 'https://www.youtube.com/watch?v=5xH0HfJHsaY')
+  cleanup()
+  api.fetchTitleDetail.mockResolvedValue({ ...fresh, trailer: null })
+  renderDetail()
+  expect(await screen.findByRole('link', { name: '▶ Ver tráiler' })).toHaveAttribute(
+    'href',
+    'https://www.youtube.com/results?search_query=Par%C3%A1sitos%202019%20tr%C3%A1iler',
+  )
 })
 
 test('shows where to watch it in Argentina, by group, with JustWatch as source', async () => {
@@ -188,6 +202,7 @@ test('never shows null or undefined, even with nothing saved', async () => {
     ratings: { imdb: null, rottenTomatoes: null, metacritic: null, tmdb: null, updatedAt: null },
     ratingsStale: false,
     providers: null,
+    trailer: null,
   })
   renderDetail(bare)
   await screen.findByText('Sin información de dónde verla')
