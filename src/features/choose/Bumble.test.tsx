@@ -95,6 +95,18 @@ test('with fewer than 2 titles neither option is available', async () => {
   expect(screen.getByRole('button', { name: '📱📱 Dos' })).toBeDisabled()
 })
 
+test('the deck is 30 cards unless they choose 10, 20, 50 or 80', async () => {
+  const many = Array.from({ length: 12 }, (_, i) => makeTitle({ id: `m${i}`, tmdbId: 100 + i }))
+  api.listTitles.mockResolvedValue(many)
+  renderBumble()
+  await screen.findByText('¿Cuántos celulares van a usar?')
+  expect(screen.getByRole('button', { name: '30' })).toHaveAttribute('aria-pressed', 'true')
+  expect(['10', '20', '50', '80'].map((n) => screen.getByRole('button', { name: n }))).toHaveLength(4)
+  press('10')
+  await act(async () => press('📱📱 Dos'))
+  expect(api.startBumble).toHaveBeenCalledWith(many.slice(0, 10).map((t) => t.id))
+})
+
 test('Dos starts a game with the titles that match the filters', async () => {
   renderBumble(undefined, { ...NO_FILTERS, genres: ['Comedia'] })
   await screen.findByText('¿Cuántos celulares van a usar?')

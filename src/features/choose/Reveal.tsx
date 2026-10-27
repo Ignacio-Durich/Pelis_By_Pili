@@ -8,6 +8,7 @@ import { TitleCard } from '../titles/TitleCard'
 import type { Title } from '../titles/titlesApi'
 import { useTitles } from '../titles/useTitles'
 import { seededIndex } from './bumbleLogic'
+import { CountChoice } from './CountChoice'
 import { GameTop } from './GameTop'
 import { PhonesChoice } from './PhonesChoice'
 import { NO_PARTNER, playerName } from './players'
@@ -61,14 +62,7 @@ export function Reveal({ filters, onFiltersChange, onBack }: Props) {
     body = (
       <>
         <p>{`Cada uno elige ${pickCount} en secreto y se muestran a la vez.`}</p>
-        <h3>¿Cuántas elige cada uno?</h3>
-        <div className="segmented">
-          {PICK_COUNTS.map((n) => (
-            <button key={n} aria-pressed={pickCount === n} onClick={() => setPickCount(n)}>
-              {n}
-            </button>
-          ))}
-        </div>
+        <CountChoice label="¿Cuántas elige cada uno?" options={PICK_COUNTS} value={pickCount} onChange={setPickCount} />
         <FiltersPanel value={filters} options={filterOptions(toWatch)} count={{ matching: matching.length, total: toWatch.length }} onChange={onFiltersChange} />
         <PhonesChoice
           missing={matching.length < 1 ? 'Hace falta al menos 1 título' : null}

@@ -289,3 +289,9 @@ Pedido desde Comentarios. Antes de elegir cuántos celulares, "¿Cuántas elige 
 Con dos celulares la cantidad se guarda en la partida (`reveal_sessions.pick_count`, solo 3, 5 o 10) y `start_reveal(p_pick_count)` la fija; si la pareja ya tenía una partida abierta, se entra a esa con su cantidad. `submit_reveal` acepta de 1 a `pick_count` títulos, y `reveal_picks` admite hasta 10. Con un celular la cantidad viaja en la partida guardada en el celular; las guardadas antes del cambio cuentan como 3.
 
 Con 10 de cada uno, la ruleta de desempate puede tener hasta 20 títulos; desde 13 no muestra los nombres en la rueda, como ya pasaba en la Ruleta.
+
+## Bumble: mazo de 10, 20, 30, 50 u 80 (2026-10-27)
+
+Pedido desde Comentarios; Nacho eligió opciones fijas hasta 80. "¿Cuántas cartas?" con 10, 20, 30, 50 y 80 (30 marcado de entrada, como antes). Si hay menos títulos que cumplan los filtros, el mazo es de los que haya. La base sube el tope del mazo de 30 a 80 (`bumble_sessions` y `start_bumble`); la cantidad no se guarda aparte porque el mazo ya la dice.
+
+La elección "¿Cuántas…?" es un componente compartido (`CountChoice`) que usan Top 3 secreto, Bumble y el Torneo.
