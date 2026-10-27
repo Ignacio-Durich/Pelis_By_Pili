@@ -53,7 +53,7 @@ function renderList(items: Recommendation[], extra: { titles?: ReturnType<typeof
         coupleId="c1"
         items={items}
         titles={extra.titles ?? []}
-        originNote={() => 'De Descubrir'}
+        originNote={() => 'Descubrir'}
         hidden={extra.hidden ?? new Set()}
         onHide={onHide}
         onOpenWatched={onOpenWatched}
@@ -109,11 +109,11 @@ test('a single seed reads Porque vieron A and platforms show under the card', ()
 test('tapping adds it with the origin note and tapping again takes it out', async () => {
   renderList([argentina])
   fireEvent.click(screen.getByRole('button', { name: /Argentina, 1985/ }))
-  expect(await screen.findByText('✓ Agregada · tocala de nuevo para sacarla')).toBeInTheDocument()
-  expect(api.addTitle).toHaveBeenCalledWith('c1', argentina, 'De Descubrir')
+  expect(await screen.findByText('✓ Agregada · tocala de nuevo para quitarla')).toBeInTheDocument()
+  expect(api.addTitle).toHaveBeenCalledWith('c1', argentina, 'Descubrir')
   expect(onHide).toHaveBeenLastCalledWith(recKey(argentina), true)
   fireEvent.click(screen.getByRole('button', { name: /Argentina, 1985/ }))
-  await waitFor(() => expect(screen.queryByText('✓ Agregada · tocala de nuevo para sacarla')).not.toBeInTheDocument())
+  await waitFor(() => expect(screen.queryByText('✓ Agregada · tocala de nuevo para quitarla')).not.toBeInTheDocument())
   expect(api.removeTitle).toHaveBeenCalledWith('new1')
   expect(onHide).toHaveBeenLastCalledWith(recKey(argentina), false)
 })
@@ -123,7 +123,7 @@ test('if the other one added it a moment ago it says Ya está en la lista', asyn
   renderList([argentina])
   fireEvent.click(screen.getByRole('button', { name: /Argentina, 1985/ }))
   expect(await screen.findByRole('alert')).toHaveTextContent('Ya está en la lista')
-  expect(screen.queryByText('✓ Agregada · tocala de nuevo para sacarla')).not.toBeInTheDocument()
+  expect(screen.queryByText('✓ Agregada · tocala de nuevo para quitarla')).not.toBeInTheDocument()
   expect(onHide).not.toHaveBeenCalled()
 })
 

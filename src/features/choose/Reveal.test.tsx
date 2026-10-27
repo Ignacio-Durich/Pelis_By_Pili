@@ -67,7 +67,7 @@ function renderReveal(members?: Parameters<typeof withCouple>[1]) {
 async function renderGame(session: RevealSession) {
   api.loadOpenReveal.mockResolvedValue(session)
   renderReveal()
-  await screen.findAllByText(/Elegí tus 3|Esperando|Coinciden|Eligió|ruleta|^3$/)
+  await screen.findAllByText(/Elegí 3|Esperando|Coinciden|Eligió|ruleta|^3$/)
 }
 
 async function changeGame(session: RevealSession) {
@@ -97,7 +97,7 @@ test('Dos starts a game', async () => {
 
 test('picking: up to three, then Listo sends them', async () => {
   await renderGame(game({}))
-  expect(screen.getByText('Elegí tus 3')).toBeInTheDocument()
+  expect(screen.getByText('Elegí 3')).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Listo (0 de 3)' })).toBeDisabled()
   pick('a', 'c', 'e', 'f')
   expect(screen.getByRole('button', { name: /Peli F/ })).toHaveAttribute('aria-pressed', 'false')
@@ -161,7 +161,7 @@ test('one phone: the first chooses, passes the phone without showing, the second
   const first = renderReveal()
   await screen.findByText('¿Cuántos celulares van a usar?')
   press('📱 Uno')
-  expect(screen.getByText('Turno de Tomás: elegí tus 3')).toBeInTheDocument()
+  expect(screen.getByText('Turno de Tomás: elegí 3')).toBeInTheDocument()
   pick('a', 'b', 'c')
   press('Listo (3 de 3)')
   expect(screen.getByText('Pasale el celu a Juli')).toBeInTheDocument()
@@ -170,7 +170,7 @@ test('one phone: the first chooses, passes the phone without showing, the second
   renderReveal()
   expect(await screen.findByText('Pasale el celu a Juli')).toBeInTheDocument()
   press('Listo, soy Juli')
-  expect(screen.getByText('Turno de Juli: elegí tus 3')).toBeInTheDocument()
+  expect(screen.getByText('Turno de Juli: elegí 3')).toBeInTheDocument()
   expect(screen.getByRole('button', { name: /Peli A/ })).toHaveAttribute('aria-pressed', 'false')
   pick('c', 'd', 'e')
   press('Listo (3 de 3)')

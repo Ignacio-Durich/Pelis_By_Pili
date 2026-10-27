@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { formatScore, imdbScore, metacriticScore, parseScore, ratingsDate, rtScore, tmdbScore } from './ratings'
+import { formatScore, imdbScore, metacriticScore, parseScore, ratingsDate, rtScore, scoreLine, tmdbScore } from './ratings'
 
 test('formats each score', () => {
   expect(imdbScore('8.5/10')).toBe('8.5')
@@ -9,13 +9,19 @@ test('formats each score', () => {
   expect(tmdbScore(8)).toBe('8.0')
 })
 
-test('missing or unreadable values are shown as —', () => {
+test('missing or unreadable values are null, so they are not shown', () => {
   for (const raw of ['N/A', '', null]) {
-    expect(imdbScore(raw)).toBe('—')
-    expect(rtScore(raw)).toBe('—')
-    expect(metacriticScore(raw)).toBe('—')
+    expect(imdbScore(raw)).toBeNull()
+    expect(rtScore(raw)).toBeNull()
+    expect(metacriticScore(raw)).toBeNull()
   }
-  expect(tmdbScore(null)).toBe('—')
+  expect(tmdbScore(null)).toBeNull()
+})
+
+test('scoreLine joins only the scores there are, or is null without any', () => {
+  expect(scoreLine([['IMDb', '8.5'], ['RT', '92%']])).toBe('IMDb 8.5 · RT 92%')
+  expect(scoreLine([['IMDb', '9.0'], ['RT', null]])).toBe('IMDb 9.0')
+  expect(scoreLine([['IMDb', null], ['RT', null]])).toBeNull()
 })
 
 test('ratingsDate uses the Argentine date', () => {

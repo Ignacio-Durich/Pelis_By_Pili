@@ -95,10 +95,14 @@ export function pickGenres(details: { genres?: { name: string }[] }): string[] {
   return [...new Set((details.genres ?? []).map((g) => g.name))]
 }
 
-// Dónde se puede ver sin pagar aparte: suscripción y gratis.
+// Los canales que se contratan dentro de otra plataforma ("Paramount+ Amazon Channel"): no se ofrecen
+// para elegir (ni en Ajustes ni en los filtros), como plataforma aparte no suman.
+export const isAddOnChannel = (name: string) => /\bchannel\b/i.test(name)
+
+// Dónde se puede ver sin pagar aparte: suscripción y gratis, sin los canales.
 export function streamingNames(providers: Providers | null): string[] {
   if (!providers) return []
-  return [...new Set([...providers.subscription, ...providers.free].map((p) => p.name))]
+  return [...new Set([...providers.subscription, ...providers.free].map((p) => p.name))].filter((name) => !isAddOnChannel(name))
 }
 
 // Las usa también la búsqueda (director, temporadas, duración e IMDb de los resultados).

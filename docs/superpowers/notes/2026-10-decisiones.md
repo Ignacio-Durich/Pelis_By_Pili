@@ -246,3 +246,17 @@ Pedido desde Comentarios: que "Parecidas a esta" también recomiende por directo
 - **De una serie cuenta quien la creó**, no quien dirigió episodios: muchos directores de cine dirigieron un episodio suelto y esa serie taparía sus películas.
 - **De un actor no entran las series donde estuvo en menos de 3 episodios** (un cameo en Friends saldría primera por cantidad de votos), ni sus apariciones como sí mismo, ni los programas de todas las semanas.
 - **Un título sale en una sola parte:** lo que ya está en las parecidas no se repite en la del director, y así sucesivamente.
+
+# Revisión de pantallas, bloque 1 (2026-10-27)
+
+Pedido desde Comentarios: revisar todas las pantallas buscando incongruencias. Tomás eligió arreglar primero las que más se notan.
+
+- **El título de cada pestaña es su nombre:** Lista, Descubrir, Elegir y Ajustes, del mismo tamaño. "¿Qué vemos?" se fue con el título viejo de Elegir.
+- **Lista no repite "Por ver" o "Vistas" como título:** ya lo dice el selector.
+- **La nota de origen de Descubrir es "Descubrir"** (se lee "De dónde vino: Descubrir"). Una migración cambia las ya guardadas.
+- **Top 3 secreto y Torneo piden las que se pueden elegir:** con 2 títulos, "elegí 2" (antes decía "elegí 4" con "Listo (0 de 2)"). Top 3 pasa de "elegí tus 3" a "elegí 3", igual que el Torneo.
+- **"Quitar" en todos lados:** "tocala de nuevo para quitarla" y "No se pudo quitar".
+- **Un puntaje sin dato no se muestra** (antes "RT —"). Si en la ficha no hay ninguno: "Todavía no hay puntajes".
+- **Los canales que se contratan dentro de otra plataforma ("Paramount+ Amazon Channel") no aparecen en Filtros ni en Preguntas rápidas**, como ya pasaba en Ajustes. Los títulos guardados antes los conservan hasta que se actualicen sus datos, pero no se ofrecen para elegir.
+- **"Cerrar sesión" es un botón secundario, separado de "Mandar".**
+- **Nuestras plataformas muestra las conocidas y las que ya tenían elegidas; el resto con "Ver más".** Una que desmarcan no desaparece hasta volver a abrir Ajustes.

@@ -135,7 +135,7 @@ type Discover = {
 
 **Tarjeta de recomendación.**
 - Como en Agregar: póster, título, año y tipo, duración, director, IMDb. Debajo, "Porque vieron …" o la plataforma (y "Temporada nueva" si corresponde), según la sección.
-- Tocarla la agrega a "Por ver" y muestra "✓ Agregada · tocala de nuevo para sacarla". Se agrega con una nota de origen: "De Descubrir" o "Parecida a <título>".
+- Tocarla la agrega a "Por ver" y muestra "✓ Agregada · tocala de nuevo para quitarla". Se agrega con una nota de origen: "Descubrir" o "Parecida a <título>".
 - Una serie que ya vieron con temporada nueva no se agrega: dice "Ya la vieron · salió una temporada nueva" y tocarla abre su ficha. No tiene "No me interesa".
 - Debajo, dos botones chicos: **Ver detalle** (despliega la sinopsis completa y los géneros; pasa a "Ocultar detalle") y **No me interesa** (la tarjeta pasa a "Descartada · Deshacer" hasta salir de la pantalla).
 

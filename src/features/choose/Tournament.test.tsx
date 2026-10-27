@@ -84,7 +84,8 @@ test('a duel card shows the title data', async () => {
   const card = screen.getByRole('button', { name: /Peli A/ })
   expect(card).toHaveTextContent('2000 · Película · 1 h 40')
   expect(card).toHaveTextContent('Drama')
-  expect(card).toHaveTextContent('IMDb 7.0 · RT —')
+  expect(card).toHaveTextContent('IMDb 7.0')
+  expect(card).not.toHaveTextContent('RT')
 })
 
 test('tapping a card moves on; a double tap decides one duel only', async () => {

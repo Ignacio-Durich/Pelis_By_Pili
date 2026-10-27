@@ -213,7 +213,7 @@ test('tapping a result adds it once with the note, then marks it and clears the 
   expect(api.addTitle).toHaveBeenCalledTimes(1)
   expect(api.addTitle).toHaveBeenCalledWith('c1', angelito, 'un reel')
   await act(async () => finish())
-  expect(screen.getByText('✓ Agregada · tocala de nuevo para sacarla')).toBeInTheDocument()
+  expect(screen.getByText('✓ Agregada · tocala de nuevo para quitarla')).toBeInTheDocument()
   expect(screen.getByLabelText('¿De dónde vino? (opcional)')).toHaveValue('')
 })
 
@@ -241,8 +241,8 @@ test('a failed take-out keeps it marked as added and says so', async () => {
   await typeQuery('mi pobre')
   await act(async () => fireEvent.click(screen.getByRole('button', { name: /Mi pobre angelito/ })))
   await act(async () => fireEvent.click(screen.getByRole('button', { name: /Mi pobre angelito/ })))
-  expect(screen.getByRole('alert')).toHaveTextContent('No se pudo sacar. Probá de nuevo.')
-  expect(screen.getByText('✓ Agregada · tocala de nuevo para sacarla')).toBeInTheDocument()
+  expect(screen.getByRole('alert')).toHaveTextContent('No se pudo quitar. Probá de nuevo.')
+  expect(screen.getByText('✓ Agregada · tocala de nuevo para quitarla')).toBeInTheDocument()
 })
 
 test('a result already in the list says who added it and cannot be added', async () => {
@@ -314,7 +314,7 @@ test('a failing background detail does not show an error', async () => {
   renderAdd()
   await typeQuery('mi pobre')
   await act(async () => fireEvent.click(screen.getByRole('button', { name: /Mi pobre angelito/ })))
-  expect(screen.getByText('✓ Agregada · tocala de nuevo para sacarla')).toBeInTheDocument()
+  expect(screen.getByText('✓ Agregada · tocala de nuevo para quitarla')).toBeInTheDocument()
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
 })
 

@@ -153,10 +153,10 @@ test('pickGenres returns names without repeats', () => {
   expect(pickGenres({})).toEqual([])
 })
 
-test('streamingNames keeps subscription and free platforms', () => {
+test('streamingNames keeps subscription and free platforms, without add-on channels', () => {
   const p = (name: string) => ({ name, logoPath: null })
   expect(
-    streamingNames({ link: null, subscription: [p('Netflix'), p('Prime Video')], rent: [p('Apple TV')], buy: [], free: [p('Pluto TV'), p('Netflix')] }),
+    streamingNames({ link: null, subscription: [p('Netflix'), p('Prime Video'), p('Paramount+ Amazon Channel')], rent: [p('Apple TV')], buy: [], free: [p('Pluto TV'), p('Netflix')] }),
   ).toEqual(['Netflix', 'Prime Video', 'Pluto TV'])
   expect(streamingNames(null)).toEqual([])
 })

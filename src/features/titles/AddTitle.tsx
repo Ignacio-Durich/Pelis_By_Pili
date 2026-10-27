@@ -5,9 +5,8 @@ import { useMemberName } from '../couple/coupleContext'
 import { dismissShared, originNote, type SharedItem } from '../shared/sharedApi'
 import { ClearSearch } from './ClearSearch'
 import { fetchTitleDetail } from './detailApi'
-import { imdbScore } from './ratings'
 import { searchDetails, searchTitles, type Extra, type SearchResponse, type SearchResult } from './searchApi'
-import { TitleCard } from './TitleCard'
+import { ScoreLine, TitleCard } from './TitleCard'
 import { addTitle, removeTitle, TitleError, type Title } from './titlesApi'
 import { usePendingOwner } from './useTitles'
 
@@ -17,7 +16,7 @@ type Props = { coupleId: string; titles: Title[]; onClose: () => void; shared?: 
 const addMessages: Record<'duplicate' | 'network' | 'remove', string> = {
   duplicate: 'Ya está en la lista',
   network: 'No se pudo agregar. Probá de nuevo.',
-  remove: 'No se pudo sacar. Probá de nuevo.',
+  remove: 'No se pudo quitar. Probá de nuevo.',
 }
 
 const keyOf = (t: { mediaType: string; tmdbId: number }) => `${t.mediaType}:${t.tmdbId}`
@@ -189,7 +188,7 @@ export function AddTitle({ coupleId, titles, onClose, shared }: Props) {
           const inList = existing.get(key)
           const justAdded = key in added
           const status = justAdded
-            ? '✓ Agregada · tocala de nuevo para sacarla'
+            ? '✓ Agregada · tocala de nuevo para quitarla'
             : inList
               ? `Ya está en la lista (la agregó ${nameOf(inList.addedBy)})`
               : null
@@ -206,7 +205,7 @@ export function AddTitle({ coupleId, titles, onClose, shared }: Props) {
                   seasons={extras[key]?.seasons}
                   runtime={extras[key]?.runtime}
                 >
-                  {extras[key]?.imdb && <small>{`IMDb ${imdbScore(extras[key].imdb)}`}</small>}
+                  <ScoreLine imdb={extras[key]?.imdb ?? null} rt={null} />
                   {r.overview && <small className="overview">{r.overview}</small>}
                   {status && <small>{status}</small>}
                 </TitleCard>

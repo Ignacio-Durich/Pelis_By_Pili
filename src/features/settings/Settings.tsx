@@ -68,7 +68,10 @@ export function Settings() {
       <Platforms />
       <ShareShortcut />
       <Feedback />
-      <button onClick={() => signOut()}>Cerrar sesión</button>
+      {/* Secundario y separado de "Mandar": no es la acción principal de la pantalla. */}
+      <button className="secondary sign-out" onClick={() => signOut()}>
+        Cerrar sesión
+      </button>
       <section className="attribution">
         <img src="/tmdb-logo.svg" alt="TMDB" />
         <p>This product uses the TMDB API but is not endorsed or certified by TMDB.</p>

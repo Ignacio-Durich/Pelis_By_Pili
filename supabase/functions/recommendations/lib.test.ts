@@ -115,7 +115,7 @@ test('hasNewSeason: the latest season already aired started after it was marked 
 test('toProviderOptions joins movie and tv providers once each, ordering the unknown ones by display priority', () => {
   const movie = [{ provider_id: 551, provider_name: 'Magellan TV', logo_path: '/m.png', display_priority: 2 }]
   const tv = [{ provider_id: 551, provider_name: 'Magellan TV', logo_path: '/m.png', display_priority: 2 }, { provider_id: 554, provider_name: 'BroadwayHD', logo_path: null, display_priority: 1 }]
-  expect(toProviderOptions(movie, tv)).toEqual([{ id: 554, name: 'BroadwayHD', logoPath: null }, { id: 551, name: 'Magellan TV', logoPath: '/m.png' }])
+  expect(toProviderOptions(movie, tv)).toEqual([{ id: 554, name: 'BroadwayHD', logoPath: null, known: false }, { id: 551, name: 'Magellan TV', logoPath: '/m.png', known: false }])
 })
 
 test('byVotes puts the best-known first (most votes), keeping TMDB order on ties, without the excluded and up to the limit', () => {
@@ -134,6 +134,7 @@ test('toProviderOptions puts the well-known Argentine platforms first, then the 
   const movie = [p(8, 'Netflix', 0), p(551, 'Magellan TV', 15), p(1899, 'HBO Max', 34), p(582, 'Paramount+ Amazon Channel', 44)]
   const tv = [p(2285, 'JustWatch TV', 4), p(119, 'Amazon Prime Video', 1), p(2142, 'MGM+ Apple TV Channel', 38)]
   expect(toProviderOptions(movie, tv).map((o) => o.name)).toEqual(['Netflix', 'Amazon Prime Video', 'HBO Max', 'JustWatch TV', 'Magellan TV'])
+  expect(toProviderOptions(movie, tv).map((o) => o.known)).toEqual([true, true, true, false, false])
 })
 
 test('pickPeople takes the director (or the series creator) and the two lead actors, without repeating the director', () => {

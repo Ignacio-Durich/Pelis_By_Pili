@@ -26,14 +26,17 @@ export function Home() {
       <main className="screen">
         {tab === 'lista' ? (
           <>
-            <h1>Pelis By Pili</h1>
+            <h1>Lista</h1>
             {memberCount === 1 && <p>Esperando a tu pareja</p>}
             <TitleList key={listKey} filters={filters} onFiltersChange={setFilters} />
           </>
         ) : tab === 'descubrir' ? (
           <Discover />
         ) : tab === 'elegir' ? (
-          <ChooseMenu filters={filters} onFiltersChange={setFilters} />
+          <>
+            <h1>Elegir</h1>
+            <ChooseMenu filters={filters} onFiltersChange={setFilters} />
+          </>
         ) : (
           <Settings />
         )}

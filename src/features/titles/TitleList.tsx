@@ -7,10 +7,10 @@ import { AddTitle } from './AddTitle'
 import { ClearSearch } from './ClearSearch'
 import { filterOptions, matchesFilters, matchesQuery, NO_FILTERS, type Filters } from './filters'
 import { FiltersPanel } from './FiltersPanel'
-import { formatScore, imdbScore, ratingsDate, rtScore } from './ratings'
+import { formatScore, ratingsDate } from './ratings'
 import { TitleDetail } from './TitleDetail'
 import { droppedMessage, useTitles } from './useTitles'
-import { TitleCard } from './TitleCard'
+import { ScoreLine, TitleCard } from './TitleCard'
 import { removeTitle, type Title } from './titlesApi'
 
 export function TitleList({ filters, onFiltersChange }: { filters: Filters; onFiltersChange: (f: Filters) => void }) {
@@ -113,7 +113,6 @@ export function TitleList({ filters, onFiltersChange }: { filters: Filters; onFi
           Vistas
         </button>
       </div>
-      <h2>{tab === 'to_watch' ? 'Por ver' : 'Vistas'}</h2>
       {offline && titles ? (
         // Sin red, con la última lista guardada: se puede seguir y lo hecho se manda después.
         <p className="offline-note">
@@ -186,7 +185,7 @@ export function TitleList({ filters, onFiltersChange }: { filters: Filters; onFi
                 seasons={t.seasons}
                 runtime={tab === 'to_watch' ? t.runtime : null}
               >
-                <small>{`IMDb ${imdbScore(t.imdbRating)} · RT ${rtScore(t.rottenTomatoes)}`}</small>
+                <ScoreLine imdb={t.imdbRating} rt={t.rottenTomatoes} />
                 {t.pending && <small>⏳ Se guarda cuando vuelva la conexión</small>}
                 {t.status === 'watched' && t.watchedAt ? (
                   <>

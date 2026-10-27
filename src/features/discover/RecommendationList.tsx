@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import { fetchTitleDetail } from '../titles/detailApi'
-import { imdbScore } from '../titles/ratings'
 import { searchDetails, type Extra } from '../titles/searchApi'
-import { TitleCard } from '../titles/TitleCard'
+import { ScoreLine, TitleCard } from '../titles/TitleCard'
 import { addTitle, removeTitle, TitleError, type Title } from '../titles/titlesApi'
 import { dismissTitle, recKey, undismissTitle, type Recommendation } from './discoverApi'
 
@@ -10,16 +9,16 @@ type Props = {
   coupleId: string
   items: Recommendation[]
   titles: Title[] // la lista: lo que ya está no se ofrece para agregar
-  originNote: (r: Recommendation) => string // "De Descubrir" o "Parecida a <título>"
+  originNote: (r: Recommendation) => string // "Descubrir", "Parecida a <título>", "Más de <director>" o "Con <actor>"
   hidden: Set<string> // claves descartadas o agregadas en otra sección
-  onHide: (key: string, hide: boolean) => void // avisa al padre para sacarla de las otras secciones
+  onHide: (key: string, hide: boolean) => void // avisa al padre para quitarla de las otras secciones
   onOpenWatched?: (titleId: string) => void
 }
 
 const messages = {
   duplicate: 'Ya está en la lista',
   network: 'No se pudo agregar. Probá de nuevo.',
-  remove: 'No se pudo sacar. Probá de nuevo.',
+  remove: 'No se pudo quitar. Probá de nuevo.',
   dismiss: 'No se pudo descartar. Probá de nuevo.',
   undismiss: 'No se pudo deshacer. Probá de nuevo.',
 }
@@ -133,7 +132,7 @@ export function RecommendationList({ coupleId, items, titles, originNote, hidden
           const status = watchedSeries
             ? 'Ya la vieron · salió una temporada nueva'
             : justAdded
-              ? '✓ Agregada · tocala de nuevo para sacarla'
+              ? '✓ Agregada · tocala de nuevo para quitarla'
               : null
           const extra = extras[key]
           const detailOpen = open.has(key)
@@ -154,7 +153,7 @@ export function RecommendationList({ coupleId, items, titles, originNote, hidden
                   seasons={extra?.seasons}
                   runtime={extra?.runtime}
                 >
-                  {extra?.imdb && <small>{`IMDb ${imdbScore(extra.imdb)}`}</small>}
+                  <ScoreLine imdb={extra?.imdb ?? null} rt={null} />
                   {r.newSeason && !watchedSeries && <small>Temporada nueva</small>}
                   {r.because && r.because.length > 0 && <small>{`Porque vieron ${joinNames(r.because)}`}</small>}
                   {r.platforms && r.platforms.length > 0 && <small>{`En ${r.platforms.join(' · ')}`}</small>}

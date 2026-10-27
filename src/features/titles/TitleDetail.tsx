@@ -61,6 +61,14 @@ export function TitleDetail({
     tmdb: title.tmdbRating,
     updatedAt: title.ratingsUpdatedAt,
   }
+  // Solo los que hay: un puntaje sin dato no se muestra.
+  const scores: [string, string | null][] = [
+    ['IMDb', imdbScore(ratings.imdb)],
+    ['Rotten Tomatoes', rtScore(ratings.rottenTomatoes)],
+    ['Metacritic', metacriticScore(ratings.metacritic)],
+    ['TMDB', tmdbScore(ratings.tmdb)],
+  ]
+  const shownScores = scores.filter(([, value]) => value !== null)
   const people = peopleLine(title.mediaType, title.director)
   const showOriginal = title.originalTitle && title.originalTitle.toLowerCase() !== title.title.toLowerCase()
 
@@ -192,12 +200,15 @@ export function TitleDetail({
       )}
 
       <h3>Puntajes</h3>
-      <ul className="scores">
-        <li>{`IMDb ${imdbScore(ratings.imdb)}`}</li>
-        <li>{`Rotten Tomatoes ${rtScore(ratings.rottenTomatoes)}`}</li>
-        <li>{`Metacritic ${metacriticScore(ratings.metacritic)}`}</li>
-        <li>{`TMDB ${tmdbScore(ratings.tmdb)}`}</li>
-      </ul>
+      {shownScores.length ? (
+        <ul className="scores">
+          {shownScores.map(([label, value]) => (
+            <li key={label}>{`${label} ${value}`}</li>
+          ))}
+        </ul>
+      ) : (
+        <p>Todavía no hay puntajes</p>
+      )}
       {ratings.updatedAt && <small>{`Actualizados el ${ratingsDate(ratings.updatedAt)}`}</small>}
       {detail?.ratingsStale && <p>Hoy no se pudieron actualizar los puntajes</p>}
 

@@ -22,7 +22,6 @@ export function ChooseMenu({ filters, onFiltersChange }: Props) {
 
   return (
     <section className="choose-menu">
-      <h2>¿Qué vemos?</h2>
       <button onClick={() => setMode('bumble')}>
         Bumble
         <small>Deslicen y gana la que les guste a los dos</small>

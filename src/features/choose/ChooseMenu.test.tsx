@@ -38,7 +38,6 @@ function renderMenu() {
 
 test('shows the three modes with their help texts, Bumble first', () => {
   renderMenu()
-  expect(screen.getByRole('heading', { name: '¿Qué vemos?' })).toBeInTheDocument()
   const modes = screen.getAllByRole('button')
   expect(modes[0]).toHaveTextContent('Bumble')
   expect(modes[0]).toHaveTextContent('Deslicen y gana la que les guste a los dos')
@@ -64,7 +63,6 @@ test('each mode opens and Volver a los modos returns to the menu', async () => {
   fireEvent.click(screen.getByRole('button', { name: /Preguntas rápidas/ }))
   expect(await screen.findByRole('heading', { name: 'Preguntas rápidas' })).toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: 'Volver a los modos' }))
-  expect(screen.getByRole('heading', { name: '¿Qué vemos?' })).toBeInTheDocument()
 })
 
 test('with a detail open there is only the detail Volver, and the answers stay', async () => {

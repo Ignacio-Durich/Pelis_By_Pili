@@ -14,9 +14,11 @@ import { withCouple } from '../../test/providers'
 import { Platforms } from './Platforms'
 
 const providers = [
-  { id: 8, name: 'Netflix', logoPath: '/netflix.jpg' },
-  { id: 337, name: 'Disney Plus', logoPath: '/disney.jpg' },
-  { id: 119, name: 'Amazon Prime Video', logoPath: null },
+  { id: 8, name: 'Netflix', logoPath: '/netflix.jpg', known: true },
+  { id: 337, name: 'Disney Plus', logoPath: '/disney.jpg', known: true },
+  { id: 119, name: 'Amazon Prime Video', logoPath: null, known: true },
+  { id: 551, name: 'Magellan TV', logoPath: null, known: false },
+  { id: 554, name: 'BroadwayHD', logoPath: null, known: false },
 ]
 
 beforeEach(() => {
@@ -85,4 +87,22 @@ test('if the chosen ones do not load it says so', async () => {
   api.fetchPlatforms.mockRejectedValue(new Error('network'))
   renderPlatforms()
   expect(await screen.findByText('No se pudieron cargar las plataformas')).toBeInTheDocument()
+})
+
+test('shows the well-known ones and the chosen ones; Ver más shows the rest', async () => {
+  api.fetchPlatforms.mockResolvedValue([8, 554])
+  renderPlatforms()
+  expect(await screen.findByRole('button', { name: 'Netflix' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'BroadwayHD' })).toHaveAttribute('aria-pressed', 'true')
+  expect(screen.queryByRole('button', { name: 'Magellan TV' })).not.toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: 'Ver más' }))
+  expect(screen.getByRole('button', { name: 'Magellan TV' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Ver más' })).not.toBeInTheDocument()
+})
+
+test('unmarking a less-known one keeps it in view', async () => {
+  api.fetchPlatforms.mockResolvedValue([554])
+  renderPlatforms()
+  fireEvent.click(await screen.findByRole('button', { name: 'BroadwayHD' }))
+  expect(screen.getByRole('button', { name: 'BroadwayHD' })).toHaveAttribute('aria-pressed', 'false')
 })

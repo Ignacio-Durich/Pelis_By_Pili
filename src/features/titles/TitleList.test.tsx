@@ -97,7 +97,9 @@ test('shows Cargando… and then the empty list', async () => {
   first.unmount()
   renderList()
   expect(await screen.findByText('Nuestra lista está vacía')).toBeInTheDocument()
-  expect(screen.getByRole('heading', { name: 'Por ver' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Por ver' })).toHaveAttribute('aria-pressed', 'true')
+  // El selector ya dice en qué parte están: no se repite como título.
+  expect(screen.queryByRole('heading', { name: 'Por ver' })).not.toBeInTheDocument()
 })
 
 test('shows each title with who added it, the note and the original name', async () => {
@@ -197,14 +199,15 @@ test('the + button opens Agregar', async () => {
   fireEvent.click(await screen.findByRole('button', { name: 'Agregar' }))
   expect(screen.getByRole('heading', { name: 'Agregar' })).toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: 'Volver' }))
-  expect(screen.getByRole('heading', { name: 'Por ver' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Por ver' })).toHaveAttribute('aria-pressed', 'true')
 })
 
-test('each card shows the IMDb and Rotten Tomatoes scores, or — when missing', async () => {
+test('each card shows the IMDb and Rotten Tomatoes scores it has, and nothing for the missing ones', async () => {
   api.listTitles.mockResolvedValue([angelito, sinDatos])
   renderList()
   expect(await screen.findByText('IMDb 7.7 · RT 67%')).toBeInTheDocument()
-  expect(screen.getByText('IMDb — · RT —')).toBeInTheDocument()
+  expect(screen.queryByText(/IMDb —|RT —/)).not.toBeInTheDocument()
+  expect(screen.getAllByText(/^IMDb /)).toHaveLength(1)
 })
 
 test('tapping a card opens its detail and Volver returns', async () => {
@@ -214,7 +217,7 @@ test('tapping a card opens its detail and Volver returns', async () => {
   expect(screen.getByRole('heading', { name: 'Mi pobre angelito' })).toBeInTheDocument()
   expect(screen.getByText('Cargando el detalle…')).toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: 'Volver' }))
-  expect(screen.getByRole('heading', { name: 'Por ver' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Por ver' })).toHaveAttribute('aria-pressed', 'true')
 })
 
 test('the detail opens at the top and Volver returns to the same place in the list', async () => {
@@ -258,7 +261,7 @@ test('Por ver and Vistas tabs split the list, newest watched first', async () =>
   expect(screen.getByRole('button', { name: 'Agregar' })).toBeInTheDocument()
 
   fireEvent.click(screen.getByRole('button', { name: 'Vistas' }))
-  expect(screen.getByRole('heading', { name: 'Vistas' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Vistas' })).toHaveAttribute('aria-pressed', 'true')
   expect(screen.queryByText('Mi pobre angelito')).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Agregar' })).not.toBeInTheDocument()
   const names = [...document.querySelectorAll('.title-list strong')].map((n) => n.textContent)
