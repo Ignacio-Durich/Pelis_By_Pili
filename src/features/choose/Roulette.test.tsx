@@ -56,6 +56,7 @@ const resultName = () => screen.getByTestId('roulette-result').querySelector('st
 test('shows how many titles match and lets you spin', async () => {
   renderRoulette()
   expect(screen.getByRole('heading', { name: 'Ruleta' })).toBeInTheDocument()
+  expect(screen.getByText('Gira entre los títulos que cumplen los filtros.')).toBeInTheDocument()
   expect(await screen.findByText('Hay 3 títulos que cumplen los filtros')).toBeInTheDocument()
   expect(screen.getByRole('button', { name: /^Filtros/ })).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Girar' })).toBeEnabled()
@@ -143,10 +144,10 @@ test('Ver detalle opens the detail and Volver comes back to the same result', as
   spin()
   fireEvent.click(screen.getByRole('button', { name: 'Ver detalle' }))
   expect(screen.getByRole('heading', { name: 'Primera' })).toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Volver a los modos' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Volver a Elegir' })).not.toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: 'Volver' }))
   expect(resultName()).toBe('Primera')
-  expect(screen.getByRole('button', { name: 'Volver a los modos' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Volver a Elegir' })).toBeInTheDocument()
 })
 
 test('the wheel is there from the start with the candidates', async () => {

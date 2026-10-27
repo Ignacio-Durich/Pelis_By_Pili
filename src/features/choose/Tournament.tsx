@@ -57,7 +57,7 @@ export function Tournament({ filters, onFiltersChange, onBack, random = Math.ran
     return (
       <section className="tournament-mode">
         <button className="back" onClick={onBack}>
-          Volver a los modos
+          Volver a Elegir
         </button>
         <h2>Torneo</h2>
         {offline && titles === null && (

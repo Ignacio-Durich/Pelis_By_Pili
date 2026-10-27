@@ -85,7 +85,7 @@ export function Bumble({ filters, onFiltersChange, onBack, random = Math.random 
       {!inGame && (
         <>
           <button className="back" onClick={onBack}>
-            Volver a los modos
+            Volver a Elegir
           </button>
           <h2>Bumble</h2>
         </>

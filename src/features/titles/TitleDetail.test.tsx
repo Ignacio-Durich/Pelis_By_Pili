@@ -297,3 +297,9 @@ test('a watched title shows Parecidas a esta, a to-watch one does not ask for it
   expect(screen.getByRole('heading', { name: 'Parecidas a esta' })).toBeInTheDocument()
   await waitFor(() => expect(api.fetchSimilar).toHaveBeenCalledWith('t1'))
 })
+
+test('the detail shows the runtime like the card does', () => {
+  api.fetchTitleDetail.mockReturnValue(new Promise(() => {}))
+  renderDetail({ ...parasitos, runtime: 132 })
+  expect(screen.getByText('2019 · Película · 2 h 12')).toBeInTheDocument()
+})

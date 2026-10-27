@@ -77,7 +77,7 @@ export function Reveal({ filters, onFiltersChange, onBack }: Props) {
       {!inGame && (
         <>
           <button className="back" onClick={onBack}>
-            Volver a los modos
+            Volver a Elegir
           </button>
           <h2>Top 3 secreto</h2>
         </>

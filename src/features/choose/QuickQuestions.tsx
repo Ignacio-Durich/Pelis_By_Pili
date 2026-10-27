@@ -37,9 +37,10 @@ export function QuickQuestions({ onBack }: { onBack: () => void }) {
       {/* Oculta (no desmontada) mientras se ve un detalle: se conservan las respuestas. */}
       <section className="quick" hidden={!!detail}>
         <button className="back" onClick={onBack}>
-          Volver a los modos
+          Volver a Elegir
         </button>
         <h2>Preguntas rápidas</h2>
+        <p>Respondan tres preguntas y les sugerimos 5.</p>
         <span aria-hidden="true">¿Cuánto tiempo tienen?</span>
         <div className="chips" role="group" aria-label="¿Cuánto tiempo tienen?">
           {TIME_OPTIONS.map((o) => (
@@ -90,7 +91,7 @@ export function QuickQuestions({ onBack }: { onBack: () => void }) {
                   <TitleCard title={t.title} originalTitle={t.originalTitle} year={t.year} mediaType={t.mediaType} posterPath={t.posterPath}>
                     <ScoreLine imdb={t.imdbRating} rt={t.rottenTomatoes} />
                   </TitleCard>
-                  <button className="secondary" aria-label={`Ver detalle de ${t.title}`} onClick={() => openDetail(t.id)}>
+                  <button className="small" aria-label={`Ver detalle de ${t.title}`} onClick={() => openDetail(t.id)}>
                     Ver detalle
                   </button>
                 </li>

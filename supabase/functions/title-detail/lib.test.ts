@@ -148,8 +148,10 @@ test('pickRuntime uses the movie runtime or an episode length', () => {
   expect(pickRuntime({})).toBeNull()
 })
 
-test('pickGenres returns names without repeats', () => {
-  expect(pickGenres({ genres: [{ name: 'Drama' }, { name: 'Crimen' }, { name: 'Drama' }] })).toEqual(['Drama', 'Crimen'])
+test('pickGenres returns names without repeats, with the same Spanish names as Descubrir', () => {
+  expect(pickGenres({ genres: [{ id: 18, name: 'Drama' }, { id: 80, name: 'Crimen' }, { id: 18, name: 'Drama' }] })).toEqual(['Drama', 'Crimen'])
+  // TMDB da "Suspense" y los de series en inglés.
+  expect(pickGenres({ genres: [{ id: 53, name: 'Suspense' }, { id: 10765, name: 'Sci-Fi & Fantasy' }, { id: 99999, name: 'Nuevo' }] })).toEqual(['Suspenso', 'Ciencia ficción y fantasía', 'Nuevo'])
   expect(pickGenres({})).toEqual([])
 })
 
