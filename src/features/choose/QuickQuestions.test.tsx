@@ -55,7 +55,7 @@ test('shows the three questions with Sin apuro and Cualquiera chosen', async () 
 test('without answers it suggests up to 5 by score', async () => {
   await renderQuick()
   expect(suggested()).toEqual(['Comedia buena', 'Un drama', 'Documental', 'De terror'])
-  expect(screen.getAllByText(/^IMDb /)[0]).toHaveTextContent('IMDb 9.0 · RT —')
+  expect(screen.getAllByText(/^IMDb /)[0]).toHaveTextContent(/^IMDb 9\.0$/)
 })
 
 test('choosing a genre reorders, and genres toggle', async () => {

@@ -1,3 +1,4 @@
+import { isAddOnChannel } from '../../../supabase/functions/title-detail/lib.ts'
 import type { Title } from './titlesApi'
 
 export type Filters = {
@@ -70,7 +71,7 @@ export function matchesQuery(t: Pick<Title, 'title' | 'originalTitle' | 'directo
 }
 
 export function filterOptions(titles: Title[]): { genres: string[]; platforms: string[] } {
-  return { genres: sorted(titles.flatMap((t) => t.genres)), platforms: sorted(titles.flatMap((t) => t.streaming)) }
+  return { genres: sorted(titles.flatMap((t) => t.genres)), platforms: sorted(titles.flatMap((t) => t.streaming).filter((name) => !isAddOnChannel(name))) }
 }
 
 // "30 min", "1 h", "1 h 30"

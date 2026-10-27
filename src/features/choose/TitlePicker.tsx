@@ -3,7 +3,8 @@ import { TitleCard } from '../titles/TitleCard'
 import type { Title } from '../titles/titlesApi'
 
 type Props = {
-  heading: string
+  // De quién es el turno, cuando se pasan un solo celular.
+  turnOf?: string
   titles: Title[]
   matching: Title[]
   initial: string[]
@@ -16,7 +17,7 @@ type Props = {
 
 // Marcar títulos de "Por ver" (con los filtros); "Listo" queda a la vista aunque la lista scrollee.
 // Lo usan Top 3 secreto y el Torneo.
-export function TitlePicker({ heading, titles, matching, initial, need, locked, onDone }: Props) {
+export function TitlePicker({ turnOf, titles, matching, initial, need, locked, onDone }: Props) {
   const [chosen, setChosen] = useState<string[]>(initial)
   // Lo ya elegido sigue a la vista aunque los filtros hayan cambiado.
   // (Salvo que ya se haya visto: eso no se puede elegir.)
@@ -37,7 +38,8 @@ export function TitlePicker({ heading, titles, matching, initial, need, locked, 
 
   return (
     <>
-      <h3>{heading}</h3>
+      {/* Pide las que de verdad se pueden elegir: con 2 títulos, "elegí 2" y no "elegí 4". */}
+      <h3>{turnOf ? `Turno de ${turnOf}: elegí ${target}` : `Elegí ${target}`}</h3>
       <ul className="title-list reveal-options">
         {options.map((t) => (
           <li key={t.id}>

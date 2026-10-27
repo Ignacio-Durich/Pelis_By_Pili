@@ -91,7 +91,7 @@ test('shows what is saved right away, while the detail loads', () => {
   expect(screen.getByText('La agregó Juli')).toBeInTheDocument()
   expect(screen.getByText('De dónde vino: un reel')).toBeInTheDocument()
   expect(screen.getByText('IMDb 8.5')).toBeInTheDocument()
-  expect(screen.getByText('Metacritic —')).toBeInTheDocument()
+  expect(screen.queryByText(/^Metacritic/)).not.toBeInTheDocument()
   expect(screen.getByText('Actualizados el 30/9/2026')).toBeInTheDocument()
   expect(screen.getByText('Cargando el detalle…')).toBeInTheDocument()
   expect(document.querySelector('img.poster-large')?.getAttribute('src')).toBe('https://image.tmdb.org/t/p/w342/p.jpg')

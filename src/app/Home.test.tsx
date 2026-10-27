@@ -22,8 +22,8 @@ function renderHome(memberCount: number) {
 
 test('the Lista tab shows the title list', async () => {
   renderHome(2)
-  expect(screen.getByRole('heading', { name: 'Pelis By Pili' })).toBeInTheDocument()
-  expect(await screen.findByRole('heading', { name: 'Por ver' })).toBeInTheDocument()
+  expect(screen.getByRole('heading', { name: 'Lista' })).toBeInTheDocument()
+  expect(await screen.findByRole('button', { name: 'Por ver' })).toHaveAttribute('aria-pressed', 'true')
   expect(screen.queryByText('Esperando a tu pareja')).not.toBeInTheDocument()
 })
 
@@ -36,9 +36,9 @@ test('the Ajustes tab shows Settings', async () => {
   renderHome(2)
   fireEvent.click(screen.getByRole('button', { name: 'Ajustes' }))
   expect(screen.getByRole('button', { name: 'Cerrar sesión' })).toBeInTheDocument()
-  expect(screen.queryByRole('heading', { name: 'Por ver' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('heading', { name: 'Lista' })).not.toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: 'Lista' }))
-  expect(await screen.findByRole('heading', { name: 'Por ver' })).toBeInTheDocument()
+  expect(await screen.findByRole('button', { name: 'Por ver' })).toHaveAttribute('aria-pressed', 'true')
 })
 
 test('the tab bar has Lista, Descubrir, Elegir and Ajustes in that order', () => {
@@ -53,7 +53,7 @@ test('the bottom bar has Lista, Elegir and Ajustes, and filters are shared', asy
   fireEvent.click(await screen.findByRole('button', { name: 'Filtros' }))
   fireEvent.click(screen.getByRole('button', { name: 'Series' }))
   fireEvent.click(screen.getByRole('button', { name: 'Elegir' }))
-  expect(screen.getByRole('heading', { name: '¿Qué vemos?' })).toBeInTheDocument()
+  expect(screen.getByRole('heading', { name: 'Elegir' })).toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: /Ruleta/ }))
   expect(await screen.findByRole('heading', { name: 'Ruleta' })).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Filtros (1)' })).toBeInTheDocument()
@@ -65,5 +65,5 @@ test('tapping Lista while inside Agregar or a detail goes back to the list', asy
   expect(screen.getByRole('heading', { name: 'Agregar' })).toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: 'Lista' }))
   expect(screen.queryByRole('heading', { name: 'Agregar' })).not.toBeInTheDocument()
-  expect(await screen.findByRole('heading', { name: 'Por ver' })).toBeInTheDocument()
+  expect(await screen.findByRole('button', { name: 'Por ver' })).toHaveAttribute('aria-pressed', 'true')
 })

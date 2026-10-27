@@ -34,6 +34,6 @@ import { App } from './App'
 
 test('with a session and a couple shows the home', async () => {
   render(<App />)
-  expect(await screen.findByRole('heading', { name: 'Pelis By Pili' })).toBeInTheDocument()
-  expect(await screen.findByRole('heading', { name: 'Por ver' })).toBeInTheDocument()
+  expect(await screen.findByRole('heading', { name: 'Lista' })).toBeInTheDocument()
+  expect(await screen.findByRole('button', { name: 'Por ver' })).toHaveAttribute('aria-pressed', 'true')
 })

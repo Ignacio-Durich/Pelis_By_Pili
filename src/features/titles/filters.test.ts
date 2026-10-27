@@ -78,8 +78,9 @@ test('activeCount counts each active filter once', () => {
   expect(activeCount(f({ runtime: [30, 240], imdb: [1, 9] }))).toBe(2)
 })
 
-test('filterOptions lists genres and platforms without repeats, alphabetically', () => {
-  expect(filterOptions([parasitos, dark, bare])).toEqual({
+test('filterOptions lists genres and platforms without repeats, alphabetically, without add-on channels', () => {
+  const channel = makeTitle({ streaming: ['Paramount+ Amazon Channel', 'Netflix'] })
+  expect(filterOptions([parasitos, dark, bare, channel])).toEqual({
     genres: ['Ciencia ficción', 'Comedia', 'Drama'],
     platforms: ['Netflix', 'Prime Video'],
   })

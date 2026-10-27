@@ -1,8 +1,7 @@
 import { useRef, useState } from 'react'
 import { useCouple } from '../couple/coupleContext'
 import { filterOptions, withChosen } from '../titles/filters'
-import { imdbScore, rtScore } from '../titles/ratings'
-import { TitleCard } from '../titles/TitleCard'
+import { ScoreLine, TitleCard } from '../titles/TitleCard'
 import { TitleDetail } from '../titles/TitleDetail'
 import { useTitles } from '../titles/useTitles'
 import { NO_ANSWERS, quickPick, TIME_OPTIONS, type Answers } from './quickPick'
@@ -89,7 +88,7 @@ export function QuickQuestions({ onBack }: { onBack: () => void }) {
               {picks.map((t) => (
                 <li key={t.id} data-testid="suggestion">
                   <TitleCard title={t.title} originalTitle={t.originalTitle} year={t.year} mediaType={t.mediaType} posterPath={t.posterPath}>
-                    <small>{`IMDb ${imdbScore(t.imdbRating)} · RT ${rtScore(t.rottenTomatoes)}`}</small>
+                    <ScoreLine imdb={t.imdbRating} rt={t.rottenTomatoes} />
                   </TitleCard>
                   <button className="secondary" aria-label={`Ver detalle de ${t.title}`} onClick={() => openDetail(t.id)}>
                     Ver detalle

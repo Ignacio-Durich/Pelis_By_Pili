@@ -6,7 +6,7 @@ import { useTitles } from '../titles/useTitles'
 import { discoverKey, fetchDiscover, type Discover as DiscoverData, type Recommendation } from './discoverApi'
 import { RecommendationList } from './RecommendationList'
 
-const originNote = () => 'De Descubrir'
+const originNote = () => 'Descubrir'
 
 export function Discover() {
   const { coupleId } = useCouple()

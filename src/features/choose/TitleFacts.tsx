@@ -1,5 +1,5 @@
 import { formatMinutes } from '../titles/filters'
-import { imdbScore, rtScore } from '../titles/ratings'
+import { ScoreLine } from '../titles/TitleCard'
 import { kindLine } from '../titles/titleText'
 import type { Title } from '../titles/titlesApi'
 
@@ -12,7 +12,7 @@ export function TitleFacts({ title }: { title: Title }) {
       <strong>{title.title}</strong>
       <span>{facts}</span>
       {title.genres.length > 0 && <span>{title.genres.slice(0, 3).join(' · ')}</span>}
-      <span>{`IMDb ${imdbScore(title.imdbRating)} · RT ${rtScore(title.rottenTomatoes)}`}</span>
+      <ScoreLine imdb={title.imdbRating} rt={title.rottenTomatoes} as="span" />
       <span>{title.streaming.length ? title.streaming.join(', ') : 'Sin información de dónde verla'}</span>
     </>
   )

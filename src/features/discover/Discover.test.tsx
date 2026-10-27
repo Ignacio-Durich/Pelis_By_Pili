@@ -10,11 +10,13 @@ const api = vi.hoisted(() => ({
   dismissTitle: vi.fn(),
   undismissTitle: vi.fn(),
   fetchSimilar: vi.fn(),
+  addTitle: vi.fn(),
 }))
 vi.mock('../titles/titlesApi', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../titles/titlesApi')>()),
   listTitles: api.listTitles,
   subscribeTitles: api.subscribeTitles,
+  addTitle: api.addTitle,
 }))
 vi.mock('../titles/detailApi', () => ({ fetchTitleDetail: api.fetchTitleDetail }))
 vi.mock('../titles/searchApi', () => ({ searchDetails: api.searchDetails }))
@@ -200,4 +202,11 @@ test('a watched series with a new season opens its detail inside Descubrir', asy
   fireEvent.click(screen.getByRole('button', { name: 'Volver' }))
   expect(screen.getByRole('heading', { name: 'Descubrir' })).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Novedades' })).toHaveAttribute('aria-pressed', 'true')
+})
+
+test('adding from Descubrir notes Descubrir as where it came from', async () => {
+  api.addTitle.mockResolvedValue('new1')
+  renderDiscover()
+  fireEvent.click(await screen.findByRole('button', { name: /Relatos salvajes/ }))
+  await waitFor(() => expect(api.addTitle).toHaveBeenCalledWith('c1', relatos, 'Descubrir'))
 })

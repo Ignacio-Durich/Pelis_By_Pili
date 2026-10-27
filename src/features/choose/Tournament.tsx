@@ -113,7 +113,7 @@ export function Tournament({ filters, onFiltersChange, onBack, random = Math.ran
   if (!first) {
     content = (
       <TitlePicker
-        heading={`Turno de ${name(0)}: elegí 4`}
+        turnOf={name(0)}
         titles={all}
         matching={matching}
         initial={[]}
@@ -131,7 +131,7 @@ export function Tournament({ filters, onFiltersChange, onBack, random = Math.ran
   } else if (!second || !game.slots) {
     content = (
       <TitlePicker
-        heading={`Turno de ${name(1)}: elegí 4`}
+        turnOf={name(1)}
         titles={all}
         matching={matching}
         initial={[]}

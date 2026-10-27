@@ -142,7 +142,7 @@ function TwoPhones({ session, me, partner, titles, matching, reload, onBack }: G
       {!mine || editing ? (
         <>
           {session.ready.includes(partner) && <p className="reveal-ready">{`${nameOf(partner)} ya eligió`}</p>}
-          <TitlePicker need={PICKS} heading="Elegí tus 3" titles={titles} matching={matching} initial={mine ?? []} onDone={send} />
+          <TitlePicker need={PICKS} titles={titles} matching={matching} initial={mine ?? []} onDone={send} />
         </>
       ) : (
         <>
@@ -174,7 +174,7 @@ function OnePhone({ game, titles, matching, onChange, onBack }: GameProps & { ga
 
   let content
   if (!first) {
-    content = <TitlePicker need={PICKS} heading={`Turno de ${name(0)}: elegí tus 3`} titles={titles} matching={matching} initial={[]} onDone={(ids) => onChange({ ...game, picks: [ids, null] })} />
+    content = <TitlePicker need={PICKS} turnOf={name(0)} titles={titles} matching={matching} initial={[]} onDone={(ids) => onChange({ ...game, picks: [ids, null] })} />
   } else if (game.active === 0) {
     // El primero ya eligió: se pasa el celular sin mostrar lo que eligió.
     content = (
@@ -184,7 +184,7 @@ function OnePhone({ game, titles, matching, onChange, onBack }: GameProps & { ga
       </>
     )
   } else if (!second) {
-    content = <TitlePicker need={PICKS} heading={`Turno de ${name(1)}: elegí tus 3`} titles={titles} matching={matching} initial={[]} onDone={(ids) => onChange({ ...game, picks: [first, ids] })} />
+    content = <TitlePicker need={PICKS} turnOf={name(1)} titles={titles} matching={matching} initial={[]} onDone={(ids) => onChange({ ...game, picks: [first, ids] })} />
   } else {
     content = (
       <>

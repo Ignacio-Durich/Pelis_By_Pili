@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { formatMinutes } from './filters'
+import { imdbScore, rtScore, scoreLine } from './ratings'
 import { kindLine, peopleLine } from './titleText'
 
 type Props = {
@@ -33,4 +34,10 @@ export function TitleCard({ title, originalTitle, year, mediaType, posterPath, d
       </div>
     </div>
   )
+}
+
+// IMDb y Rotten Tomatoes de un título, sin los que faltan; sin ninguno, nada.
+export function ScoreLine({ imdb, rt, as: Tag = 'small' }: { imdb: string | null; rt: string | null; as?: 'small' | 'span' }) {
+  const line = scoreLine([['IMDb', imdbScore(imdb)], ['RT', rtScore(rt)]])
+  return line && <Tag>{line}</Tag>
 }

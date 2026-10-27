@@ -1,6 +1,6 @@
 // Lógica pura de las recomendaciones (sin APIs de Deno), para poder testearla con Vitest.
 import { toSearchResult, type SearchResult } from '../tmdb-search/lib.ts'
-import { parseTitleId } from '../title-detail/lib.ts'
+import { isAddOnChannel, parseTitleId } from '../title-detail/lib.ts'
 
 export type TmdbItem = {
   id: number
@@ -33,7 +33,7 @@ export type Discover = {
   onPlatforms: Recommendation[] | null
   platformNames: string[] // las elegidas, para mostrar bajo el subtítulo
 }
-export type ProviderOption = { id: number; name: string; logoPath: string | null }
+export type ProviderOption = { id: number; name: string; logoPath: string | null; known: boolean }
 export type RecRequest = { kind: 'discover' } | { kind: 'similar'; titleId: string } | { kind: 'providers' }
 export type Seed = { key: string; title: string; weight: number } // key = `${mediaType}:${tmdbId}`
 
@@ -245,8 +245,8 @@ const rank = (id: number) => (KNOWN_PROVIDERS.includes(id) ? KNOWN_PROVIDERS.ind
 export function toProviderOptions(movie: unknown[], tv: unknown[]): ProviderOption[] {
   const unique = new Map(([...movie, ...tv] as TmdbProvider[]).map((p) => [p.provider_id, p]))
   return [...unique.values()]
-    .filter((p) => !/\bchannel\b/i.test(p.provider_name))
+    .filter((p) => !isAddOnChannel(p.provider_name))
     .sort((a, b) => rank(a.provider_id) - rank(b.provider_id) || (a.display_priority ?? 999) - (b.display_priority ?? 999))
     .slice(0, 30)
-    .map((p) => ({ id: p.provider_id, name: p.provider_name.trim(), logoPath: p.logo_path ?? null }))
+    .map((p) => ({ id: p.provider_id, name: p.provider_name.trim(), logoPath: p.logo_path ?? null, known: KNOWN_PROVIDERS.includes(p.provider_id) }))
 }
