@@ -884,10 +884,11 @@ button.chip[aria-pressed='true'] {
   color: var(--accent);
 }
 
-/* Torneo: el duelo entra en una pantalla de iPhone 13/15. 250 px son la fila de arriba, la ronda,
-   el "vs", "Deshacer", los espacios y la barra de pestañas; las dos cartas se reparten el resto. */
+/* Torneo: el duelo entra en una pantalla de iPhone 13/15. 350 px son el título "Elegir", la fila de
+   arriba, la ronda, el "vs", "Que decida la suerte" y "Deshacer", los espacios y la barra de
+   pestañas; las dos cartas se reparten el resto. */
 .tournament-mode {
-  --duel-card: max(150px, calc((100dvh - 250px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) / 2));
+  --duel-card: max(150px, calc((100dvh - 350px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) / 2));
 }
 
 .duel-round {
@@ -948,6 +949,36 @@ button.chip[aria-pressed='true'] {
   text-align: center;
   font-weight: 800;
   color: var(--accent);
+}
+
+.duel-slot {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* La "i" del detalle va sobre el póster, abajo a la izquierda, para no tapar el texto. */
+button.round.duel-detail {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  background: var(--surface);
+}
+
+/* "Que decida la suerte": el borde que va pasando de una carta a la otra. */
+.duel-card.lit {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.duel-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.duel-actions button {
+  flex: 1;
 }
 
 /* Sin internet: aviso arriba de la lista y cambios que no se pudieron guardar */
