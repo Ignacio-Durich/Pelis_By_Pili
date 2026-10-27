@@ -271,3 +271,7 @@ Pedido desde Comentarios: revisar todas las pantallas buscando incongruencias. T
 - **"Ver detalle" chico en Preguntas rápidas**, como en Descubrir: los dos van al lado de una tarjeta. En la Ruleta y Bumble sigue grande porque es un resultado solo.
 - **"Ver opciones en TMDB" tiene el mismo estilo que "▶ Ver tráiler".** El ▶ del tráiler se queda (es "reproducir"); los triángulos de "Cómo armar el Atajo" son los del desplegable del sistema.
 - **Sin aire de más arriba de "Sinopsis":** los párrafos de la ficha no suman margen al espacio entre elementos.
+
+# Ruleta con 3 vetos (2026-10-27)
+
+Pedido desde Comentarios. Cada uno tiene 3 vetos por sesión (antes 1). El botón dice cuántos le quedan ("Veto de Tomás (quedan 2)") y, sin vetos, "Tomás ya no tiene vetos". Cambiar un filtro sigue empezando una sesión nueva, con los vetos completos.

@@ -12,6 +12,9 @@ import { targetRotation } from './wheelMath'
 
 type Props = { filters: Filters; onFiltersChange: (f: Filters) => void; random?: () => number; onBack: () => void }
 
+// Vetos por persona en cada sesión (pedido desde Comentarios: antes era 1).
+const VETOES = 3
+
 export function Roulette({ filters, onFiltersChange, random = Math.random, onBack }: Props) {
   const { coupleId } = useCouple()
   const { titles, offline, load } = useTitles(coupleId)
@@ -76,6 +79,7 @@ function Session({ matching, filtered, random, onOpenDetail }: SessionProps) {
   const { members } = useCouple()
   const nameOf = useMemberName()
   const [vetoed, setVetoed] = useState<string[]>([])
+  // Un id por cada veto usado: cada uno tiene VETOES.
   const [usedBy, setUsedBy] = useState<string[]>([])
   const [resultId, setResultId] = useState<string | null>(null)
   const [vetoedAll, setVetoedAll] = useState(false)
@@ -158,7 +162,8 @@ function Session({ matching, filtered, random, onOpenDetail }: SessionProps) {
     if (noneLeft) return <p>No quedan títulos con estos filtros</p>
 
     if (result) {
-      const allUsed = members.every((m) => usedBy.includes(m.userId))
+      const left = (userId: string) => VETOES - usedBy.filter((id) => id === userId).length
+      const allUsed = members.every((m) => left(m.userId) === 0)
       return (
         <div className="roulette-result">
           <h3>Les tocó</h3>
@@ -170,10 +175,12 @@ function Session({ matching, filtered, random, onOpenDetail }: SessionProps) {
           </button>
           <div className="vetoes">
             {members.map((m) =>
-              usedBy.includes(m.userId) ? (
-                <button key={m.userId} disabled>{`${nameOf(m.userId)} ya vetó`}</button>
+              left(m.userId) === 0 ? (
+                <button key={m.userId} disabled>{`${nameOf(m.userId)} ya no tiene vetos`}</button>
               ) : (
-                <button key={m.userId} onClick={() => veto(m.userId)}>{`Veto de ${nameOf(m.userId)}`}</button>
+                <button key={m.userId} onClick={() => veto(m.userId)}>
+                  {`Veto de ${nameOf(m.userId)} (${left(m.userId) === 1 ? 'queda 1' : `quedan ${left(m.userId)}`})`}
+                </button>
               ),
             )}
           </div>
