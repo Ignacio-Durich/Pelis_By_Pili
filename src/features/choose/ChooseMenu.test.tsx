@@ -49,20 +49,20 @@ test('shows the three modes with their help texts, Bumble first', () => {
   expect(screen.getByRole('button', { name: /Preguntas rápidas/ })).toHaveTextContent('Respondan tres preguntas y les sugerimos 5')
 })
 
-test('each mode opens and Volver a los modos returns to the menu', async () => {
+test('each mode opens and Volver a Elegir returns to the menu', async () => {
   renderMenu()
   fireEvent.click(screen.getByRole('button', { name: /Bumble/ }))
   expect(await screen.findByRole('heading', { name: 'Bumble' })).toBeInTheDocument()
-  fireEvent.click(screen.getByRole('button', { name: 'Volver a los modos' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Volver a Elegir' }))
   fireEvent.click(screen.getByRole('button', { name: /Top 3 secreto/ }))
   expect(await screen.findByRole('heading', { name: 'Top 3 secreto' })).toBeInTheDocument()
-  fireEvent.click(screen.getByRole('button', { name: 'Volver a los modos' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Volver a Elegir' }))
   fireEvent.click(screen.getByRole('button', { name: /Ruleta/ }))
   expect(await screen.findByRole('heading', { name: 'Ruleta' })).toBeInTheDocument()
-  fireEvent.click(screen.getByRole('button', { name: 'Volver a los modos' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Volver a Elegir' }))
   fireEvent.click(screen.getByRole('button', { name: /Preguntas rápidas/ }))
   expect(await screen.findByRole('heading', { name: 'Preguntas rápidas' })).toBeInTheDocument()
-  fireEvent.click(screen.getByRole('button', { name: 'Volver a los modos' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Volver a Elegir' }))
 })
 
 test('with a detail open there is only the detail Volver, and the answers stay', async () => {
@@ -71,8 +71,8 @@ test('with a detail open there is only the detail Volver, and the answers stay',
   fireEvent.click(screen.getByRole('button', { name: /Preguntas rápidas/ }))
   fireEvent.click(await screen.findByRole('button', { name: 'Terror' }))
   fireEvent.click(await screen.findByRole('button', { name: 'Ver detalle de Una' }))
-  expect(screen.queryByRole('button', { name: 'Volver a los modos' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Volver a Elegir' })).not.toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: 'Volver' }))
   expect(screen.getByRole('button', { name: 'Terror' })).toHaveAttribute('aria-pressed', 'true')
-  expect(screen.getByRole('button', { name: 'Volver a los modos' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Volver a Elegir' })).toBeInTheDocument()
 })

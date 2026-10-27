@@ -160,7 +160,7 @@ test('results also show how long they last and the IMDb score', async () => {
   await typeQuery('algo')
   expect(screen.getByText('1990 · Película · 1 h 43')).toBeInTheDocument()
   expect(screen.getByText('IMDb 7.7')).toBeInTheDocument()
-  expect(screen.getByText('Serie · 2 temporadas · 45 min')).toBeInTheDocument()
+  expect(screen.getByText('Serie · 2 temporadas · 45 min por episodio')).toBeInTheDocument()
   expect(screen.getAllByText(/^IMDb/)).toHaveLength(1)
 })
 

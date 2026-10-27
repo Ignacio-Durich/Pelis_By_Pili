@@ -3,7 +3,7 @@ export function GameTop({ onBack, onEnd }: { onBack: () => void; onEnd?: () => v
   return (
     <div className="bumble-top">
       <button className="back" onClick={onBack}>
-        Volver a los modos
+        Volver a Elegir
       </button>
       {onEnd && (
         <button className="end" onClick={onEnd}>

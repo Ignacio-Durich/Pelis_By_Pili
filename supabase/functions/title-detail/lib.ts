@@ -91,8 +91,22 @@ export function pickOverview(details: { overview?: string; translations?: { tran
   return ''
 }
 
-export function pickGenres(details: { genres?: { name: string }[] }): string[] {
-  return [...new Set((details.genres ?? []).map((g) => g.name))]
+// IDs de géneros de TMDB (películas y series) con su nombre en castellano. No cambian. TMDB da
+// "Suspense" y los de series en inglés ("Sci-Fi & Fantasy"): así se llaman igual en toda la app.
+const GENRES: Record<number, string> = {
+  28: 'Acción', 12: 'Aventura', 16: 'Animación', 35: 'Comedia', 80: 'Crimen', 99: 'Documental', 18: 'Drama',
+  10751: 'Familia', 14: 'Fantasía', 36: 'Historia', 27: 'Terror', 10402: 'Música', 9648: 'Misterio',
+  10749: 'Romance', 878: 'Ciencia ficción', 10770: 'Película de TV', 53: 'Suspenso', 10752: 'Bélica', 37: 'Western',
+  10759: 'Acción y aventura', 10762: 'Infantil', 10763: 'Noticias', 10764: 'Reality',
+  10765: 'Ciencia ficción y fantasía', 10766: 'Telenovela', 10767: 'Entrevistas', 10768: 'Guerra y política',
+}
+
+export function genreNames(ids: number[] | undefined): string[] {
+  return (ids ?? []).map((id) => GENRES[id]).filter((name): name is string => !!name)
+}
+
+export function pickGenres(details: { genres?: { id: number; name: string }[] }): string[] {
+  return [...new Set((details.genres ?? []).map((g) => genreNames([g.id])[0] ?? g.name))]
 }
 
 // Los canales que se contratan dentro de otra plataforma ("Paramount+ Amazon Channel"): no se ofrecen

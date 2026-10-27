@@ -1,6 +1,8 @@
 // Lógica pura de las recomendaciones (sin APIs de Deno), para poder testearla con Vitest.
 import { toSearchResult, type SearchResult } from '../tmdb-search/lib.ts'
-import { isAddOnChannel, parseTitleId } from '../title-detail/lib.ts'
+import { genreNames, isAddOnChannel, parseTitleId } from '../title-detail/lib.ts'
+
+export { genreNames }
 
 export type TmdbItem = {
   id: number
@@ -62,19 +64,6 @@ export function memberSeeds<T extends Seed>(both: T[], scores: { key: string; sc
     const weight = seedWeight(scores.filter((s) => s.key === seed.key).map((s) => s.score))
     return weight === null ? [] : [{ ...seed, weight }]
   })
-}
-
-// IDs de géneros de TMDB (películas y series), en es-MX. No cambian.
-const GENRES: Record<number, string> = {
-  28: 'Acción', 12: 'Aventura', 16: 'Animación', 35: 'Comedia', 80: 'Crimen', 99: 'Documental', 18: 'Drama',
-  10751: 'Familia', 14: 'Fantasía', 36: 'Historia', 27: 'Terror', 10402: 'Música', 9648: 'Misterio',
-  10749: 'Romance', 878: 'Ciencia ficción', 10770: 'Película de TV', 53: 'Suspenso', 10752: 'Bélica', 37: 'Western',
-  10759: 'Acción y aventura', 10762: 'Infantil', 10763: 'Noticias', 10764: 'Reality',
-  10765: 'Ciencia ficción y fantasía', 10766: 'Telenovela', 10767: 'Entrevistas', 10768: 'Guerra y política',
-}
-
-export function genreNames(ids: number[] | undefined): string[] {
-  return (ids ?? []).map((id) => GENRES[id]).filter((name): name is string => !!name)
 }
 
 export function toRecommendation(item: TmdbItem, mediaType: MediaType): Recommendation {

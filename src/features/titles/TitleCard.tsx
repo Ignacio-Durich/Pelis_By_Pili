@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react'
-import { formatMinutes } from './filters'
 import { imdbScore, rtScore, scoreLine } from './ratings'
 import { kindLine, peopleLine } from './titleText'
 
@@ -28,7 +27,7 @@ export function TitleCard({ title, originalTitle, year, mediaType, posterPath, d
       <div className="card-text">
         <strong>{title}</strong>
         {showOriginal && <small>{`Original: ${originalTitle}`}</small>}
-        <small>{[kindLine(year, mediaType, seasons), runtime ? formatMinutes(runtime) : null].filter(Boolean).join(' · ')}</small>
+        <small>{kindLine(year, mediaType, seasons, runtime)}</small>
         {people && <small>{people}</small>}
         {children}
       </div>

@@ -124,7 +124,7 @@ export function TitleDetail({
       )}
       <h2>{title.title}</h2>
       {showOriginal && <small>{`Original: ${title.originalTitle}`}</small>}
-      <small>{kindLine(title.year, title.mediaType, title.seasons)}</small>
+      <small>{kindLine(title.year, title.mediaType, title.seasons, title.runtime)}</small>
       {people && <small>{people}</small>}
       <small>{`La agregó ${nameOf(title.addedBy)}`}</small>
       {title.originNote && <small>{`De dónde vino: ${title.originNote}`}</small>}
@@ -186,7 +186,7 @@ export function TitleDetail({
           <p>{detail.overview || 'Sin sinopsis'}</p>
           {/* Si TMDB no tiene tráiler, se busca en YouTube. */}
           <a
-            className="trailer"
+            className="button-link"
             href={
               detail.trailer ??
               `https://www.youtube.com/results?search_query=${encodeURIComponent([title.title, title.year, 'tráiler'].filter(Boolean).join(' '))}`
@@ -223,7 +223,7 @@ export function TitleDetail({
             <p>Sin información de dónde verla</p>
           )}
           {detail.providers?.link && (
-            <a href={detail.providers.link} target="_blank" rel="noreferrer">
+            <a className="button-link" href={detail.providers.link} target="_blank" rel="noreferrer">
               Ver opciones en TMDB
             </a>
           )}

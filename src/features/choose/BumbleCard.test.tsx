@@ -39,7 +39,7 @@ const tap = () => drag(0)
 test('the front shows the title data like a dating app card', () => {
   render(<BumbleCard title={dark} onVote={onVote} />)
   expect(screen.getByText('Dark')).toBeInTheDocument()
-  expect(screen.getByText('2017 · Serie · 1 h')).toBeInTheDocument()
+  expect(screen.getByText('2017 · Serie · 1 h por episodio')).toBeInTheDocument()
   expect(screen.getByText('Crimen · Drama · Misterio')).toBeInTheDocument()
   expect(screen.getByText('IMDb 8.7 · RT 95%')).toBeInTheDocument()
   expect(screen.getByText('Netflix, Prime Video')).toBeInTheDocument()

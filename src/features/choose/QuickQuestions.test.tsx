@@ -43,6 +43,7 @@ async function renderQuick() {
 
 test('shows the three questions with Sin apuro and Cualquiera chosen', async () => {
   await renderQuick()
+  expect(screen.getByText('Respondan tres preguntas y les sugerimos 5.')).toBeInTheDocument()
   for (const q of ['¿Cuánto tiempo tienen?', '¿Qué género?', '¿Dónde lo ven?']) expect(screen.getByText(q)).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Sin apuro' })).toHaveAttribute('aria-pressed', 'true')
   expect(screen.getByRole('button', { name: 'Cualquiera' })).toHaveAttribute('aria-pressed', 'true')

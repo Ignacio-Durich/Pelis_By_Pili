@@ -345,7 +345,12 @@ button.end {
   color: var(--accent);
 }
 
-.detail a.trailer {
+/* La ficha ya separa con gap: el margen propio de los párrafos sumaba aire de más (arriba de Sinopsis). */
+.detail p {
+  margin: 0;
+}
+
+.detail a.button-link {
   align-self: flex-start;
   display: inline-flex;
   align-items: center;

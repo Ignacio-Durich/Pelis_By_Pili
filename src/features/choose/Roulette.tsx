@@ -38,9 +38,10 @@ export function Roulette({ filters, onFiltersChange, random = Math.random, onBac
       {/* Oculta y no desmontada mientras se ve el detalle: así no se pierden el resultado ni los vetos. */}
       <section className="roulette" hidden={!!detail}>
         <button className="back" onClick={onBack}>
-          Volver a los modos
+          Volver a Elegir
         </button>
         <h2>Ruleta</h2>
+        <p>Gira entre los títulos que cumplen los filtros.</p>
         <FiltersPanel
           value={filters}
           options={filterOptions(toWatch)}

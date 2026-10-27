@@ -260,3 +260,14 @@ Pedido desde Comentarios: revisar todas las pantallas buscando incongruencias. T
 - **Los canales que se contratan dentro de otra plataforma ("Paramount+ Amazon Channel") no aparecen en Filtros ni en Preguntas rápidas**, como ya pasaba en Ajustes. Los títulos guardados antes los conservan hasta que se actualicen sus datos, pero no se ofrecen para elegir.
 - **"Cerrar sesión" es un botón secundario, separado de "Mandar".**
 - **Nuestras plataformas muestra las conocidas y las que ya tenían elegidas; el resto con "Ver más".** Una que desmarcan no desaparece hasta volver a abrir Ajustes.
+
+# Revisión de pantallas, bloque 2 (2026-10-27)
+
+- **"‹ Volver a Elegir"** en vez de "Volver a los modos" (la pantalla nunca los llamaba "modos"). No queda solo "Volver": al ganador de Bumble se le puede abrir la ficha, que tiene su propio "Volver", y serían dos botones iguales.
+- **La Ruleta y Preguntas rápidas explican de qué se tratan**, como los otros modos.
+- **Vos y ustedes:** se revisaron y ya siguen una regla. Lo que hacen los dos va en plural ("Elijan", "Márquenla como vista"); lo de cada uno, en singular ("Probá de nuevo", "Contanos", "Tu puntaje", "Turno de Tomás: elegí 3"). No se cambió nada.
+- **Los géneros se llaman igual en toda la app:** TMDB da "Suspense" y los de series en inglés ("Sci-Fi & Fantasy"); ahora se guardan con la misma tabla que usa Descubrir ("Suspenso", "Ciencia ficción y fantasía"). La tabla pasó a `title-detail/lib.ts` y una migración traduce los ya guardados.
+- **La duración de una serie dice "por episodio"**, y la ficha muestra la duración como la tarjeta.
+- **"Ver detalle" chico en Preguntas rápidas**, como en Descubrir: los dos van al lado de una tarjeta. En la Ruleta y Bumble sigue grande porque es un resultado solo.
+- **"Ver opciones en TMDB" tiene el mismo estilo que "▶ Ver tráiler".** El ▶ del tráiler se queda (es "reproducir"); los triángulos de "Cómo armar el Atajo" son los del desplegable del sistema.
+- **Sin aire de más arriba de "Sinopsis":** los párrafos de la ficha no suman margen al espacio entre elementos.
