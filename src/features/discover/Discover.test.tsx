@@ -77,7 +77,7 @@ beforeEach(() => {
   api.searchDetails.mockResolvedValue({})
   api.invoke.mockResolvedValue({ data, error: null })
   api.dismissTitle.mockResolvedValue(undefined)
-  api.fetchSimilar.mockResolvedValue([])
+  api.fetchSimilar.mockResolvedValue({ results: [], more: [] })
 })
 
 test('shows Para los dos first, then each member by name and Novedades', async () => {

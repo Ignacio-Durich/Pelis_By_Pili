@@ -9,6 +9,8 @@ import {
   memberSeeds,
   mergePlatformResults,
   parseRequest,
+  personTitles,
+  pickPeople,
   pickSeeds,
   rankRecommendations,
   seedWeight,
@@ -132,4 +134,38 @@ test('toProviderOptions puts the well-known Argentine platforms first, then the 
   const movie = [p(8, 'Netflix', 0), p(551, 'Magellan TV', 15), p(1899, 'HBO Max', 34), p(582, 'Paramount+ Amazon Channel', 44)]
   const tv = [p(2285, 'JustWatch TV', 4), p(119, 'Amazon Prime Video', 1), p(2142, 'MGM+ Apple TV Channel', 38)]
   expect(toProviderOptions(movie, tv).map((o) => o.name)).toEqual(['Netflix', 'Amazon Prime Video', 'HBO Max', 'JustWatch TV', 'Magellan TV'])
+})
+
+test('pickPeople takes the director (or the series creator) and the two lead actors, without repeating the director', () => {
+  const credits = {
+    cast: [{ id: 3, name: 'Elliot Page', order: 2 }, { id: 1, name: 'Leonardo DiCaprio', order: 0 }, { id: 2, name: 'Joseph Gordon-Levitt', order: 1 }],
+    crew: [{ id: 9, name: 'Emma Thomas', job: 'Producer' }, { id: 7, name: 'Christopher Nolan', job: 'Director' }],
+  }
+  expect(pickPeople({ credits }, 'movie')).toEqual({ director: { id: 7, name: 'Christopher Nolan' }, cast: [{ id: 1, name: 'Leonardo DiCaprio' }, { id: 2, name: 'Joseph Gordon-Levitt' }] })
+  const series = { created_by: [{ id: 5, name: 'Vince Gilligan' }], credits: { cast: [{ id: 5, name: 'Vince Gilligan', order: 0 }, { id: 6, name: 'Bryan Cranston', order: 1 }], crew: [] } }
+  expect(pickPeople(series, 'tv')).toEqual({ director: { id: 5, name: 'Vince Gilligan' }, cast: [{ id: 6, name: 'Bryan Cranston' }] })
+  expect(pickPeople({}, 'movie')).toEqual({ director: null, cast: [] })
+})
+
+test('personTitles lists what a director directed (or created) and what an actor acted in, best-known first', () => {
+  const credits = {
+    cast: [
+      { id: 1, media_type: 'movie', title: 'Titanic', character: 'Jack Dawson', vote_count: 26000 },
+      { id: 2, media_type: 'movie', title: 'Documental', character: 'Himself', vote_count: 90000 },
+      { id: 3, media_type: 'tv', name: 'Talk show', character: 'Guest', genre_ids: [10767], vote_count: 5000 },
+      { id: 4, media_type: 'tv', name: 'Friends', character: 'Cameo', episode_count: 1, vote_count: 9000 },
+      { id: 5, media_type: 'tv', name: 'Miniserie', character: 'Lead', episode_count: 6, vote_count: 800 },
+      { id: 6, media_type: 'movie', title: 'El origen', character: 'Cobb', vote_count: 37000 },
+      { id: 1, media_type: 'movie', title: 'Titanic', character: 'Otro personaje', vote_count: 26000 },
+    ],
+    crew: [
+      { id: 7, media_type: 'movie', title: 'Oppenheimer', job: 'Director', vote_count: 9000 },
+      { id: 8, media_type: 'movie', title: 'Producida', job: 'Producer', vote_count: 20000 },
+      { id: 9, media_type: 'tv', name: 'Episodio dirigido', job: 'Director', vote_count: 30000 },
+      { id: 10, media_type: 'tv', name: 'Creada', job: 'Creator', vote_count: 100 },
+    ],
+  }
+  expect(personTitles(credits, 'cast', new Set(['movie:6']), 20).map((r) => r.title)).toEqual(['Titanic', 'Miniserie'])
+  expect(personTitles(credits, 'director', new Set(), 20).map((r) => r.title)).toEqual(['Oppenheimer', 'Creada'])
+  expect(personTitles(credits, 'cast', new Set(), 1).map((r) => r.title)).toEqual(['El origen'])
 })

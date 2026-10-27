@@ -72,7 +72,7 @@ const onClose = vi.fn()
 
 beforeEach(() => {
   vi.resetAllMocks()
-  api.fetchSimilar.mockResolvedValue([])
+  api.fetchSimilar.mockResolvedValue({ results: [], more: [] })
 })
 afterEach(() => vi.restoreAllMocks())
 
@@ -288,7 +288,7 @@ test('Reintentar shows Cargando el detalle… while it retries', async () => {
 
 test('a watched title shows Parecidas a esta, a to-watch one does not ask for it', async () => {
   api.fetchTitleDetail.mockReturnValue(new Promise(() => {}))
-  api.fetchSimilar.mockResolvedValue([])
+  api.fetchSimilar.mockResolvedValue({ results: [], more: [] })
   renderDetail()
   expect(screen.queryByRole('heading', { name: 'Parecidas a esta' })).not.toBeInTheDocument()
   expect(api.fetchSimilar).not.toHaveBeenCalled()

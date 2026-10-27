@@ -65,9 +65,9 @@ test('a failed discover is not remembered', async () => {
   await expect(fetchDiscover('k3')).resolves.toEqual(empty)
 })
 
-test('fetchSimilar and fetchProviders unwrap their lists', async () => {
-  invoke.mockResolvedValueOnce({ data: { results: [rec] }, error: null })
-  expect(await fetchSimilar('t1')).toEqual([rec])
+test('fetchSimilar returns the similar ones and the parts by person; fetchProviders unwraps its list', async () => {
+  invoke.mockResolvedValueOnce({ data: { results: [rec], more: [] }, error: null })
+  expect(await fetchSimilar('t1')).toEqual({ results: [rec], more: [] })
   expect(invoke).toHaveBeenLastCalledWith('recommendations', { body: { similarTo: 't1' } })
   invoke.mockResolvedValueOnce({ data: { providers: [{ id: 8, name: 'Netflix', logoPath: null }] }, error: null })
   expect(await fetchProviders()).toEqual([{ id: 8, name: 'Netflix', logoPath: null }])

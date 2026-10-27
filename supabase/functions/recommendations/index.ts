@@ -11,11 +11,14 @@ import {
   memberSeeds,
   mergePlatformResults,
   parseRequest,
+  personTitles,
+  pickPeople,
   pickSeeds,
   rankRecommendations,
   seedWeight,
   toProviderOptions,
   type Discover,
+  type MoreBy,
   type Seed,
   type TmdbItem,
 } from './lib.ts'
@@ -77,11 +80,29 @@ async function providers(calls: Calls) {
 
 async function similar(calls: Calls, title: Title, exclude: Set<string>) {
   const base = `${title.media_type}/${title.tmdb_id}`
-  let found = items(await calls.get(`${base}/recommendations`, 'language=es-MX&page=1'))
+  const [recommended, details] = await Promise.all([
+    calls.get(`${base}/recommendations`, 'language=es-MX&page=1'),
+    calls.get(base, 'language=es-MX&append_to_response=credits'),
+  ])
+  let found = items(recommended)
   if (!found.length) found = items(await calls.get(`${base}/similar`, 'language=es-MX&page=1'))
-  calls.check()
   // TMDB a veces pone primero títulos poco conocidos: suben los que más votos tienen (pedido de Tomás).
-  return { results: byVotes(found.map((item) => ({ item, mediaType: title.media_type })), exclude, 20) }
+  const results = byVotes(found.map((item) => ({ item, mediaType: title.media_type })), exclude, 20)
+
+  // Más del mismo director y de los dos actores principales, cada uno en su parte (pedido desde Comentarios).
+  // Lo que ya salió en una parte no se repite en las siguientes.
+  const { director, cast } = pickPeople((details ?? {}) as Parameters<typeof pickPeople>[0], title.media_type)
+  const people = [...(director ? [{ ...director, kind: 'director' as const }] : []), ...cast.map((p) => ({ ...p, kind: 'cast' as const }))]
+  const credits = await Promise.all(people.map((p) => calls.get(`person/${p.id}/combined_credits`, 'language=es-MX')))
+  calls.check()
+  const shown = new Set([...exclude, keyOf(title.media_type, title.tmdb_id), ...results.map((r) => keyOf(r.mediaType, r.tmdbId))])
+  const more: MoreBy[] = []
+  people.forEach((p, i) => {
+    const titles = personTitles((credits[i] ?? {}) as Parameters<typeof personTitles>[0], p.kind, shown, 20)
+    titles.forEach((r) => shown.add(keyOf(r.mediaType, r.tmdbId)))
+    if (titles.length) more.push({ kind: p.kind, name: p.name, results: titles })
+  })
+  return { results, more }
 }
 
 async function discover(
