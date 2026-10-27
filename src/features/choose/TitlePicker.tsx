@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { TitleCard } from '../titles/TitleCard'
+import { fetchTitleDetail } from '../titles/detailApi'
+import { InfoIcon, ScoreLine, TitleCard } from '../titles/TitleCard'
 import type { Title } from '../titles/titlesApi'
 
 type Props = {
@@ -19,6 +20,9 @@ type Props = {
 // Lo usan Top 3 secreto y el Torneo.
 export function TitlePicker({ turnOf, titles, matching, initial, need, locked, onDone }: Props) {
   const [chosen, setChosen] = useState<string[]>(initial)
+  // La sinopsis no está guardada con el título: se pide la primera vez que se abre.
+  const [synopsis, setSynopsis] = useState<Record<string, string | null>>({})
+  const [open, setOpen] = useState<string | null>(null)
   // Lo ya elegido sigue a la vista aunque los filtros hayan cambiado.
   // (Salvo que ya se haya visto: eso no se puede elegir.)
   const options = [...matching, ...titles.filter((t) => initial.includes(t.id) && !matching.includes(t) && t.status === 'to_watch')]
@@ -36,18 +40,53 @@ export function TitlePicker({ turnOf, titles, matching, initial, need, locked, o
     })
   }
 
+  function toggleDetail(id: string) {
+    setOpen((prev) => (prev === id ? null : id))
+    if (id in synopsis) return
+    fetchTitleDetail(id).then(
+      (d) => setSynopsis((m) => ({ ...m, [id]: d.overview || 'Sin sinopsis' })),
+      () => setSynopsis((m) => ({ ...m, [id]: 'No se pudo cargar la sinopsis.' })),
+    )
+  }
+
   return (
     <>
       {/* Pide las que de verdad se pueden elegir: con 2 títulos, "elegí 2" y no "elegí 4". */}
       <h3>{turnOf ? `Turno de ${turnOf}: elegí ${target}` : `Elegí ${target}`}</h3>
       <ul className="title-list reveal-options">
         {options.map((t) => (
-          <li key={t.id}>
+          <li key={t.id} className="rec-item">
             <button className="result" aria-pressed={picked.includes(t.id)} disabled={isLocked(t.id)} onClick={() => toggle(t.id)}>
-              <TitleCard title={t.title} originalTitle={t.originalTitle} year={t.year} mediaType={t.mediaType} posterPath={t.posterPath} seasons={t.seasons} runtime={t.runtime}>
+              <TitleCard
+                title={t.title}
+                originalTitle={t.originalTitle}
+                year={t.year}
+                mediaType={t.mediaType}
+                posterPath={t.posterPath}
+                director={t.director}
+                seasons={t.seasons}
+                runtime={t.runtime}
+              >
+                <ScoreLine imdb={t.imdbRating} rt={null} />
                 {isLocked(t.id) && <small>{locked!.label}</small>}
               </TitleCard>
             </button>
+            <div className="rec-actions">
+              <button
+                className="round info"
+                aria-label={open === t.id ? 'Ocultar detalle' : 'Ver detalle'}
+                aria-expanded={open === t.id}
+                onClick={() => toggleDetail(t.id)}
+              >
+                <InfoIcon />
+              </button>
+            </div>
+            {open === t.id && (
+              <div className="rec-detail">
+                <p>{synopsis[t.id] ?? 'Cargando…'}</p>
+                {t.genres.length > 0 && <small>{t.genres.join(' · ')}</small>}
+              </div>
+            )}
           </li>
         ))}
       </ul>

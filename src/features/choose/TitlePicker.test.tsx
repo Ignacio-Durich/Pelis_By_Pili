@@ -1,5 +1,9 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { expect, test, vi } from 'vitest'
+
+const api = vi.hoisted(() => ({ fetchTitleDetail: vi.fn() }))
+vi.mock('../titles/detailApi', () => ({ fetchTitleDetail: api.fetchTitleDetail }))
+
 import { makeTitle } from '../../test/titles'
 import { TitlePicker } from './TitlePicker'
 
@@ -57,4 +61,27 @@ test('the heading asks for as many as can be chosen, saying whose turn it is', (
   unmount()
   render(<TitlePicker turnOf="Juli" titles={titles} matching={titles} initial={[]} need={4} onDone={vi.fn()} />)
   expect(screen.getByRole('heading', { name: 'Turno de Juli: elegí 4' })).toBeInTheDocument()
+})
+
+test('each card shows director and IMDb, and the i button brings the synopsis without picking it', async () => {
+  api.fetchTitleDetail.mockResolvedValue({ overview: 'Un juicio histórico.' })
+  const one = makeTitle({ id: 'a', tmdbId: 1, title: 'Peli A', director: 'Santiago Mitre', imdbRating: '7.8/10', genres: ['Drama'] })
+  render(<TitlePicker titles={[one]} matching={[one]} initial={[]} need={3} onDone={vi.fn()} />)
+  expect(screen.getByText('Dirigida por Santiago Mitre')).toBeInTheDocument()
+  expect(screen.getByText('IMDb 7.8')).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: 'Ver detalle' }))
+  expect(await screen.findByText('Un juicio histórico.')).toBeInTheDocument()
+  expect(screen.getByText('Drama')).toBeInTheDocument()
+  expect(api.fetchTitleDetail).toHaveBeenCalledWith('a')
+  expect(screen.getByRole('button', { name: /Peli A/ })).toHaveAttribute('aria-pressed', 'false')
+  fireEvent.click(screen.getByRole('button', { name: 'Ocultar detalle' }))
+  expect(screen.queryByText('Un juicio histórico.')).not.toBeInTheDocument()
+})
+
+test('if the synopsis cannot load it says so', async () => {
+  api.fetchTitleDetail.mockRejectedValue(new Error('x'))
+  const one = makeTitle({ id: 'a', tmdbId: 1, title: 'Peli A' })
+  render(<TitlePicker titles={[one]} matching={[one]} initial={[]} need={3} onDone={vi.fn()} />)
+  fireEvent.click(screen.getByRole('button', { name: 'Ver detalle' }))
+  expect(await screen.findByText('No se pudo cargar la sinopsis.')).toBeInTheDocument()
 })
