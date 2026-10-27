@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react'
 import { useOnline } from '../../lib/useOnline'
 import { useCouple } from '../couple/coupleContext'
 import type { Title } from '../titles/titlesApi'
-import { fetchSimilar, type Recommendation } from './discoverApi'
+import { fetchSimilar, type Similar } from './discoverApi'
 import { RecommendationList } from './RecommendationList'
 
-// "Parecidas a esta" en la ficha de una vista: lo que TMDB considera parecido a ese título.
+// "Parecidas a esta" en la ficha de una vista: lo que TMDB considera parecido a ese título y, cada
+// una en su parte, más del mismo director y de los dos actores principales.
 export function SimilarTitles({ title, titles }: { title: Title; titles: Title[] }) {
   const { coupleId } = useCouple()
-  const [items, setItems] = useState<Recommendation[] | null>(null)
+  const [items, setItems] = useState<Similar | null>(null)
   const [failed, setFailed] = useState(false)
   const [attempt, setAttempt] = useState(0)
   const online = useOnline()
@@ -57,18 +58,38 @@ export function SimilarTitles({ title, titles }: { title: Title; titles: Title[]
         </>
       ) : items === null ? (
         online && <p>Buscando parecidas…</p>
-      ) : items.length === 0 ? (
-        <p>TMDB no tiene parecidas para este título</p>
       ) : (
-        <RecommendationList
-          coupleId={coupleId}
-          items={items}
-          titles={titles}
-          // La base acepta como mucho 200 caracteres en la nota de origen.
-          originNote={() => `Parecida a ${title.title}`.slice(0, 200)}
-          hidden={hidden}
-          onHide={onHide}
-        />
+        <>
+          {items.results.length === 0 ? (
+            <p>TMDB no tiene parecidas para este título</p>
+          ) : (
+            <RecommendationList
+              coupleId={coupleId}
+              items={items.results}
+              titles={titles}
+              // La base acepta como mucho 200 caracteres en la nota de origen.
+              originNote={() => `Parecida a ${title.title}`.slice(0, 200)}
+              hidden={hidden}
+              onHide={onHide}
+            />
+          )}
+          {items.more.map((part) => {
+            const heading = `${part.kind === 'director' ? 'Más de' : 'Con'} ${part.name}`
+            return (
+              <section key={`${part.kind}:${part.name}`}>
+                <h3>{heading}</h3>
+                <RecommendationList
+                  coupleId={coupleId}
+                  items={part.results}
+                  titles={titles}
+                  originNote={() => heading.slice(0, 200)}
+                  hidden={hidden}
+                  onHide={onHide}
+                />
+              </section>
+            )
+          })}
+        </>
       )}
     </>
   )

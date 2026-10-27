@@ -1,9 +1,9 @@
-import type { Discover, ProviderOption, Recommendation } from '../../../supabase/functions/recommendations/lib.ts'
+import type { Discover, MoreBy, ProviderOption, Recommendation } from '../../../supabase/functions/recommendations/lib.ts'
 import { supabase } from '../../lib/supabase'
 import { callRpc, CodedError } from '../../lib/rpc'
 import type { Title } from '../titles/titlesApi'
 
-export type { Discover, ProviderOption, Recommendation }
+export type { Discover, MoreBy, ProviderOption, Recommendation }
 
 type DiscoverErrorKind = 'network' | 'no_couple' | 'invalid_platforms' | 'invalid_title'
 export class DiscoverError extends CodedError<DiscoverErrorKind> {}
@@ -44,8 +44,10 @@ export function fetchDiscover(key: string): Promise<Discover> {
   return entry.promise
 }
 
-export async function fetchSimilar(titleId: string): Promise<Recommendation[]> {
-  return (await invoke<{ results: Recommendation[] }>({ similarTo: titleId })).results
+export type Similar = { results: Recommendation[]; more: MoreBy[] }
+
+export async function fetchSimilar(titleId: string): Promise<Similar> {
+  return invoke<Similar>({ similarTo: titleId })
 }
 
 export async function fetchProviders(): Promise<ProviderOption[]> {

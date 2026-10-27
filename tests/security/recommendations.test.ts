@@ -81,10 +81,12 @@ test('similarTo a title of another couple is 404', async () => {
   expect((await recs(A.client, { similarTo: data!.id })).status).toBe(404)
 })
 
-test('similarTo a watched title returns TMDB recommendations without what is already in the list', async () => {
-  const { data } = await recs<{ results: Recommendation[] }>(A.client, { similarTo: originId })
+test('similarTo a watched title returns TMDB recommendations and the parts by person, without what is already in the list', async () => {
+  const { data } = await recs<{ results: Recommendation[]; more: { kind: string; name: string; results: Recommendation[] }[] }>(A.client, { similarTo: originId })
   expect(data.results.length).toBeGreaterThan(0)
   expect(data.results.find((r) => r.tmdbId === 157336)).toBeUndefined()
+  expect(data.more.map((p) => p.kind)).toContain('director')
+  expect(data.more.flatMap((p) => p.results).find((r) => r.tmdbId === 157336 || r.tmdbId === 27205)).toBeUndefined()
 })
 
 test('discover returns the four sections; no platforms means onPlatforms null', async () => {

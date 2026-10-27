@@ -137,6 +137,43 @@ export function byVotes(items: Entries, exclude: Set<string>, limit: number): Re
   return inOrder([...items].sort((a, b) => (b.item.vote_count ?? 0) - (a.item.vote_count ?? 0)), exclude, limit)
 }
 
+export type Person = { id: number; name: string }
+export type MoreBy = { kind: 'director' | 'cast'; name: string; results: Recommendation[] }
+type Credit = TmdbItem & { media_type: string; job?: string; character?: string; episode_count?: number }
+
+// Quién la hizo: el director (de una serie, quien la creó) y los dos actores principales.
+export function pickPeople(
+  details: { created_by?: Person[]; credits?: { cast?: (Person & { order?: number })[]; crew?: (Person & { job?: string })[] } },
+  mediaType: MediaType,
+): { director: Person | null; cast: Person[] } {
+  const found = mediaType === 'tv' ? details.created_by?.[0] : details.credits?.crew?.find((c) => c.job === 'Director')
+  const director = found ? { id: found.id, name: found.name } : null
+  const cast = [...(details.credits?.cast ?? [])]
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    .filter((c) => c.id !== director?.id)
+    .slice(0, 2)
+    .map(({ id, name }) => ({ id, name }))
+  return { director, cast }
+}
+
+// Lo que dirigió (o creó, si es serie) o en lo que actuó, las más conocidas primero. Sin apariciones
+// como sí mismo, programas de todas las semanas ni series donde estuvo en un par de episodios.
+export function personTitles(
+  credits: { cast?: Credit[]; crew?: Credit[] },
+  role: 'director' | 'cast',
+  exclude: Set<string>,
+  limit: number,
+): Recommendation[] {
+  const found = role === 'director'
+    ? (credits.crew ?? []).filter((c) => (c.media_type === 'movie' && c.job === 'Director') || (c.media_type === 'tv' && c.job === 'Creator'))
+    : (credits.cast ?? []).filter((c) =>
+      (c.media_type === 'movie' || c.media_type === 'tv') &&
+      !/\b(self|himself|herself)\b/i.test(c.character ?? '') &&
+      !c.genre_ids?.some((g) => LONG_RUNNING_GENRES.includes(g)) &&
+      !(c.media_type === 'tv' && (c.episode_count ?? Infinity) < 3))
+  return byVotes(found.map((item) => ({ item, mediaType: item.media_type as MediaType })), exclude, limit)
+}
+
 // Una serie que se estrenó antes de la ventana de novedades y sigue emitiendo: temporada nueva.
 export function isNewSeasonSeries(item: TmdbItem, since: string): boolean {
   return !!item.first_air_date && item.first_air_date < since

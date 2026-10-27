@@ -238,3 +238,11 @@ Decisiones tomadas al hacerla:
 # Tráiler (2026-10-27)
 
 Pedido desde Comentarios. "▶ Ver tráiler" debajo de la sinopsis abre YouTube. Se elige entre los videos de TMDB: primero en español latino, después cualquier español y después inglés; un tráiler antes que un teaser y uno oficial antes que otro. Si TMDB no tiene ninguno, abre la búsqueda "<título> <año> tráiler" en YouTube, así el botón siempre lleva a algún lado.
+
+# Más del director y de los actores (2026-10-27)
+
+Pedido desde Comentarios: que "Parecidas a esta" también recomiende por director y actores. Tomás eligió partes aparte en vez de mezclarlas con las parecidas: "Más de <director>" y "Con <actor>" para los dos actores principales.
+
+- **De una serie cuenta quien la creó**, no quien dirigió episodios: muchos directores de cine dirigieron un episodio suelto y esa serie taparía sus películas.
+- **De un actor no entran las series donde estuvo en menos de 3 episodios** (un cameo en Friends saldría primera por cantidad de votos), ni sus apariciones como sí mismo, ni los programas de todas las semanas.
+- **Un título sale en una sola parte:** lo que ya está en las parecidas no se repite en la del director, y así sucesivamente.
