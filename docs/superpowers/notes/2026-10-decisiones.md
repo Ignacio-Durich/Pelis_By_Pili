@@ -295,3 +295,13 @@ Con 10 de cada uno, la ruleta de desempate puede tener hasta 20 títulos; desde 
 Pedido desde Comentarios; Nacho eligió opciones fijas hasta 80. "¿Cuántas cartas?" con 10, 20, 30, 50 y 80 (30 marcado de entrada, como antes). Si hay menos títulos que cumplan los filtros, el mazo es de los que haya. La base sube el tope del mazo de 30 a 80 (`bumble_sessions` y `start_bumble`); la cantidad no se guarda aparte porque el mazo ya la dice.
 
 La elección "¿Cuántas…?" es un componente compartido (`CountChoice`) que usan Top 3 secreto, Bumble y el Torneo.
+
+## Torneo: 4, 8 o 16 cada uno, detalle en el duelo y "Que decida la suerte" (2026-10-27)
+
+Pedido desde Comentarios; Nacho aclaró que 4, 8 o 16 son las que elige cada uno. "¿Cuántas elige cada uno?" con 4, 8 y 16 (4 marcado de entrada); el cuadro es del doble (8, 16 o 32) y las rondas se nombran por cuántos duelos tienen: dieciseisavos, octavos, cuartos, semifinal y final. Si no hay tantos títulos, se completa como antes y quedan huecos. Los torneos guardados antes del cambio cuentan como de 4.
+
+En el duelo, cada carta tiene la "i" redonda sobre el póster (abajo a la izquierda, para no tapar el texto); abre el detalle completo y "Volver" deja el mismo duelo, como en la Ruleta.
+
+Para cuando no se deciden, pidieron algo como la ruleta pero sin rueda: "Que decida la suerte" pasa un borde de color de una carta a la otra, cada vez más lento (13 o 14 pasos, unos 3 segundos), se queda en la ganadora 0,7 s y recién ahí cuenta como elegida; se puede deshacer como cualquier duelo. Mientras gira no se puede tocar nada del duelo. Con "reducir movimiento" elige al instante.
+
+Al probarlo apareció que el duelo ya no entraba en la pantalla: el título "Elegir" que sumó la revisión de pantallas no estaba en la cuenta de la altura de las cartas, y "Deshacer" quedaba debajo de las pestañas. La cuenta pasa de 250 a 350 px (incluye el título y la fila de botones).
