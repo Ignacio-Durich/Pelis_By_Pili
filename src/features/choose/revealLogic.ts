@@ -1,4 +1,5 @@
-export const PICKS = 3
+// Cuántas elige cada uno; la primera es la de siempre.
+export const PICK_COUNTS = [3, 5, 10] as const
 
 export type RevealResult = { matches: string[]; only: [string[], string[]]; winner: string | null; roulette: string[] | null }
 

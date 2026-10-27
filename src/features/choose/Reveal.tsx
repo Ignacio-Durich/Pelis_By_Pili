@@ -12,7 +12,7 @@ import { GameTop } from './GameTop'
 import { PhonesChoice } from './PhonesChoice'
 import { NO_PARTNER, playerName } from './players'
 import { finishReveal, RevealError, startReveal, submitReveal, type RevealSession } from './revealApi'
-import { PICKS, revealResult } from './revealLogic'
+import { PICK_COUNTS, revealResult } from './revealLogic'
 import { TieBreak } from './TieBreak'
 import { TitlePicker } from './TitlePicker'
 import { useReveal } from './useReveal'
@@ -20,8 +20,8 @@ import { useReveal } from './useReveal'
 type Props = { filters: Filters; onFiltersChange: (f: Filters) => void; onBack: () => void }
 
 // Partida de un solo celular: no pasa por la base; se guarda en el celular por si iOS recarga la
-// app. `active` es quién tiene el celular.
-type LocalReveal = { id: string; players: [string, string]; picks: [string[] | null, string[] | null]; active: 0 | 1; revealed: boolean }
+// app. `active` es quién tiene el celular. (Las guardadas antes de poder elegir 5 o 10 no traen `pickCount`.)
+type LocalReveal = { id: string; players: [string, string]; picks: [string[] | null, string[] | null]; active: 0 | 1; revealed: boolean; pickCount?: number }
 
 export function Reveal({ filters, onFiltersChange, onBack }: Props) {
   const { coupleId, members } = useCouple()
@@ -30,6 +30,7 @@ export function Reveal({ filters, onFiltersChange, onBack }: Props) {
   const { session, offline: revealOffline, load } = useReveal(coupleId)
   const [local, setLocalState] = useState<LocalReveal | null>(() => readCache<LocalReveal>('reveal', me))
   const [error, setError] = useState<string | null>(null)
+  const [pickCount, setPickCount] = useState<number>(PICK_COUNTS[0])
   const partner = members.find((m) => m.userId !== me)?.userId ?? null
 
   const toWatch = titles?.filter((t) => t.status === 'to_watch') ?? []
@@ -42,7 +43,7 @@ export function Reveal({ filters, onFiltersChange, onBack }: Props) {
 
   function startTwo() {
     setError(null)
-    startReveal().then(load, () => setError('No se pudo empezar. Probá de nuevo.'))
+    startReveal(pickCount).then(load, () => setError('No se pudo empezar. Probá de nuevo.'))
   }
 
   let body
@@ -59,13 +60,21 @@ export function Reveal({ filters, onFiltersChange, onBack }: Props) {
   } else {
     body = (
       <>
-        <p>Cada uno elige 3 en secreto y se muestran a la vez.</p>
+        <p>{`Cada uno elige ${pickCount} en secreto y se muestran a la vez.`}</p>
+        <h3>¿Cuántas elige cada uno?</h3>
+        <div className="segmented">
+          {PICK_COUNTS.map((n) => (
+            <button key={n} aria-pressed={pickCount === n} onClick={() => setPickCount(n)}>
+              {n}
+            </button>
+          ))}
+        </div>
         <FiltersPanel value={filters} options={filterOptions(toWatch)} count={{ matching: matching.length, total: toWatch.length }} onChange={onFiltersChange} />
         <PhonesChoice
           missing={matching.length < 1 ? 'Hace falta al menos 1 título' : null}
           hasPartner={!!partner}
           error={error}
-          onOne={() => setLocal({ id: crypto.randomUUID(), players: [me, partner ?? NO_PARTNER], picks: [null, null], active: 0, revealed: false })}
+          onOne={() => setLocal({ id: crypto.randomUUID(), players: [me, partner ?? NO_PARTNER], picks: [null, null], active: 0, revealed: false, pickCount })}
           onTwo={startTwo}
         />
       </>
@@ -142,7 +151,7 @@ function TwoPhones({ session, me, partner, titles, matching, reload, onBack }: G
       {!mine || editing ? (
         <>
           {session.ready.includes(partner) && <p className="reveal-ready">{`${nameOf(partner)} ya eligió`}</p>}
-          <TitlePicker need={PICKS} titles={titles} matching={matching} initial={mine ?? []} onDone={send} />
+          <TitlePicker need={session.pickCount} titles={titles} matching={matching} initial={mine ?? []} onDone={send} />
         </>
       ) : (
         <>
@@ -162,6 +171,7 @@ function OnePhone({ game, titles, matching, onChange, onBack }: GameProps & { ga
   const name = (i: 0 | 1) => playerName(game.players[i], nameOf)
   const end = () => onChange(null)
   const [first, second] = game.picks
+  const need = game.pickCount ?? PICK_COUNTS[0]
 
   if (game.revealed) {
     return (
@@ -174,7 +184,7 @@ function OnePhone({ game, titles, matching, onChange, onBack }: GameProps & { ga
 
   let content
   if (!first) {
-    content = <TitlePicker need={PICKS} turnOf={name(0)} titles={titles} matching={matching} initial={[]} onDone={(ids) => onChange({ ...game, picks: [ids, null] })} />
+    content = <TitlePicker need={need} turnOf={name(0)} titles={titles} matching={matching} initial={[]} onDone={(ids) => onChange({ ...game, picks: [ids, null] })} />
   } else if (game.active === 0) {
     // El primero ya eligió: se pasa el celular sin mostrar lo que eligió.
     content = (
@@ -184,7 +194,7 @@ function OnePhone({ game, titles, matching, onChange, onBack }: GameProps & { ga
       </>
     )
   } else if (!second) {
-    content = <TitlePicker need={PICKS} turnOf={name(1)} titles={titles} matching={matching} initial={[]} onDone={(ids) => onChange({ ...game, picks: [first, ids] })} />
+    content = <TitlePicker need={need} turnOf={name(1)} titles={titles} matching={matching} initial={[]} onDone={(ids) => onChange({ ...game, picks: [first, ids] })} />
   } else {
     content = (
       <>
