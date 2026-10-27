@@ -29,8 +29,8 @@ async function closeOpen() {
   await adminClient().from('reveal_sessions').update({ status: 'cancelled', finished_at: new Date().toISOString() }).eq('couple_id', coupleA).eq('status', 'open')
 }
 
-async function start(u: User) {
-  const { data, error } = await u.client.rpc('start_reveal')
+async function start(u: User, pickCount?: number) {
+  const { data, error } = await u.client.rpc('start_reveal', pickCount ? { p_pick_count: pickCount } : {})
   if (error) throw error
   return data as string
 }
@@ -51,7 +51,7 @@ beforeAll(async () => {
   ;[A, B, C] = await Promise.all([createTestUser(), createTestUser(), createTestUser()])
   coupleA = await createCouple(A, B)
   const coupleC = await createCouple(C)
-  ids = await addTitles(coupleA, 6)
+  ids = await addTitles(coupleA, 11)
   ;[watched] = await addTitles(coupleA, 1, 'watched')
   ;[foreign] = await addTitles(coupleC, 1)
 })
@@ -121,6 +121,24 @@ test('the choice must be 1 to 3 titles of the couple still to watch', async () =
   expect((await submit(A, id, [ids[0], ids[0]])).error).toBeNull()
   expect(await picksSeenBy(A, id)).toEqual({ A: [ids[0]] })
   expect((await submit(C, id, [ids[0]])).error?.message).toBe('not_found')
+})
+
+test('a game can be of 5 or 10 picks, set by who starts it, and nothing else', async () => {
+  await closeOpen()
+  const id = await start(A, 5)
+  expect(await start(B, 10)).toBe(id)
+  const { data } = await adminClient().from('reveal_sessions').select('pick_count').eq('id', id).single()
+  expect(data!.pick_count).toBe(5)
+  expect((await submit(A, id, ids.slice(0, 6))).error?.message).toBe('invalid_picks')
+  expect((await submit(A, id, ids.slice(0, 5))).error).toBeNull()
+  await closeOpen()
+  const ten = await start(A, 10)
+  expect((await submit(A, ten, ids.slice(0, 11))).error?.message).toBe('invalid_picks')
+  expect((await submit(A, ten, ids.slice(0, 10))).error).toBeNull()
+  await closeOpen()
+  for (const bad of [4, 0, 11]) {
+    expect((await A.client.rpc('start_reveal', { p_pick_count: bad })).error?.message).toBe('invalid_picks')
+  }
 })
 
 test('finishing saves a chosen title once and lets them start again', async () => {

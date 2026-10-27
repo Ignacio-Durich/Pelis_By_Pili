@@ -25,10 +25,10 @@ const kindOf = (p: Promise<unknown>) => p.then(() => 'ok', (e: RevealError) => e
 
 test('loadOpenReveal reads the open game of the couple with the picks it is allowed to see', async () => {
   db.query.maybeSingle.mockResolvedValue({
-    data: { id: 's1', ready: ['u1'], revealed_at: null, reveal_picks: [{ user_id: 'u1', title_ids: ['a', 'b', 'c'] }] },
+    data: { id: 's1', ready: ['u1'], revealed_at: null, pick_count: 5, reveal_picks: [{ user_id: 'u1', title_ids: ['a', 'b', 'c'] }] },
     error: null,
   })
-  expect(await loadOpenReveal('c1')).toEqual({ id: 's1', ready: ['u1'], revealed: false, picks: [{ userId: 'u1', titleIds: ['a', 'b', 'c'] }] })
+  expect(await loadOpenReveal('c1')).toEqual({ id: 's1', ready: ['u1'], revealed: false, pickCount: 5, picks: [{ userId: 'u1', titleIds: ['a', 'b', 'c'] }] })
   expect(db.from).toHaveBeenCalledWith('reveal_sessions')
   expect(db.query.eq).toHaveBeenCalledWith('couple_id', 'c1')
   expect(db.query.eq).toHaveBeenCalledWith('status', 'open')
@@ -45,8 +45,8 @@ test('loadOpenReveal gives null without a game and network on errors', async () 
 
 test('each action calls its function with the exact parameters', async () => {
   db.rpc.mockResolvedValue({ data: 's9', error: null })
-  expect(await startReveal()).toBe('s9')
-  expect(db.rpc).toHaveBeenLastCalledWith('start_reveal')
+  expect(await startReveal(5)).toBe('s9')
+  expect(db.rpc).toHaveBeenLastCalledWith('start_reveal', { p_pick_count: 5 })
   await submitReveal('s9', ['a', 'b', 'c'])
   expect(db.rpc).toHaveBeenLastCalledWith('submit_reveal', { p_session_id: 's9', p_title_ids: ['a', 'b', 'c'] })
   await finishReveal('s9', 'a')
@@ -59,7 +59,7 @@ test('function errors keep their code and anything else is network', async () =>
     expect(await kindOf(submitReveal('s', ['a']))).toBe(code)
   }
   db.rpc.mockResolvedValue({ data: null, error: { message: 'Failed to fetch' } })
-  expect(await kindOf(startReveal())).toBe('network')
+  expect(await kindOf(startReveal(3))).toBe('network')
 })
 
 test('subscribeReveal listens to the couple games only (picks never travel by Realtime)', () => {

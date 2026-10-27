@@ -58,7 +58,7 @@ afterEach(() => vi.useRealTimers())
 
 const press = (name: string | RegExp) => fireEvent.click(screen.getByRole('button', { name }))
 const pick = (...letters: string[]) => letters.forEach((l) => press(new RegExp(`Peli ${l.toUpperCase()}`)))
-const game = (over: Partial<RevealSession>): RevealSession => ({ id: 's1', ready: [], revealed: false, picks: [], ...over })
+const game = (over: Partial<RevealSession>): RevealSession => ({ id: 's1', ready: [], revealed: false, pickCount: 3, picks: [], ...over })
 
 function renderReveal(members?: Parameters<typeof withCouple>[1]) {
   return render(withCouple(<Reveal filters={NO_FILTERS} onFiltersChange={vi.fn()} onBack={vi.fn()} />, members))
@@ -67,7 +67,7 @@ function renderReveal(members?: Parameters<typeof withCouple>[1]) {
 async function renderGame(session: RevealSession) {
   api.loadOpenReveal.mockResolvedValue(session)
   renderReveal()
-  await screen.findAllByText(/Elegí 3|Esperando|Coinciden|Eligió|ruleta|^3$/)
+  await screen.findAllByText(/Elegí \d+|Esperando|Coinciden|Eligió|ruleta|^3$/)
 }
 
 async function changeGame(session: RevealSession) {
@@ -88,11 +88,33 @@ test('asks how many phones; two phones need the partner and one needs a title', 
   expect(screen.getByRole('button', { name: '📱 Uno' })).toBeDisabled()
 })
 
-test('Dos starts a game', async () => {
+test('Dos starts a game of 3 unless they choose 5 or 10', async () => {
   renderReveal()
   await screen.findByText('¿Cuántos celulares van a usar?')
+  expect(screen.getByRole('button', { name: '3' })).toHaveAttribute('aria-pressed', 'true')
   await act(async () => press('📱📱 Dos'))
-  expect(api.startReveal).toHaveBeenCalled()
+  expect(api.startReveal).toHaveBeenLastCalledWith(3)
+  press('5')
+  expect(screen.getByText('Cada uno elige 5 en secreto y se muestran a la vez.')).toBeInTheDocument()
+  await act(async () => press('📱📱 Dos'))
+  expect(api.startReveal).toHaveBeenLastCalledWith(5)
+})
+
+test('a game of 5 asks for 5 on both phones', async () => {
+  await renderGame(game({ pickCount: 5 }))
+  expect(screen.getByText('Elegí 5')).toBeInTheDocument()
+})
+
+test('one phone with 5: each one picks 5', async () => {
+  renderReveal()
+  await screen.findByText('¿Cuántos celulares van a usar?')
+  press('5')
+  press('📱 Uno')
+  expect(screen.getByText('Turno de Tomás: elegí 5')).toBeInTheDocument()
+  pick('a', 'b', 'c', 'd', 'e')
+  press('Listo (5 de 5)')
+  press('Listo, soy Juli')
+  expect(screen.getByText('Turno de Juli: elegí 5')).toBeInTheDocument()
 })
 
 test('picking: up to three, then Listo sends them', async () => {

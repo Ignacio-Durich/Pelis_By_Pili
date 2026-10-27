@@ -281,3 +281,11 @@ Pedido desde Comentarios. Cada uno tiene 3 vetos por sesión (antes 1). El botó
 Pedido desde Comentarios: el botón para ver la sinopsis en Descubrir no gustaba. Entre cuatro opciones se eligió la de íconos redondos al costado de la tarjeta: una "i" (en el color de acento; relleno cuando está abierta) y una ✕ para "No me interesa". Los nombres accesibles siguen siendo "Ver detalle" / "Ocultar detalle" y "No me interesa".
 
 El mismo botón "i" va en las listas para elegir de Top 3 secreto y Torneo, que además muestran director e IMDb. La sinopsis no está guardada con el título: se pide a title-detail la primera vez que se abre y se recuerda mientras dura la lista. En esas listas se abre una sinopsis a la vez.
+
+## Top 3 secreto: 3, 5 o 10 (2026-10-27)
+
+Pedido desde Comentarios. Antes de elegir cuántos celulares, "¿Cuántas elige cada uno?" con 3, 5 o 10 (3 marcado de entrada). El modo sigue llamándose "Top 3 secreto"; el texto de arriba dice cuántas.
+
+Con dos celulares la cantidad se guarda en la partida (`reveal_sessions.pick_count`, solo 3, 5 o 10) y `start_reveal(p_pick_count)` la fija; si la pareja ya tenía una partida abierta, se entra a esa con su cantidad. `submit_reveal` acepta de 1 a `pick_count` títulos, y `reveal_picks` admite hasta 10. Con un celular la cantidad viaja en la partida guardada en el celular; las guardadas antes del cambio cuentan como 3.
+
+Con 10 de cada uno, la ruleta de desempate puede tener hasta 20 títulos; desde 13 no muestra los nombres en la rueda, como ya pasaba en la Ruleta.
