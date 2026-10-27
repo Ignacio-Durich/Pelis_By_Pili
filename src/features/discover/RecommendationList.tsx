@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { fetchTitleDetail } from '../titles/detailApi'
 import { searchDetails, type Extra } from '../titles/searchApi'
-import { ScoreLine, TitleCard } from '../titles/TitleCard'
+import { InfoIcon, ScoreLine, TitleCard } from '../titles/TitleCard'
 import { addTitle, removeTitle, TitleError, type Title } from '../titles/titlesApi'
 import { dismissTitle, recKey, undismissTitle, type Recommendation } from './discoverApi'
 
@@ -162,12 +162,17 @@ export function RecommendationList({ coupleId, items, titles, originNote, hidden
               </button>
               {!watchedSeries && (
                 <div className="rec-actions">
-                  <button className="small" aria-expanded={detailOpen} onClick={() => toggleDetail(key)}>
-                    {detailOpen ? 'Ocultar detalle' : 'Ver detalle'}
+                  <button
+                    className="round info"
+                    aria-label={detailOpen ? 'Ocultar detalle' : 'Ver detalle'}
+                    aria-expanded={detailOpen}
+                    onClick={() => toggleDetail(key)}
+                  >
+                    <InfoIcon />
                   </button>
                   {!justAdded && (
-                    <button className="small" disabled={busyKey !== null} onClick={() => dismiss(r)}>
-                      No me interesa
+                    <button className="round" aria-label="No me interesa" disabled={busyKey !== null} onClick={() => dismiss(r)}>
+                      ✕
                     </button>
                   )}
                 </div>

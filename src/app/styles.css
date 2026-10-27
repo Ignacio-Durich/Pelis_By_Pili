@@ -1033,19 +1033,48 @@ button.theme-option[aria-pressed='true'] {
   white-space: nowrap;
 }
 
-/* Tarjetas de Descubrir: la tarjeta y, debajo, "Ver detalle" y "No me interesa". */
+/* Tarjetas de Descubrir y de las listas para elegir (Top 3 secreto, Torneo): la tarjeta, al costado los botones redondos (detalle y "No me interesa")
+   y, debajo, la sinopsis cuando se abre. */
 .title-list li.rec-item {
   flex-wrap: wrap;
+  align-items: flex-start;
 }
 
 .rec-item > button.result {
-  flex-basis: 100%;
+  min-width: 0;
 }
 
 .rec-actions {
   display: flex;
+  flex-direction: column;
   gap: 8px;
-  flex-basis: 100%;
+  padding-top: 6px;
+}
+
+/* Botón redondo con un ícono: "i" para la sinopsis, ✕ para descartar. */
+button.round {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 16px;
+  font-weight: normal;
+}
+
+button.round.info {
+  color: var(--accent);
+}
+
+button.round[aria-expanded='true'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
 }
 
 button.small {

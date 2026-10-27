@@ -275,3 +275,9 @@ Pedido desde Comentarios: revisar todas las pantallas buscando incongruencias. T
 # Ruleta con 3 vetos (2026-10-27)
 
 Pedido desde Comentarios. Cada uno tiene 3 vetos por sesión (antes 1). El botón dice cuántos le quedan ("Veto de Tomás (quedan 2)") y, sin vetos, "Tomás ya no tiene vetos". Cambiar un filtro sigue empezando una sesión nueva, con los vetos completos.
+
+## Botones redondos para el detalle y "No me interesa" (2026-10-27)
+
+Pedido desde Comentarios: el botón para ver la sinopsis en Descubrir no gustaba. Entre cuatro opciones se eligió la de íconos redondos al costado de la tarjeta: una "i" (en el color de acento; relleno cuando está abierta) y una ✕ para "No me interesa". Los nombres accesibles siguen siendo "Ver detalle" / "Ocultar detalle" y "No me interesa".
+
+El mismo botón "i" va en las listas para elegir de Top 3 secreto y Torneo, que además muestran director e IMDb. La sinopsis no está guardada con el título: se pide a title-detail la primera vez que se abre y se recuerda mientras dura la lista. En esas listas se abre una sinopsis a la vez.
