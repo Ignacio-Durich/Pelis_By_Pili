@@ -9,10 +9,11 @@ import type { Title } from '../titles/titlesApi'
 import { useTitles } from '../titles/useTitles'
 import { BumbleCard } from './BumbleCard'
 import { GameTop as Top } from './GameTop'
+import { CountChoice } from './CountChoice'
 import { PhonesChoice } from './PhonesChoice'
 import { NO_PARTNER, playerName } from './players'
 import { bumbleUndo, bumbleVote, finishBumble, startBumble, type BumbleSession } from './bumbleApi'
-import { bumbleState, buildDeck, lastUndoable, seededIndex, type BumbleState, type Vote } from './bumbleLogic'
+import { bumbleState, buildDeck, DECK_SIZE, DECK_SIZES, lastUndoable, seededIndex, type BumbleState, type Vote } from './bumbleLogic'
 import { TieBreak } from './TieBreak'
 import { TitleFacts } from './TitleFacts'
 import { useBumble } from './useBumble'
@@ -33,6 +34,7 @@ export function Bumble({ filters, onFiltersChange, onBack, random = Math.random 
   const { session, offline: bumbleOffline, load } = useBumble(coupleId)
   const [local, setLocalState] = useState<LocalGame | null>(() => readCache<LocalGame>('bumble', me))
   const [error, setError] = useState<string | null>(null)
+  const [deckSize, setDeckSize] = useState<number>(DECK_SIZE)
   const partner = members.find((m) => m.userId !== me)?.userId ?? null
 
   const toWatch = titles?.filter((t) => t.status === 'to_watch') ?? []
@@ -44,12 +46,12 @@ export function Bumble({ filters, onFiltersChange, onBack, random = Math.random 
   }
 
   function startOne() {
-    setLocal({ id: crypto.randomUUID(), deck: buildDeck(toWatch, filters, random), votes: [], players: [me, partner ?? NO_PARTNER], active: 0, round: 1 })
+    setLocal({ id: crypto.randomUUID(), deck: buildDeck(toWatch, filters, deckSize, random), votes: [], players: [me, partner ?? NO_PARTNER], active: 0, round: 1 })
   }
 
   function startTwo() {
     setError(null)
-    startBumble(buildDeck(toWatch, filters, random)).then(load, () => setError('No se pudo empezar. Probá de nuevo.'))
+    startBumble(buildDeck(toWatch, filters, deckSize, random)).then(load, () => setError('No se pudo empezar. Probá de nuevo.'))
   }
 
   let body
@@ -67,6 +69,7 @@ export function Bumble({ filters, onFiltersChange, onBack, random = Math.random 
     body = (
       <>
         <p>Deslicen las cartas. Hay match cuando a los dos les gusta la misma.</p>
+        <CountChoice label="¿Cuántas cartas?" options={DECK_SIZES} value={deckSize} onChange={setDeckSize} />
         <FiltersPanel value={filters} options={filterOptions(toWatch)} count={{ matching: matching.length, total: toWatch.length }} onChange={onFiltersChange} />
         <PhonesChoice
           missing={matching.length < 2 ? 'Hacen falta al menos 2 títulos' : null}

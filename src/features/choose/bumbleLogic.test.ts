@@ -19,12 +19,13 @@ test('buildDeck: only titles to watch that match the filters, at most 30, no rep
   const dramas = buildDeck(titles, { ...NO_FILTERS, genres: ['Drama'] })
   expect(dramas.every((id) => Number(id.slice(1)) % 2 === 1)).toBe(true)
   expect(dramas).toHaveLength(17)
+  expect(buildDeck(titles, NO_FILTERS, 10)).toHaveLength(10)
 })
 
 test('buildDeck: shuffles with the given random', () => {
   const titles = ['a', 'b', 'c', 'd'].map((id, i) => makeTitle({ id, tmdbId: i }))
-  expect(buildDeck(titles, NO_FILTERS, () => 0.999)).toEqual(['a', 'b', 'c', 'd'])
-  expect(buildDeck(titles, NO_FILTERS, () => 0)).not.toEqual(['a', 'b', 'c', 'd'])
+  expect(buildDeck(titles, NO_FILTERS, 30, () => 0.999)).toEqual(['a', 'b', 'c', 'd'])
+  expect(buildDeck(titles, NO_FILTERS, 30, () => 0)).not.toEqual(['a', 'b', 'c', 'd'])
 })
 
 test('without votes: round 1 with the first card for both', () => {

@@ -51,7 +51,7 @@ beforeAll(async () => {
   ;[A, B, C, D] = await Promise.all([createTestUser(), createTestUser(), createTestUser(), createTestUser()])
   coupleA = await createCouple(A, B)
   coupleC = await createCouple(C, D)
-  deck = await addTitles(coupleA, 31)
+  deck = await addTitles(coupleA, 81)
   ;[watched] = await addTitles(coupleA, 1, 'watched')
   ;[foreign] = await addTitles(coupleC, 1)
 })
@@ -68,15 +68,15 @@ test('starting gives one open game per couple, even when both start at once', as
   expect([3, 4]).toContain((data?.deck as string[] | undefined)?.length)
 })
 
-test('the deck must have 2 to 30 of the couple titles still to watch', async () => {
+test('the deck must have 2 to 80 of the couple titles still to watch', async () => {
   await closeOpen()
-  for (const ids of [deck.slice(0, 1), deck.slice(0, 31), [deck[0], watched], [deck[0], foreign], [deck[0], deck[0]]]) {
+  for (const ids of [deck.slice(0, 1), deck.slice(0, 81), [deck[0], watched], [deck[0], foreign], [deck[0], deck[0]]]) {
     const { error } = await A.client.rpc('start_bumble', { p_title_ids: ids })
     expect(error?.message).toBe('invalid_deck')
   }
-  const id = await start(A, deck.slice(0, 30))
+  const id = await start(A, deck.slice(0, 80))
   const { data } = await adminClient().from('bumble_sessions').select('deck').eq('id', id).single()
-  expect(data?.deck).toEqual(deck.slice(0, 30))
+  expect(data?.deck).toEqual(deck.slice(0, 80))
 })
 
 test('repeated titles are dropped keeping the order', async () => {

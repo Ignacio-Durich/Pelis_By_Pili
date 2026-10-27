@@ -2,6 +2,8 @@ import { matchesFilters, type Filters } from '../titles/filters'
 import type { Title } from '../titles/titlesApi'
 import { shuffled } from './pick'
 
+// De cuántas cartas puede ser el mazo; 30 es la de siempre.
+export const DECK_SIZES = [10, 20, 30, 50, 80] as const
 export const DECK_SIZE = 30
 export const MAX_ROUNDS = 3
 
@@ -13,9 +15,9 @@ export type BumbleState =
   | { kind: 'roulette'; round: number; candidates: string[] }
   | { kind: 'none' }
 
-export function buildDeck(titles: Title[], filters: Filters, random: () => number = Math.random): string[] {
+export function buildDeck(titles: Title[], filters: Filters, size: number = DECK_SIZE, random: () => number = Math.random): string[] {
   const ids = titles.filter((t) => t.status === 'to_watch' && matchesFilters(t, filters)).map((t) => t.id)
-  return shuffled(ids, random).slice(0, DECK_SIZE)
+  return shuffled(ids, random).slice(0, size)
 }
 
 // Los dos celulares (o el único) llegan al mismo estado con los mismos votos: vuelta 1 = el mazo;
