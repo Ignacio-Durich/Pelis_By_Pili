@@ -4,7 +4,7 @@ import { Icon } from '../../lib/icons'
 type Props = {
   title: string
   posterPath: string | null
-  // Puntaje IMDb ya formateado ("7.7"); sin puntaje y en cartelera, el chip dice "En cines".
+  // Puntaje IMDb ya formateado ("7.7"): el chip dice "IMDb 7.7"; sin puntaje y en cartelera, "En cines".
   imdb: string | null
   inTheaters?: boolean
   // Recién agregada desde Descubrir: un ✓ sobre el póster.
@@ -28,10 +28,7 @@ export function PosterTile({ title, posterPath, imdb, inTheaters, marked, childr
       <strong>{title}</strong>
       {children}
       {imdb ? (
-        <span className="tile-badge">
-          <span className="visually-hidden">{`IMDb ${imdb}`}</span>
-          <span aria-hidden="true">{imdb}</span>
-        </span>
+        <span className="tile-badge">{`IMDb ${imdb}`}</span>
       ) : (
         inTheaters && <span className="tile-badge">En cines</span>
       )}

@@ -168,6 +168,8 @@ test('the poster carries the IMDb score, or En cines when it has none and is in 
   expect(screen.getByRole('button', { name: /^Ver Serie rara/ })).not.toHaveAccessibleName(expect.stringMatching(/IMDb|RT|En cines/))
   expect(await screen.findByRole('button', { name: /^Ver Estreno.*En cines/ })).toBeInTheDocument()
   expect(screen.queryByText(/RT 67%/)).not.toBeInTheDocument()
+  // Se lee "IMDb" en el póster, no solo el número.
+  expect(screen.getByText('IMDb 7.7')).toBeInTheDocument()
 })
 
 test('tapping a card opens its detail and Volver returns', async () => {
