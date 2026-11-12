@@ -14,6 +14,7 @@ import {
   discoverKey,
   dismissTitle,
   fetchDiscover,
+  fetchNowPlaying,
   fetchPlatforms,
   fetchProviders,
   fetchSimilar,
@@ -71,6 +72,16 @@ test('fetchSimilar returns the similar ones and the parts by person; fetchProvid
   expect(invoke).toHaveBeenLastCalledWith('recommendations', { body: { similarTo: 't1' } })
   invoke.mockResolvedValueOnce({ data: { providers: [{ id: 8, name: 'Netflix', logoPath: null }] }, error: null })
   expect(await fetchProviders()).toEqual([{ id: 8, name: 'Netflix', logoPath: null }])
+})
+
+test('fetchNowPlaying asks once per session, and again after a failure', async () => {
+  invoke.mockResolvedValueOnce({ data: null, error: new Error('x') })
+  await expect(fetchNowPlaying()).rejects.toThrow()
+  invoke.mockResolvedValue({ data: { ids: [27205, 155] }, error: null })
+  expect(await fetchNowPlaying()).toEqual([27205, 155])
+  expect(await fetchNowPlaying()).toEqual([27205, 155])
+  expect(invoke).toHaveBeenCalledTimes(2)
+  expect(invoke).toHaveBeenLastCalledWith('recommendations', { body: { nowPlaying: true } })
 })
 
 test('dismiss, undismiss and setPlatforms call their SQL functions', async () => {

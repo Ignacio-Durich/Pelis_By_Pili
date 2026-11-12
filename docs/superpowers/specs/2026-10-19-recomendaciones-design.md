@@ -92,6 +92,10 @@ El título tiene que estar en la lista del espacio (lo comprueba RLS). Primera p
 
 Además, `more`: más del mismo director y de los dos actores principales, cada uno en su parte (pedido desde Comentarios, 2026-10-27). La ficha del título con `append_to_response=credits` da el director (de una serie, el primero de `created_by`) y los dos primeros del reparto que no sean el director; `/person/{id}/combined_credits` da lo de cada uno. Del director, las películas que dirigió y las series que creó (no las series donde dirigió algún episodio); de un actor, películas y series, sin apariciones como sí mismo, sin programas que emiten todas las semanas y sin series donde estuvo en menos de 3 episodios. Hasta 20 por parte, las más votadas primero, sin lo que ya salió en las parecidas o en una parte anterior. Una parte vacía no se devuelve. Son hasta 4 consultas más a TMDB, ninguna a OMDb. En la ficha: "Más de <director>" y "Con <actor>", con la nota de origen igual al título de la parte.
 
+### `{ nowPlaying: true }` → cartelera para el filtro "En cines"
+
+`/movie/now_playing` con `region=AR`, páginas 1 a 5, devuelve `{ ids }`: los ids de TMDB de las películas en cines, sin repetidos. La app la pide una vez por sesión (si falla, la próxima vez) y `useTitles` marca con `inTheaters` las películas de la lista que están ahí. En los Filtros, "En cines" va entre las plataformas (solo si alguna está en cines) y se combina con ellas como una más. Sin cartelera, nadie está en cines y la opción no aparece (pedido desde Comentarios, 2026-10-28).
+
 ### `{ providers: true }` → plataformas para Ajustes
 
 `/watch/providers/movie` y `/watch/providers/tv` con `watch_region=AR`, unidas y sin los canales que se contratan dentro de otra ("… Amazon Channel", "… Apple TV Channel"). Primero van las conocidas en Argentina (Netflix, Prime Video, Disney Plus, HBO Max, Paramount Plus, Apple TV, MUBI, Crunchyroll, Mercado Play, Claro video, Movistar TV, DIRECTV GO, ViX, Pluto TV) y después el resto por `display_priority`, porque TMDB deja a HBO Max en el puesto 34 (pedido de Tomás, 2026-10-19). Hasta 30, con nombre y logo. Así la clave de TMDB no sale del servidor.

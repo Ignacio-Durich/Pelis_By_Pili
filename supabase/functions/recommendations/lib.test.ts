@@ -18,8 +18,9 @@ import {
   toRecommendation,
 } from './lib.ts'
 
-test('parseRequest: the three modes and nothing else', () => {
+test('parseRequest: the four modes and nothing else', () => {
   expect(parseRequest({ discover: true })).toEqual({ kind: 'discover' })
+  expect(parseRequest({ nowPlaying: true })).toEqual({ kind: 'nowPlaying' })
   expect(parseRequest({ similarTo: '6f1c2a4e-3b7d-4c1e-9a2b-1d2e3f4a5b6c' })).toEqual({ kind: 'similar', titleId: '6f1c2a4e-3b7d-4c1e-9a2b-1d2e3f4a5b6c' })
   expect(parseRequest({ providers: true })).toEqual({ kind: 'providers' })
   for (const body of [null, {}, { similarTo: 'x' }, { discover: 'yes' }]) expect(parseRequest(body)).toBeNull()

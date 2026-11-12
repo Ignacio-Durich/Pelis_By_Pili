@@ -33,6 +33,17 @@ async function invoke<T>(body: Record<string, unknown>): Promise<T> {
   return data
 }
 
+// La cartelera se pide una vez por sesión de la app; si falla, se vuelve a pedir la próxima vez.
+let nowPlaying: Promise<number[]> | null = null
+
+export function fetchNowPlaying(): Promise<number[]> {
+  const promise = (nowPlaying ??= invoke<{ ids: number[] }>({ nowPlaying: true }).then((r) => r.ids))
+  promise.catch(() => {
+    if (nowPlaying === promise) nowPlaying = null
+  })
+  return promise
+}
+
 export function fetchDiscover(key: string): Promise<Discover> {
   if (saved?.key === key) return saved.promise
   const entry = { key, promise: invoke<Discover>({ discover: true }) }

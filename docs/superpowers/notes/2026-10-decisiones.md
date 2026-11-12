@@ -305,3 +305,9 @@ En el duelo, cada carta tiene la "i" redonda sobre el póster (abajo a la izquie
 Para cuando no se deciden, pidieron algo como la ruleta pero sin rueda: "Que decida la suerte" pasa un borde de color de una carta a la otra, cada vez más lento (13 o 14 pasos, unos 3 segundos), se queda en la ganadora 0,7 s y recién ahí cuenta como elegida; se puede deshacer como cualquier duelo. Mientras gira no se puede tocar nada del duelo. Con "reducir movimiento" elige al instante.
 
 Al probarlo apareció que el duelo ya no entraba en la pantalla: el título "Elegir" que sumó la revisión de pantallas no estaba en la cuenta de la altura de las cartas, y "Deshacer" quedaba debajo de las pestañas. La cuenta pasa de 250 a 350 px (incluye el título y la fila de botones).
+
+## Filtro "En cines" (2026-11-12)
+
+Pedido desde Comentarios (2026-10-28): un filtro para las películas que están en el cine. Nacho aprobó la propuesta: "En cines" va entre las Plataformas del panel de Filtros, así sirve en la Lista y en todos los modos de Elegir, y combinada con una plataforma muestra lo que está en cualquiera de las dos.
+
+El dato es la cartelera de TMDB para Argentina, que trae `recommendations` con `{ nowPlaying: true }` (la función ya la usaba para Descubrir). No se guarda en la base: así está siempre al día y no hace falta migración. Solo cuentan películas; las series nunca. Si la cartelera no se puede pedir (sin conexión), la opción no aparece y se vuelve a pedir cuando vuelve la conexión.

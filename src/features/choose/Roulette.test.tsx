@@ -2,13 +2,17 @@ import { act, fireEvent, render, screen } from '@testing-library/react'
 import { useState } from 'react'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 
-const api = vi.hoisted(() => ({ listTitles: vi.fn(), subscribeTitles: vi.fn(), fetchTitleDetail: vi.fn() }))
+const api = vi.hoisted(() => ({ listTitles: vi.fn(), subscribeTitles: vi.fn(), fetchTitleDetail: vi.fn(), fetchNowPlaying: vi.fn() }))
 vi.mock('../titles/titlesApi', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../titles/titlesApi')>()),
   listTitles: api.listTitles,
   subscribeTitles: api.subscribeTitles,
 }))
 vi.mock('../titles/detailApi', () => ({ fetchTitleDetail: api.fetchTitleDetail }))
+vi.mock('../discover/discoverApi', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../discover/discoverApi')>()),
+  fetchNowPlaying: api.fetchNowPlaying,
+}))
 vi.mock('../../lib/supabase', () => ({ supabase: {} }))
 
 import { tomas, withCouple } from '../../test/providers'
@@ -38,6 +42,7 @@ beforeEach(() => {
     return () => {}
   })
   api.fetchTitleDetail.mockReturnValue(new Promise(() => {}))
+  api.fetchNowPlaying.mockResolvedValue([])
 })
 afterEach(() => vi.useRealTimers())
 
@@ -118,6 +123,26 @@ test('a veto that leaves no candidates says so', async () => {
   fireEvent.click(screen.getByRole('button', { name: /^Veto de Tomás/ }))
   expect(screen.getByText('No quedan títulos con estos filtros')).toBeInTheDocument()
   expect(screen.queryByRole('heading', { name: 'Les tocó' })).not.toBeInTheDocument()
+})
+
+test('En cines shows up among the platforms when a movie of the list is in theaters, and filters by it', async () => {
+  api.fetchNowPlaying.mockResolvedValue([3, 999])
+  renderRoulette()
+  await screen.findByText('Hay 3 títulos que cumplen los filtros')
+  fireEvent.click(screen.getByRole('button', { name: /^Filtros/ }))
+  fireEvent.click(await screen.findByRole('button', { name: 'En cines' }))
+  expect(await screen.findByText('1 de 3 títulos cumple los filtros')).toBeInTheDocument()
+  spin()
+  expect(resultName()).toBe('Tercera')
+})
+
+test('without the theaters list there is no En cines', async () => {
+  api.fetchNowPlaying.mockRejectedValue(new Error('network'))
+  renderRoulette()
+  await screen.findByText('Hay 3 títulos que cumplen los filtros')
+  fireEvent.click(screen.getByRole('button', { name: /^Filtros/ }))
+  expect(screen.getByRole('button', { name: 'Netflix' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'En cines' })).not.toBeInTheDocument()
 })
 
 test('changing a filter starts a new session', async () => {

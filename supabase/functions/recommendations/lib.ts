@@ -36,12 +36,13 @@ export type Discover = {
   platformNames: string[] // las elegidas, para mostrar bajo el subtítulo
 }
 export type ProviderOption = { id: number; name: string; logoPath: string | null; known: boolean }
-export type RecRequest = { kind: 'discover' } | { kind: 'similar'; titleId: string } | { kind: 'providers' }
+export type RecRequest = { kind: 'discover' } | { kind: 'similar'; titleId: string } | { kind: 'providers' } | { kind: 'nowPlaying' }
 export type Seed = { key: string; title: string; weight: number } // key = `${mediaType}:${tmdbId}`
 
 export function parseRequest(body: unknown): RecRequest | null {
-  const b = (body ?? {}) as { discover?: unknown; similarTo?: unknown; providers?: unknown }
+  const b = (body ?? {}) as { discover?: unknown; similarTo?: unknown; providers?: unknown; nowPlaying?: unknown }
   if (b.discover === true) return { kind: 'discover' }
+  if (b.nowPlaying === true) return { kind: 'nowPlaying' }
   if (b.providers === true) return { kind: 'providers' }
   const titleId = parseTitleId({ titleId: b.similarTo })
   return titleId ? { kind: 'similar', titleId } : null

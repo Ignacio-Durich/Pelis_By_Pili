@@ -3,7 +3,9 @@ import { useBackfillDetails } from './useBackfillDetails'
 import { applyPending, clearDropped, droppedFor, flushPending, pendingFor, readCache, saveCache, subscribePending, type FlushResult, type Pending } from '../../lib/offline'
 import { useUserId } from '../auth/sessionContext'
 import { useCouple } from '../couple/coupleContext'
+import { fetchNowPlaying } from '../discover/discoverApi'
 import { addSharedItem } from '../shared/sharedApi'
+import { markInTheaters } from './filters'
 import { listTitles, setMyScore, setWatched, subscribeTitles, TitleError, type Title } from './titlesApi'
 
 export type ShownTitle = Title & { pending?: boolean }
@@ -127,8 +129,15 @@ export function useTitles(coupleId: string): {
 
   useBackfillDetails(titles)
 
+  // La cartelera, para el filtro "En cines". Sin ella (sin conexión) nadie está en cines; se vuelve
+  // a pedir cuando vuelve la conexión.
+  const [inTheaters, setInTheaters] = useState<number[] | null>(null)
+  useEffect(() => {
+    if (!offline) fetchNowPlaying().then(setInTheaters, () => {})
+  }, [offline])
+
   return {
-    titles: titles && applyPending(titles, [...sent, ...pending], userId),
+    titles: titles && markInTheaters(applyPending(titles, [...sent, ...pending], userId), inTheaters),
     offline,
     load,
     pending: pending.length,

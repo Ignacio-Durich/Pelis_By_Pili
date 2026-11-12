@@ -1,6 +1,7 @@
 // Edge Function (Deno): recomendaciones a partir de TMDB sin exponer la clave al navegador.
 // { discover } arma las cuatro secciones de Descubrir, { similarTo } las "Parecidas a esta" de un
-// título de la lista y { providers } las plataformas de Argentina para elegir. Todo lo del espacio
+// título de la lista, { providers } las plataformas de Argentina para elegir y { nowPlaying } los
+// ids de las películas en cines (para el filtro "En cines"). Todo lo del espacio
 // se lee con la sesión de quien llama: RLS limita cada lectura a su propio espacio.
 import { createClient } from 'npm:@supabase/supabase-js@2.117.2'
 import {
@@ -76,6 +77,13 @@ async function providers(calls: Calls) {
   const [movie, tv] = await Promise.all(['movie', 'tv'].map((t) => calls.get(`watch/providers/${t}`, 'watch_region=AR&language=es-MX')))
   calls.check()
   return { providers: toProviderOptions(items(movie), items(tv)) }
+}
+
+// ponytail: hasta 5 páginas (100 películas); la cartelera de Argentina no suele pasar de 3.
+async function nowPlaying(calls: Calls) {
+  const pages = await Promise.all([1, 2, 3, 4, 5].map((page) => calls.get('movie/now_playing', `language=es-MX&region=AR&page=${page}`)))
+  calls.check()
+  return { ids: [...new Set(pages.flatMap((p) => items(p).map((item) => item.id)))] }
 }
 
 async function similar(calls: Calls, title: Title, exclude: Set<string>) {
@@ -207,6 +215,7 @@ Deno.serve(async (req) => {
   const calls = tmdbCalls()
   try {
     if (request.kind === 'providers') return json(200, await providers(calls))
+    if (request.kind === 'nowPlaying') return json(200, await nowPlaying(calls))
 
     // ponytail: una sola lectura (hasta 1.000 filas por tabla); un espacio con más títulos que eso necesitaría paginar.
     const [titlesRes, scoresRes, dismissedRes, coupleRes] = await Promise.all([

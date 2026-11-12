@@ -25,6 +25,8 @@ export type Title = {
   runtime: number | null
   genres: string[]
   streaming: string[]
+  // Si es una película que hoy está en la cartelera de Argentina (no se guarda: la marca useTitles).
+  inTheaters?: boolean
   // Quién la dirigió (o creó, si es serie) y cuántas temporadas tiene: los guarda title-detail.
   director: string | null
   seasons: number | null

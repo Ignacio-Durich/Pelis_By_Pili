@@ -107,6 +107,13 @@ test('discover with a chosen platform lists its name and a platforms section', a
   expect(data.onPlatforms!.length).toBeLessThanOrEqual(30)
 })
 
+test('nowPlaying lists the TMDB ids of the movies in Argentine theaters', async () => {
+  const { data } = await recs<{ ids: number[] }>(A.client, { nowPlaying: true })
+  expect(data.ids.length).toBeGreaterThan(0)
+  expect(data.ids.every((id) => Number.isInteger(id) && id > 0)).toBe(true)
+  expect(new Set(data.ids).size).toBe(data.ids.length)
+})
+
 test('providers lists Argentine platforms with Netflix among them', async () => {
   const { data } = await recs<{ providers: ProviderOption[] }>(A.client, { providers: true })
   expect(data.providers.find((p) => p.id === 8)?.name).toBe('Netflix')

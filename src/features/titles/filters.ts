@@ -39,6 +39,13 @@ export function activeCount(f: Filters): number {
   ].filter(Boolean).length
 }
 
+// "En cines" va entre las plataformas: con ella elegida pasan las películas de la cartelera.
+export const IN_THEATERS = 'En cines'
+
+export function markInTheaters<T extends Title>(titles: T[], ids: number[] | null): T[] {
+  return titles.map((t) => ({ ...t, inTheaters: t.mediaType === 'movie' && !!ids?.includes(t.tmdbId) }))
+}
+
 // Con un filtro activo, un título sin ese dato no pasa (con "Netflix" elegido, solo lo que está en Netflix).
 export function matchesFilters(t: Title, f: Filters): boolean {
   if (f.type !== 'all' && t.mediaType !== f.type) return false
@@ -56,7 +63,7 @@ export function matchesFilters(t: Title, f: Filters): boolean {
     if (t.year === null || (low > YEAR_RANGE.min && t.year < low) || (high < YEAR_RANGE.max && t.year > high)) return false
   }
   if (f.genres.length > 0 && !f.genres.some((g) => t.genres.includes(g))) return false
-  if (f.platforms.length > 0 && !f.platforms.some((p) => t.streaming.includes(p))) return false
+  if (f.platforms.length > 0 && !f.platforms.some((p) => (p === IN_THEATERS ? t.inTheaters : t.streaming.includes(p)))) return false
   return true
 }
 
@@ -71,7 +78,7 @@ export function matchesQuery(t: Pick<Title, 'title' | 'originalTitle' | 'directo
 }
 
 export function filterOptions(titles: Title[]): { genres: string[]; platforms: string[] } {
-  return { genres: sorted(titles.flatMap((t) => t.genres)), platforms: sorted(titles.flatMap((t) => t.streaming).filter((name) => !isAddOnChannel(name))) }
+  return { genres: sorted(titles.flatMap((t) => t.genres)), platforms: sorted([...titles.flatMap((t) => t.streaming).filter((name) => !isAddOnChannel(name)), ...(titles.some((t) => t.inTheaters) ? [IN_THEATERS] : [])]) }
 }
 
 // "30 min", "1 h", "1 h 30"

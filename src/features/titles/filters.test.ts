@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 import { makeTitle } from '../../test/titles'
-import { activeCount, filterOptions, imdbText, matchesFilters, matchesQuery, NO_FILTERS, runtimeText, YEAR_RANGE, yearText, type Filters } from './filters'
+import { activeCount, filterOptions, imdbText, IN_THEATERS, markInTheaters, matchesFilters, matchesQuery, NO_FILTERS, runtimeText, YEAR_RANGE, yearText, type Filters } from './filters'
 
 const parasitos = makeTitle({ runtime: 132, imdbRating: '8.5/10', genres: ['Comedia', 'Drama'], streaming: ['Netflix', 'Prime Video'] })
 const dark = makeTitle({ mediaType: 'tv', runtime: 60, imdbRating: '8.7/10', genres: ['Ciencia ficción', 'Drama'], streaming: ['Netflix'] })
@@ -50,6 +50,21 @@ test('platforms: only titles on a chosen platform, never ones without platforms'
   expect(matchesFilters(onlyPrime, f({ platforms: ['Netflix'] }))).toBe(false)
   expect(matchesFilters(bare, f({ platforms: ['Netflix'] }))).toBe(false)
   expect(matchesFilters(onlyPrime, f({ platforms: ['Netflix', 'Prime Video'] }))).toBe(true)
+})
+
+test('En cines: only movies in the theaters list, alone or together with a platform', () => {
+  const [cine, serie, netflix] = markInTheaters(
+    [makeTitle({ tmdbId: 1 }), makeTitle({ tmdbId: 1, mediaType: 'tv' }), makeTitle({ tmdbId: 2, streaming: ['Netflix'] })],
+    [1],
+  )
+  expect([cine.inTheaters, serie.inTheaters, netflix.inTheaters]).toEqual([true, false, false])
+  const f = (platforms: string[]): Filters => ({ ...NO_FILTERS, platforms })
+  expect([cine, serie, netflix].map((t) => matchesFilters(t, f([IN_THEATERS])))).toEqual([true, false, false])
+  expect([cine, serie, netflix].map((t) => matchesFilters(t, f([IN_THEATERS, 'Netflix'])))).toEqual([true, false, true])
+  expect(filterOptions([cine, netflix]).platforms).toEqual(['En cines', 'Netflix'])
+  expect(filterOptions(markInTheaters([netflix], [1])).platforms).toEqual(['Netflix'])
+  // Sin cartelera (sin internet), nadie está en cines.
+  expect(markInTheaters([cine], null)[0].inTheaters).toBe(false)
 })
 
 test('release year range, ends included, open at both ends, and a title without year does not pass', () => {
