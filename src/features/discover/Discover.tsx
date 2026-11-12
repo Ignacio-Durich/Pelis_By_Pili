@@ -52,9 +52,10 @@ export function Discover() {
     })
   }
 
-  const list = (items: Recommendation[]) => (
+  const list = (items: Recommendation[], featured = false) => (
     <RecommendationList
       key={section}
+      featured={featured}
       coupleId={coupleId}
       items={items}
       titles={titles ?? []}
@@ -67,7 +68,7 @@ export function Discover() {
 
   // Una sección por gusto sin resultados lo explica ahí adentro, así Novedades sigue a mano.
   const taste = (items: Recommendation[]) =>
-    items.length === 0 ? <p>Cuando marquen títulos como vistos y les pongan puntaje, acá van a aparecer recomendaciones</p> : list(items)
+    items.length === 0 ? <p>Cuando marquen títulos como vistos y les pongan puntaje, acá van a aparecer recomendaciones</p> : list(items, true)
 
   function content(d: DiscoverData) {
     // Un miembro que ya no tiene opción (cambió lo puntuado) vuelve a "Para los dos".

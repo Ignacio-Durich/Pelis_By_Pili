@@ -1,12 +1,18 @@
 import { useEffect, useState } from 'react'
 import { fetchTitleDetail } from '../titles/detailApi'
 import { searchDetails, type Extra } from '../titles/searchApi'
-import { InfoIcon, ScoreLine, TitleCard } from '../titles/TitleCard'
+import { Icon } from '../../lib/icons'
+import { PosterTile } from '../titles/PosterTile'
+import { imdbScore } from '../titles/ratings'
+import { InfoIcon } from '../titles/TitleCard'
+import { kindLine, peopleLine } from '../titles/titleText'
 import { addTitle, removeTitle, TitleError, type Title } from '../titles/titlesApi'
 import { dismissTitle, recKey, undismissTitle, type Recommendation } from './discoverApi'
 
 type Props = {
   coupleId: string
+  // La primera va destacada, a lo ancho de la grilla (las secciones por gusto de Descubrir).
+  featured?: boolean
   items: Recommendation[]
   titles: Title[] // la lista: lo que ya está no se ofrece para agregar
   originNote: (r: Recommendation) => string // "Descubrir", "Parecida a <título>", "Más de <director>" o "Con <actor>"
@@ -27,7 +33,7 @@ const messages = {
 // "A", "A y B", "A, B y C"
 const joinNames = (names: string[]) => (names.length < 2 ? names.join('') : `${names.slice(0, -1).join(', ')} y ${names[names.length - 1]}`)
 
-export function RecommendationList({ coupleId, items, titles, originNote, hidden, onHide, onOpenWatched }: Props) {
+export function RecommendationList({ coupleId, featured, items, titles, originNote, hidden, onHide, onOpenWatched }: Props) {
   const [shown, setShown] = useState(10)
   const [extras, setExtras] = useState<Record<string, Extra>>({})
   const [open, setOpen] = useState<Set<string>>(new Set())
@@ -114,7 +120,7 @@ export function RecommendationList({ coupleId, items, titles, originNote, hidden
   return (
     <>
       {error && <p role="alert">{messages[error]}</p>}
-      <ul className="title-list rec-list">
+      <ul className={`title-list poster-grid rec-list${featured ? ' featured' : ''}`}>
         {visible.map((r) => {
           const key = recKey(r)
           if (dismissed.has(key)) {
@@ -137,28 +143,18 @@ export function RecommendationList({ coupleId, items, titles, originNote, hidden
           const extra = extras[key]
           const detailOpen = open.has(key)
           return (
-            <li key={key} className="rec-item">
+            <li key={key} className={`rec-item${detailOpen ? ' open' : ''}`}>
               <button
                 className="result"
                 disabled={!watchedSeries && busyKey !== null}
                 onClick={() => (watchedSeries ? onOpenWatched?.(r.watchedTitleId!) : justAdded ? takeOut(r) : add(r))}
               >
-                <TitleCard
-                  title={r.title}
-                  originalTitle={r.originalTitle}
-                  year={r.year}
-                  mediaType={r.mediaType}
-                  posterPath={r.posterPath}
-                  director={extra?.director}
-                  seasons={extra?.seasons}
-                  runtime={extra?.runtime}
-                >
-                  <ScoreLine imdb={extra?.imdb ?? null} rt={null} />
+                <PosterTile title={r.title} posterPath={r.posterPath} imdb={imdbScore(extra?.imdb ?? null)} marked={justAdded}>
+                  <small>{detailOpen ? kindLine(r.year, r.mediaType, extra?.seasons, extra?.runtime) : kindLine(r.year, r.mediaType)}</small>
                   {r.newSeason && !watchedSeries && <small>Temporada nueva</small>}
-                  {r.because && r.because.length > 0 && <small>{`Porque vieron ${joinNames(r.because)}`}</small>}
-                  {r.platforms && r.platforms.length > 0 && <small>{`En ${r.platforms.join(' · ')}`}</small>}
+                  {r.because && r.because.length > 0 && <small className="because">{`Porque vieron ${joinNames(r.because)}`}</small>}
                   {status && <small>{status}</small>}
-                </TitleCard>
+                </PosterTile>
               </button>
               {!watchedSeries && (
                 <div className="rec-actions">
@@ -172,13 +168,15 @@ export function RecommendationList({ coupleId, items, titles, originNote, hidden
                   </button>
                   {!justAdded && (
                     <button className="round" aria-label="No me interesa" disabled={busyKey !== null} onClick={() => dismiss(r)}>
-                      ✕
+                      <Icon name="x" size={18} />
                     </button>
                   )}
                 </div>
               )}
               {detailOpen && (
                 <div className="rec-detail">
+                  {peopleLine(r.mediaType, extra?.director) && <small>{peopleLine(r.mediaType, extra?.director)}</small>}
+                  {r.platforms && r.platforms.length > 0 && <small>{`En ${r.platforms.join(' · ')}`}</small>}
                   {r.overview && <p>{r.overview}</p>}
                   {r.genres.length > 0 && <small>{r.genres.join(' · ')}</small>}
                 </div>
