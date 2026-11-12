@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Icon } from '../../lib/icons'
 import { useCouple, useMemberName } from '../couple/coupleContext'
 import type { SharedItem } from '../shared/sharedApi'
 import { SharedInbox } from '../shared/SharedInbox'
@@ -7,17 +8,17 @@ import { AddTitle } from './AddTitle'
 import { ClearSearch } from './ClearSearch'
 import { filterOptions, matchesFilters, matchesQuery, NO_FILTERS, type Filters } from './filters'
 import { FiltersPanel } from './FiltersPanel'
-import { formatScore, ratingsDate } from './ratings'
+import { PosterTile } from './PosterTile'
+import { formatScore, imdbScore } from './ratings'
 import { TitleDetail } from './TitleDetail'
 import { droppedMessage, useTitles } from './useTitles'
-import { ScoreLine, TitleCard } from './TitleCard'
-import { removeTitle, type Title } from './titlesApi'
+import { kindLine } from './titleText'
+import type { Title } from './titlesApi'
 
 export function TitleList({ filters, onFiltersChange }: { filters: Filters; onFiltersChange: (f: Filters) => void }) {
   const { coupleId, members } = useCouple()
   const nameOf = useMemberName()
   const { titles, offline, load, pending, dropped, clearDropped } = useTitles(coupleId)
-  const [removeFailed, setRemoveFailed] = useState(false)
   const { items: shared } = useShared(coupleId)
   // false = cerrado; si no, Agregar (con el ítem de la bandeja que se está buscando, si hay).
   const [adding, setAdding] = useState<false | { shared?: SharedItem }>(false)
@@ -52,17 +53,6 @@ export function TitleList({ filters, onFiltersChange }: { filters: Filters; onFi
     backToList(() => setSelectedId(null))
   }, [selectedId, titles])
 
-  async function remove(title: Title) {
-    if (!window.confirm(`¿Quitar «${title.title}» de la lista?`)) return
-    setRemoveFailed(false)
-    try {
-      await removeTitle(title.id)
-      load()
-    } catch {
-      setRemoveFailed(true)
-    }
-  }
-
   if (selected) return <TitleDetail title={selected} titles={titles ?? []} onClose={() => backToList(() => setSelectedId(null))} onChanged={load} />
   if (adding)
     return <AddTitle coupleId={coupleId} titles={titles ?? []} shared={adding.shared} onClose={() => backToList(() => setAdding(false))} />
@@ -94,18 +84,28 @@ export function TitleList({ filters, onFiltersChange }: { filters: Filters; onFi
   return (
     <section className="titles">
       {shared && <SharedInbox items={shared} onSearch={(item) => openScreen(() => setAdding({ shared: item }))} />}
-      <div className="search-field list-search">
-        <input
-          ref={searchInput}
-          type="search"
-          aria-label="Buscar en la lista"
-          placeholder="Buscar por nombre o director"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-        <ClearSearch value={query} onClear={() => setQuery('')} input={searchInput} />
+      <div className="list-tools">
+        <div className="search-field">
+          <input
+            ref={searchInput}
+            type="search"
+            aria-label="Buscar en la lista"
+            placeholder="Nombre o director"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          <ClearSearch value={query} onClear={() => setQuery('')} input={searchInput} />
+        </div>
+        {tab === 'to_watch' && (
+          <FiltersPanel
+            value={filters}
+            options={filterOptions(inTab ?? [])}
+            count={{ matching: shown?.length ?? 0, total: inTab?.length ?? 0 }}
+            onChange={onFiltersChange}
+          />
+        )}
       </div>
-      <div className="segmented">
+      <div className="segmented fit">
         <button aria-pressed={tab === 'to_watch'} onClick={() => setTab('to_watch')}>
           Por ver
         </button>
@@ -139,14 +139,6 @@ export function TitleList({ filters, onFiltersChange }: { filters: Filters; onFi
         </div>
       )}
       {titles === null && !offline && <p>Cargando…</p>}
-      {tab === 'to_watch' && (
-        <FiltersPanel
-          value={filters}
-          options={filterOptions(inTab ?? [])}
-          count={{ matching: shown?.length ?? 0, total: inTab?.length ?? 0 }}
-          onChange={onFiltersChange}
-        />
-      )}
       {shown?.length === 0 &&
         (filtered?.length ? (
           <p>{`Ningún título coincide con «${query.trim()}»`}</p>
@@ -160,9 +152,8 @@ export function TitleList({ filters, onFiltersChange }: { filters: Filters; onFi
         ) : (
           <p>{emptyText}</p>
         ))}
-      {removeFailed && <p role="alert">No se pudo quitar. Probá de nuevo.</p>}
       {gone && <p role="alert">{`«${gone}» ya no está en la lista`}</p>}
-      <ul className="title-list">
+      <ul className="title-list poster-grid">
         {shown?.map((t) => (
           <li key={t.id}>
             <button
@@ -175,40 +166,22 @@ export function TitleList({ filters, onFiltersChange }: { filters: Filters; onFi
               }
             >
               <span className="visually-hidden">Ver </span>
-              <TitleCard
-                title={t.title}
-                originalTitle={t.originalTitle}
-                year={t.year}
-                mediaType={t.mediaType}
-                posterPath={t.posterPath}
-                director={t.director}
-                seasons={t.seasons}
-                runtime={tab === 'to_watch' ? t.runtime : null}
-              >
-                <ScoreLine imdb={t.imdbRating} rt={t.rottenTomatoes} />
-                {t.pending && <small>⏳ Se guarda cuando vuelva la conexión</small>}
-                {t.status === 'watched' && t.watchedAt ? (
-                  <>
-                    <small>{`Vista el ${ratingsDate(t.watchedAt)}`}</small>
-                    <small>{ourScores(t)}</small>
-                  </>
-                ) : (
-                  <>
-                    <small>{`La agregó ${nameOf(t.addedBy)}`}</small>
-                    {t.originNote && <small>{`De dónde vino: ${t.originNote}`}</small>}
-                  </>
+              <PosterTile title={t.title} posterPath={t.posterPath} imdb={imdbScore(t.imdbRating)} inTheaters={t.inTheaters}>
+                <small>{t.status === 'watched' ? ourScores(t) : kindLine(t.year, t.mediaType)}</small>
+                {t.pending && (
+                  <span className="tile-corner">
+                    ⏳<span className="visually-hidden"> Se guarda cuando vuelva la conexión</span>
+                  </span>
                 )}
-              </TitleCard>
-            </button>
-            <button className="remove" aria-label={`Quitar ${t.title}`} onClick={() => remove(t)}>
-              Quitar
+              </PosterTile>
             </button>
           </li>
         ))}
       </ul>
       {tab === 'to_watch' && (
         <button className="add" aria-label="Agregar" onClick={() => openScreen(() => setAdding({}))}>
-          +
+          <Icon name="plus" />
+          Agregar
         </button>
       )}
     </section>

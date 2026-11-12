@@ -14,6 +14,7 @@ const api = vi.hoisted(() => ({
   setWatched: vi.fn(),
   setMyScore: vi.fn(),
   addSharedItem: vi.fn(),
+  fetchNowPlaying: vi.fn(),
 }))
 vi.mock('./titlesApi', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./titlesApi')>()),
@@ -25,6 +26,10 @@ vi.mock('./titlesApi', async (importOriginal) => ({
   setMyScore: api.setMyScore,
 }))
 vi.mock('./searchApi', () => ({ searchTitles: api.searchTitles }))
+vi.mock('../discover/discoverApi', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../discover/discoverApi')>()),
+  fetchNowPlaying: api.fetchNowPlaying,
+}))
 vi.mock('./detailApi', () => ({ fetchTitleDetail: api.fetchTitleDetail }))
 vi.mock('../shared/sharedApi', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../shared/sharedApi')>()),
@@ -83,6 +88,7 @@ beforeEach(() => {
   })
   api.listShared.mockResolvedValue([])
   api.subscribeShared.mockReturnValue(() => {})
+  api.fetchNowPlaying.mockResolvedValue([])
 })
 afterEach(() => vi.restoreAllMocks())
 
@@ -102,68 +108,20 @@ test('shows Cargando… and then the empty list', async () => {
   expect(screen.queryByRole('heading', { name: 'Por ver' })).not.toBeInTheDocument()
 })
 
-test('shows each title with who added it, the note and the original name', async () => {
-  api.listTitles.mockResolvedValue([angelito, sinDatos])
+test('each poster shows the name and year · type; who added it, the note and the original name are in the detail', async () => {
+  api.listTitles.mockResolvedValue([{ ...angelito, runtime: 103, director: 'Chris Columbus' }, sinDatos])
   renderList()
   expect(await screen.findByText('Mi pobre angelito')).toBeInTheDocument()
-  expect(screen.getByText('La agregó Juli')).toBeInTheDocument()
-  expect(screen.getByText('La agregó Tomás')).toBeInTheDocument()
-  expect(screen.getByText('De dónde vino: un reel')).toBeInTheDocument()
-  expect(screen.getByText('Original: Home Alone')).toBeInTheDocument()
   expect(screen.getByText('1990 · Película')).toBeInTheDocument()
   expect(screen.getByText('Serie')).toBeInTheDocument()
-  expect(screen.queryByText('Original: Serie rara')).not.toBeInTheDocument()
+  expect(screen.queryByText('La agregó Juli')).not.toBeInTheDocument()
+  expect(screen.queryByText('De dónde vino: un reel')).not.toBeInTheDocument()
+  expect(screen.queryByText('Original: Home Alone')).not.toBeInTheDocument()
+  expect(screen.queryByText('Dirigida por Chris Columbus')).not.toBeInTheDocument()
   expect(document.body.textContent).not.toMatch(/null|undefined/)
-})
-
-test('the card shows who directed it, and for a series how many seasons', async () => {
-  api.listTitles.mockResolvedValue([
-    { ...angelito, director: 'Chris Columbus' },
-    { ...sinDatos, year: 2008, director: 'Vince Gilligan', seasons: 5 },
-    { ...sinDatos, id: 't3', tmdbId: 6, title: 'Miniserie', year: 2020, seasons: 1 },
-  ])
-  renderList()
-  expect(await screen.findByText('Dirigida por Chris Columbus')).toBeInTheDocument()
-  expect(screen.getByText('2008 · Serie · 5 temporadas')).toBeInTheDocument()
-  expect(screen.getByText('Creada por Vince Gilligan')).toBeInTheDocument()
-  expect(screen.getByText('2020 · Serie · 1 temporada')).toBeInTheDocument()
-})
-
-test('in Por ver the card shows how long it lasts, and Vistas does not', async () => {
-  api.listTitles.mockResolvedValue([
-    { ...angelito, runtime: 103 },
-    { ...visto('t7', 'Vista antes', '2026-10-01T20:00:00Z'), year: 2001, runtime: 90 },
-  ])
-  renderList()
-  expect(await screen.findByText('1990 · Película · 1 h 43')).toBeInTheDocument()
-  fireEvent.click(screen.getByRole('button', { name: 'Vistas' }))
-  expect(screen.getByText('2001 · Película')).toBeInTheDocument()
-})
-
-test('Quitar asks for confirmation before removing', async () => {
-  api.listTitles.mockResolvedValue([angelito])
-  api.removeTitle.mockResolvedValue(undefined)
-  const confirm = vi.spyOn(window, 'confirm')
-  renderList()
-  const button = await screen.findByRole('button', { name: 'Quitar Mi pobre angelito' })
-
-  confirm.mockReturnValueOnce(false)
-  fireEvent.click(button)
-  expect(confirm).toHaveBeenCalledWith('¿Quitar «Mi pobre angelito» de la lista?')
-  expect(api.removeTitle).not.toHaveBeenCalled()
-
-  confirm.mockReturnValueOnce(true)
-  fireEvent.click(button)
-  expect(api.removeTitle).toHaveBeenCalledWith('t1')
-})
-
-test('a failed removal shows its message', async () => {
-  api.listTitles.mockResolvedValue([angelito])
-  api.removeTitle.mockRejectedValue(new TitleError('network'))
-  vi.spyOn(window, 'confirm').mockReturnValue(true)
-  renderList()
-  fireEvent.click(await screen.findByRole('button', { name: 'Quitar Mi pobre angelito' }))
-  expect(await screen.findByText('No se pudo quitar. Probá de nuevo.')).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: /^Ver Mi pobre angelito/ }))
+  expect(screen.getByText('La agregó Juli')).toBeInTheDocument()
+  expect(screen.getByText('Original: Home Alone')).toBeInTheDocument()
 })
 
 test('reloads when the subscription reports a change and when the app comes back', async () => {
@@ -202,12 +160,14 @@ test('the + button opens Agregar', async () => {
   expect(screen.getByRole('button', { name: 'Por ver' })).toHaveAttribute('aria-pressed', 'true')
 })
 
-test('each card shows the IMDb and Rotten Tomatoes scores it has, and nothing for the missing ones', async () => {
-  api.listTitles.mockResolvedValue([angelito, sinDatos])
+test('the poster carries the IMDb score, or En cines when it has none and is in theaters, and nothing otherwise', async () => {
+  api.listTitles.mockResolvedValue([angelito, sinDatos, { ...sinDatos, id: 't9', tmdbId: 9, mediaType: 'movie', title: 'Estreno' }])
+  api.fetchNowPlaying.mockResolvedValue([9])
   renderList()
-  expect(await screen.findByText('IMDb 7.7 · RT 67%')).toBeInTheDocument()
-  expect(screen.queryByText(/IMDb —|RT —/)).not.toBeInTheDocument()
-  expect(screen.getAllByText(/^IMDb /)).toHaveLength(1)
+  expect(await screen.findByRole('button', { name: /^Ver Mi pobre angelito/ })).toHaveAccessibleName(expect.stringContaining('IMDb 7.7'))
+  expect(screen.getByRole('button', { name: /^Ver Serie rara/ })).not.toHaveAccessibleName(expect.stringMatching(/IMDb|RT|En cines/))
+  expect(await screen.findByRole('button', { name: /^Ver Estreno.*En cines/ })).toBeInTheDocument()
+  expect(screen.queryByText(/RT 67%/)).not.toBeInTheDocument()
 })
 
 test('tapping a card opens its detail and Volver returns', async () => {
@@ -266,8 +226,8 @@ test('Por ver and Vistas tabs split the list, newest watched first', async () =>
   expect(screen.queryByRole('button', { name: 'Agregar' })).not.toBeInTheDocument()
   const names = [...document.querySelectorAll('.title-list strong')].map((n) => n.textContent)
   expect(names).toEqual(['Vista después', 'Vista antes'])
-  expect(screen.getByText('Vista el 7/10/2026')).toBeInTheDocument()
   expect(screen.getByText('Tomás 8,75 · Juli —')).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: /^Quitar/ })).not.toBeInTheDocument()
 })
 
 test('an empty Vistas says so', async () => {
@@ -526,17 +486,6 @@ test('opening a result and coming back keeps the list search', async () => {
   expect(screen.queryByText('Amélie')).not.toBeInTheDocument()
 })
 
-test('Quitar reloads the list by itself, without waiting for realtime', async () => {
-  api.listTitles.mockResolvedValue([angelito])
-  api.removeTitle.mockResolvedValue(undefined)
-  vi.spyOn(window, 'confirm').mockReturnValue(true)
-  renderList()
-  await screen.findByText('Mi pobre angelito')
-  api.listTitles.mockResolvedValue([])
-  await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Quitar Mi pobre angelito' })))
-  expect(screen.queryByText('Mi pobre angelito')).not.toBeInTheDocument()
-})
-
 test('an older load that answers last does not bring back a removed title', async () => {
   let answerOld!: (list: Title[]) => void
   api.listTitles.mockReturnValueOnce(new Promise((r) => (answerOld = r))).mockResolvedValue([])
@@ -557,13 +506,13 @@ test('if the open title is removed elsewhere, the list comes back with a notice'
   expect(screen.getByRole('button', { name: 'Por ver' })).toBeInTheDocument()
 })
 
-test('the card is announced with its scores and who added it', async () => {
+test('the poster is announced with its name, year and score', async () => {
   api.listTitles.mockResolvedValue([angelito])
   renderList()
   const card = await screen.findByRole('button', { name: /^Ver Mi pobre angelito/ })
   expect(card).not.toHaveAttribute('aria-label')
+  expect(card).toHaveAccessibleName(expect.stringContaining('1990 · Película'))
   expect(card).toHaveAccessibleName(expect.stringContaining('IMDb 7.7'))
-  expect(card).toHaveAccessibleName(expect.stringContaining('La agregó Juli'))
 })
 
 test('after a change is sent, the card keeps it until the new list arrives', async () => {

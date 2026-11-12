@@ -11,6 +11,8 @@ export default defineConfig({
       includeAssets: ['favicon.ico', 'apple-touch-icon-180x180.png', 'icon.svg'],
       // Los pósters ya vistos quedan en el celular para verse sin internet (etapa 11).
       workbox: {
+        // La letra (woff2) también queda guardada: sin internet la app se ve igual.
+        globPatterns: ['**/*.{js,css,html,woff2}'],
         runtimeCaching: [
           {
             urlPattern: ({ url }) => url.origin === 'https://image.tmdb.org',

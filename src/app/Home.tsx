@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useCouple } from '../features/couple/coupleContext'
+import { Icon } from '../lib/icons'
 import { Discover } from '../features/discover/Discover'
 import { ChooseMenu } from '../features/choose/ChooseMenu'
 import { Settings } from '../features/settings/Settings'
@@ -43,16 +44,20 @@ export function Home() {
       </main>
       <nav className="tabs">
         <button aria-pressed={tab === 'lista'} onClick={showList}>
-          Lista
+          <Icon name="grid" />
+          <span>Lista</span>
         </button>
         <button aria-pressed={tab === 'descubrir'} onClick={() => setTab('descubrir')}>
-          Descubrir
+          <Icon name="sparkles" />
+          <span>Descubrir</span>
         </button>
         <button aria-pressed={tab === 'elegir'} onClick={() => setTab('elegir')}>
-          Elegir
+          <Icon name="dice" />
+          <span>Elegir</span>
         </button>
         <button aria-pressed={tab === 'ajustes'} onClick={() => setTab('ajustes')}>
-          Ajustes
+          <Icon name="settings" />
+          <span>Ajustes</span>
         </button>
       </nav>
     </div>

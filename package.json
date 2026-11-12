@@ -15,6 +15,7 @@
     "deploy": "npm run build && tsx --env-file=.env.local scripts/check-dist.ts && wrangler deploy"
   },
   "dependencies": {
+    "@fontsource-variable/bricolage-grotesque": "^5.3.0",
     "@supabase/supabase-js": "^2.117.2",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
