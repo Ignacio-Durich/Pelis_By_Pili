@@ -311,3 +311,18 @@ Al probarlo apareció que el duelo ya no entraba en la pantalla: el título "Ele
 Pedido desde Comentarios (2026-10-28): un filtro para las películas que están en el cine. Nacho aprobó la propuesta: "En cines" va entre las Plataformas del panel de Filtros, así sirve en la Lista y en todos los modos de Elegir, y combinada con una plataforma muestra lo que está en cualquiera de las dos.
 
 El dato es la cartelera de TMDB para Argentina, que trae `recommendations` con `{ nowPlaying: true }` (la función ya la usaba para Descubrir). No se guarda en la base: así está siempre al día y no hace falta migración. Solo cuentan películas; las series nunca. Si la cartelera no se puede pedir (sin conexión), la opción no aparece y se vuelve a pedir cuando vuelve la conexión.
+
+## Estilo "Pósters" en toda la app (2026-11-12)
+
+Nacho pidió ver cómo mejorar el diseño. Se mostraron tres direcciones en mockups (Cartelera, Pósters, Videoclub) y eligió **Pósters**, para toda la app.
+
+- Letra Bricolage Grotesque (paquete `@fontsource-variable/bricolage-grotesque`, licencia OFL). Va dentro de la app y el service worker la guarda (`globPatterns` incluye `woff2`), así se ve igual sin conexión.
+- Los colores no cambian: los 11 temas siguen andando. Cambian las formas: botones y chips en pastilla, tarjetas redondeadas, títulos grandes en negrita.
+- Pestañas en una barra flotante con íconos propios (`src/lib/icons.tsx`, sin librería). El nombre se ve solo en la elegida; los otros quedan para lectores de pantalla.
+- La opción elegida de los chips (Por ver / Vistas, secciones, cantidades, filtros) va con el color del texto, no con el acento, como en el mockup. El acento queda para la pestaña, los botones principales y el puntaje.
+- **Lista en grilla de a 2.** Nacho eligió llevar lo que no entra al detalle: "Quitar", quién la agregó, de dónde vino, el título original y el director se ven al abrirla (el detalle ya los tenía). En el póster: el puntaje IMDb (o "En cines"), título y "año · tipo"; en Vistas, el puntaje de cada uno. Rotten Tomatoes queda solo en el detalle. Las pestañas no muestran cuántos títulos hay (sería cambiar el nombre accesible de "Por ver"; se puede sumar después).
+- **Descubrir en grilla.** Nacho eligió destacada + grilla de a 2, y tocar sigue agregando. La primera de "Para los dos" y de cada uno va a lo ancho; en Novedades no hay destacada. ⓘ y ✕ flotan sobre el póster, y al abrir el detalle la tarjeta pasa a ocupar la fila entera para no romper la grilla. Lo agregado lleva un ✓ sobre el póster. Las plataformas pasaron de la tarjeta al detalle abierto. "Parecidas a esta" usa la misma grilla.
+- **Elegir** en baldosas de a 2 con ícono, con Bumble a lo ancho.
+- **Duelo del Torneo**: las dos candidatas lado a lado, con "VS" entre los pósters. Cada dato va en una línea con "…" si no entra; el resto está en la "i". El póster mide lo que sobra de la pantalla, hasta 260 px (cuenta de 440 px para lo demás).
+- El "‹" de Volver se dibuja con CSS, porque en Bricolage parecía un paréntesis. El buscador de la Lista dice "Nombre o director" porque el texto anterior no entraba al lado de "Filtros".
+- Top 3 secreto (lista para elegir), Bumble, Ruleta, Preguntas rápidas, Agregar, Ajustes y el detalle no cambian de forma: solo toman la letra, los botones y los chips nuevos.

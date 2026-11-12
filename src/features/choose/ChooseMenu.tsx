@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Icon, type IconName } from '../../lib/icons'
 import type { Filters } from '../titles/filters'
 import { Bumble } from './Bumble'
 import { QuickQuestions } from './QuickQuestions'
@@ -8,8 +9,18 @@ import { Tournament } from './Tournament'
 
 type Props = { filters: Filters; onFiltersChange: (f: Filters) => void }
 
+type Mode = 'bumble' | 'reveal' | 'tournament' | 'roulette' | 'quick'
+
+const MODES: [Mode, string, string, IconName][] = [
+  ['bumble', 'Bumble', 'Deslicen y gana la que les guste a los dos', 'heart'],
+  ['reveal', 'Top 3 secreto', 'Cada uno elige 3 en secreto y se muestran a la vez', 'eyeOff'],
+  ['tournament', 'Torneo', 'Elijan 4 cada uno y que se enfrenten de a dos', 'trophy'],
+  ['roulette', 'Ruleta', 'Gira entre los títulos que cumplen los filtros', 'wheel'],
+  ['quick', 'Preguntas rápidas', 'Respondan tres preguntas y les sugerimos 5', 'bolt'],
+]
+
 export function ChooseMenu({ filters, onFiltersChange }: Props) {
-  const [mode, setMode] = useState<'bumble' | 'reveal' | 'tournament' | 'roulette' | 'quick' | null>(null)
+  const [mode, setMode] = useState<Mode | null>(null)
 
   if (mode) {
     const back = () => setMode(null)
@@ -22,26 +33,15 @@ export function ChooseMenu({ filters, onFiltersChange }: Props) {
 
   return (
     <section className="choose-menu">
-      <button onClick={() => setMode('bumble')}>
-        Bumble
-        <small>Deslicen y gana la que les guste a los dos</small>
-      </button>
-      <button onClick={() => setMode('reveal')}>
-        Top 3 secreto
-        <small>Cada uno elige 3 en secreto y se muestran a la vez</small>
-      </button>
-      <button onClick={() => setMode('tournament')}>
-        Torneo
-        <small>Elijan 4 cada uno y que se enfrenten de a dos</small>
-      </button>
-      <button onClick={() => setMode('roulette')}>
-        Ruleta
-        <small>Gira entre los títulos que cumplen los filtros</small>
-      </button>
-      <button onClick={() => setMode('quick')}>
-        Preguntas rápidas
-        <small>Respondan tres preguntas y les sugerimos 5</small>
-      </button>
+      {MODES.map(([key, name, about, icon]) => (
+        <button key={key} onClick={() => setMode(key)}>
+          <Icon name={icon} size={26} />
+          <span>
+            <strong>{name}</strong>
+            <small>{about}</small>
+          </span>
+        </button>
+      ))}
     </section>
   )
 }

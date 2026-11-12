@@ -414,9 +414,13 @@ button.back {
 }
 
 button.back::before {
-  content: '‹';
-  font-size: 24px;
-  line-height: 16px;
+  content: '';
+  width: 8px;
+  height: 8px;
+  margin-left: 4px;
+  border-left: 2px solid;
+  border-bottom: 2px solid;
+  transform: rotate(45deg);
 }
 
 /* Terminar (en la fila de arriba de una partida): texto, sin pastilla. */
@@ -742,15 +746,62 @@ button.chip[aria-pressed='true'] {
   color: var(--accent);
 }
 
+/* Elegir: baldosas de a 2 con ícono; la primera (Bumble) a lo ancho y con el acento. */
+.choose-menu {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
 .choose-menu button {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 132px;
+  padding: 14px;
+  border-radius: 20px;
   text-align: left;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.choose-menu button:first-child {
+  grid-column: 1 / -1;
+  min-height: 112px;
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.choose-menu button svg {
+  color: var(--accent);
+}
+
+.choose-menu button:first-child svg {
+  color: inherit;
+}
+
+.choose-menu span {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.choose-menu strong {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
 }
 
 .choose-menu small {
+  font-size: 14px;
   font-weight: normal;
+  line-height: 1.3;
+  color: var(--muted);
+}
+
+.choose-menu button:first-child small {
+  color: inherit;
 }
 
 /* Bumble: carta tipo Tinder/Bumble.
@@ -1022,11 +1073,11 @@ button.chip[aria-pressed='true'] {
   color: var(--accent);
 }
 
-/* Torneo: el duelo entra en una pantalla de iPhone 13/15. 350 px son el título "Elegir", la fila de
-   arriba, la ronda, el "vs", "Que decida la suerte" y "Deshacer", los espacios y la barra de
-   pestañas; las dos cartas se reparten el resto. */
+/* Torneo: el duelo entra en una pantalla de iPhone 13/15. Las dos candidatas van lado a lado; 440 px
+   son el título "Elegir", la fila de arriba, la ronda, los datos debajo de cada póster, "Que decida la
+   suerte" y "Deshacer", los espacios y la barra de pestañas; los pósters toman el resto (hasta 260). */
 .tournament-mode {
-  --duel-card: max(150px, calc((100dvh - 350px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) / 2));
+  --duel-poster: clamp(150px, calc(100dvh - 440px - env(safe-area-inset-top) - env(safe-area-inset-bottom)), 260px);
 }
 
 .duel-round {
@@ -1037,22 +1088,29 @@ button.chip[aria-pressed='true'] {
 
 .duel {
   display: flex;
+  gap: 10px;
+}
+
+.duel-slot {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
   flex-direction: column;
-  gap: 6px;
 }
 
 .duel-card {
   display: flex;
-  gap: 12px;
-  height: var(--duel-card);
+  flex-direction: column;
+  width: 100%;
   padding: 0;
   overflow: hidden;
   text-align: left;
   font-weight: normal;
   color: inherit;
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  border: none;
+  border-radius: 18px;
 }
 
 .duel-card:disabled {
@@ -1062,46 +1120,78 @@ button.chip[aria-pressed='true'] {
 .duel-card img,
 .duel-poster {
   flex: none;
-  height: 100%;
-  width: 42%;
+  width: 100%;
+  height: var(--duel-poster);
   object-fit: cover;
   background: var(--bg);
 }
 
+/* La ganadora, sola y centrada. */
+.duel-card.winner {
+  width: min(60%, 220px);
+  margin: 0 auto;
+}
+
+.duel-card.winner img,
+.duel-card.winner .duel-poster {
+  height: auto;
+  aspect-ratio: 2 / 3;
+}
+
+/* Cada dato en una línea (con "…" si no entra): el resto está en el detalle. */
 .duel-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 12px 12px 12px 0;
+  gap: 2px;
+  padding: 10px 10px 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.duel-info > * {
+  white-space: nowrap;
   overflow: hidden;
-  font-size: 14px;
-  color: color-mix(in srgb, var(--text) 85%, var(--surface));
+  text-overflow: ellipsis;
 }
 
 .duel-info strong {
-  font-size: 18px;
+  font-size: 16px;
+  line-height: 1.2;
   color: var(--text);
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
+/* "vs" en un círculo, entre los dos pósters. */
 .duel-vs {
-  text-align: center;
+  position: absolute;
+  z-index: 2;
+  left: -5px;
+  top: calc(var(--duel-poster) / 2);
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 3px solid var(--bg);
+  border-radius: 50%;
+  background: var(--text);
+  color: var(--bg);
   font-weight: 800;
-  color: var(--accent);
+  font-size: 14px;
+  text-transform: uppercase;
 }
 
-.duel-slot {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-/* La "i" del detalle va sobre el póster, abajo a la izquierda, para no tapar el texto. */
+/* La "i" del detalle va sobre el póster, abajo a la izquierda. */
 button.round.duel-detail {
   position: absolute;
   left: 8px;
-  bottom: 8px;
-  background: var(--surface);
+  top: calc(var(--duel-poster) - 48px);
+  border: none;
+  background: rgb(0 0 0 / 55%);
+  color: #fff;
 }
 
 /* "Que decida la suerte": el borde que va pasando de una carta a la otra. */

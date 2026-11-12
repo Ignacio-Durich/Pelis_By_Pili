@@ -71,10 +71,12 @@ Seguridad: solo los dos miembros de la pareja pueden leer y modificar los datos 
 
 ## 7. Pantallas y flujo
 
-- Lista: arriba, "📥 Compartidos (n)" cuando hay algo que llegó del Atajo de iOS (etapa 8): nombre escrito, de dónde vino y quién lo compartió, con "Ver el link", "Agregar" (abre Agregar con la búsqueda y "de dónde vino" ya cargados) y "Descartar". Pestañas Por ver / Vistas. Cada tarjeta muestra póster, título, año, tipo, puntajes de IMDb y Rotten Tomatoes y quién la cargó. Filtros y botón "+".
+- Lista: arriba, "📥 Compartidos (n)" cuando hay algo que llegó del Atajo de iOS (etapa 8): nombre escrito, de dónde vino y quién lo compartió, con "Ver el link", "Agregar" (abre Agregar con la búsqueda y "de dónde vino" ya cargados) y "Descartar". Buscador con "Filtros" al lado y chips Por ver / Vistas. Grilla de pósters de a 2: cada uno con el puntaje IMDb encima (o "En cines"), título y "año · tipo" (en Vistas, el puntaje de cada uno). Tocarlo abre el detalle, donde están quién lo cargó, de dónde vino, el director y "Quitar". Botón flotante "+ Agregar".
 - Agregar: buscador que mezcla películas y series; un toque agrega; campo opcional "de dónde vino". Si el título ya existe, avisa.
 - Detalle: sinopsis, puntajes externos con fecha, dónde verla en Argentina, puntaje de cada uno, marcar vista.
-- Elegir qué ver: menú con los modos.
+- Descubrir: chips por sección; grilla de pósters de a 2 con la primera destacada a lo ancho. Tocar agrega (✓ sobre el póster); la "i" abre la tarjeta a lo ancho con duración, director, plataformas, sinopsis y géneros.
+- Elegir qué ver: baldosas de a 2 con ícono (Bumble a lo ancho).
+- Estilo "Pósters" (2026-11-12): letra Bricolage Grotesque guardada en la app, botones y chips en pastilla, tarjetas de 16–20 px de radio y pestañas en una barra flotante con íconos (el nombre solo en la elegida). Los colores siguen siendo los del tema.
 - Ajustes: invitar a la pareja, tema de color (15 para elegir, cada celular el suyo), Atajo para compartir, cerrar sesión, atribuciones.
 
 Primer uso: la primera persona crea el espacio e invita a la otra con un link. Solo caben dos.
