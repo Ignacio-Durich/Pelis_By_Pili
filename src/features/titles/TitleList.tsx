@@ -12,7 +12,7 @@ import { PosterTile } from './PosterTile'
 import { formatScore, imdbScore } from './ratings'
 import { TitleDetail } from './TitleDetail'
 import { droppedMessage, useTitles } from './useTitles'
-import { kindLine } from './titleText'
+import { posterLine } from './titleText'
 import type { Title } from './titlesApi'
 
 export function TitleList({ filters, onFiltersChange }: { filters: Filters; onFiltersChange: (f: Filters) => void }) {
@@ -167,7 +167,7 @@ export function TitleList({ filters, onFiltersChange }: { filters: Filters; onFi
             >
               <span className="visually-hidden">Ver </span>
               <PosterTile title={t.title} posterPath={t.posterPath} imdb={imdbScore(t.imdbRating)} inTheaters={t.inTheaters}>
-                <small>{t.status === 'watched' ? ourScores(t) : kindLine(t.year, t.mediaType)}</small>
+                <small>{t.status === 'watched' ? ourScores(t) : posterLine(t.year, t.mediaType, t.runtime)}</small>
                 {t.pending && (
                   <span className="tile-corner">
                     ⏳<span className="visually-hidden"> Se guarda cuando vuelva la conexión</span>

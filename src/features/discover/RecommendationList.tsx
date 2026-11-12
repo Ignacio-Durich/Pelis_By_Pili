@@ -5,7 +5,7 @@ import { Icon } from '../../lib/icons'
 import { PosterTile } from '../titles/PosterTile'
 import { imdbScore } from '../titles/ratings'
 import { InfoIcon } from '../titles/TitleCard'
-import { kindLine, peopleLine } from '../titles/titleText'
+import { kindLine, peopleLine, posterLine } from '../titles/titleText'
 import { addTitle, removeTitle, TitleError, type Title } from '../titles/titlesApi'
 import { dismissTitle, recKey, undismissTitle, type Recommendation } from './discoverApi'
 
@@ -150,7 +150,7 @@ export function RecommendationList({ coupleId, featured, items, titles, originNo
                 onClick={() => (watchedSeries ? onOpenWatched?.(r.watchedTitleId!) : justAdded ? takeOut(r) : add(r))}
               >
                 <PosterTile title={r.title} posterPath={r.posterPath} imdb={imdbScore(extra?.imdb ?? null)} marked={justAdded}>
-                  <small>{detailOpen ? kindLine(r.year, r.mediaType, extra?.seasons, extra?.runtime) : kindLine(r.year, r.mediaType)}</small>
+                  <small>{detailOpen ? kindLine(r.year, r.mediaType, extra?.seasons, extra?.runtime) : posterLine(r.year, r.mediaType, extra?.runtime)}</small>
                   {r.newSeason && !watchedSeries && <small>Temporada nueva</small>}
                   {r.because && r.because.length > 0 && <small className="because">{`Porque vieron ${joinNames(r.because)}`}</small>}
                   {status && <small>{status}</small>}

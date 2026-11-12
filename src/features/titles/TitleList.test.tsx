@@ -108,11 +108,11 @@ test('shows Cargando… and then the empty list', async () => {
   expect(screen.queryByRole('heading', { name: 'Por ver' })).not.toBeInTheDocument()
 })
 
-test('each poster shows the name and year · type; who added it, the note and the original name are in the detail', async () => {
+test('each poster shows the name and year · type (and how long, for a movie); who added it, the note and the original name are in the detail', async () => {
   api.listTitles.mockResolvedValue([{ ...angelito, runtime: 103, director: 'Chris Columbus' }, sinDatos])
   renderList()
   expect(await screen.findByText('Mi pobre angelito')).toBeInTheDocument()
-  expect(screen.getByText('1990 · Película')).toBeInTheDocument()
+  expect(screen.getByText('1990 · Película · 1 h 43')).toBeInTheDocument()
   expect(screen.getByText('Serie')).toBeInTheDocument()
   expect(screen.queryByText('La agregó Juli')).not.toBeInTheDocument()
   expect(screen.queryByText('De dónde vino: un reel')).not.toBeInTheDocument()

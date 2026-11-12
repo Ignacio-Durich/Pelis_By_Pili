@@ -86,20 +86,18 @@ test('shows 10, Ver más adds 10, and asks details only for the visible ones', a
   expect(screen.queryByRole('button', { name: 'Ver más' })).not.toBeInTheDocument()
 })
 
-test('a poster shows year · type, IMDb and why; runtime, director, platforms, synopsis and genres only when its detail is open', async () => {
+test('a poster shows year · type · runtime, IMDb and why; director, platforms, synopsis and genres only when its detail is open', async () => {
   api.searchDetails.mockResolvedValue({ [recKey(argentina)]: { director: 'Santiago Mitre', seasons: null, runtime: 144, imdb: '7.8/10' } })
   renderList([{ ...argentina, platforms: ['Netflix', 'Disney+'] }])
   const card = await screen.findByRole('button', { name: /IMDb 7\.8/ })
-  expect(card).toHaveAccessibleName(expect.stringContaining('2023 · Película'))
+  expect(card).toHaveAccessibleName(expect.stringContaining('2023 · Película · 2 h 24'))
   expect(screen.getByText('Porque vieron Relatos salvajes y Argentina, 1985')).toBeInTheDocument()
-  expect(screen.queryByText('2023 · Película · 2 h 24')).not.toBeInTheDocument()
   expect(screen.queryByText('Dirigida por Santiago Mitre')).not.toBeInTheDocument()
   expect(screen.queryByText('En Netflix · Disney+')).not.toBeInTheDocument()
   expect(screen.queryByText('Drama · Historia')).not.toBeInTheDocument()
   expect(screen.queryByText(argentina.overview)).not.toBeInTheDocument()
 
   fireEvent.click(screen.getByRole('button', { name: 'Ver detalle' }))
-  expect(screen.getByText('2023 · Película · 2 h 24')).toBeInTheDocument()
   expect(screen.getByText('Dirigida por Santiago Mitre')).toBeInTheDocument()
   expect(screen.getByText('En Netflix · Disney+')).toBeInTheDocument()
   expect(screen.getByText(argentina.overview)).toBeInTheDocument()

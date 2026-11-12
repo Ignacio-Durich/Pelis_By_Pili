@@ -10,6 +10,12 @@ export function kindLine(year: number | null, mediaType: 'movie' | 'tv', seasons
   return [year, kind, count, length].filter(Boolean).join(' · ')
 }
 
+// Debajo del póster (Lista, Descubrir): "2010 · Película · 2 h 28". De una serie, solo "2008 · Serie":
+// lo que dura un episodio no entra y dice poco.
+export function posterLine(year: number | null, mediaType: 'movie' | 'tv', runtime?: number | null): string {
+  return kindLine(year, mediaType, null, mediaType === 'movie' ? runtime : null)
+}
+
 // "Dirigida por …" o, si es serie, "Creada por …"
 export function peopleLine(mediaType: 'movie' | 'tv', director: string | null | undefined): string | null {
   if (!director) return null
