@@ -92,7 +92,7 @@ test('similarTo a watched title returns TMDB recommendations and the parts by pe
 test('discover returns the four sections; no platforms means onPlatforms null', async () => {
   await A.client.rpc('set_platforms', { p_ids: [] })
   const { data } = await recs<Discover>(A.client, { discover: true })
-  expect(Object.keys(data).sort()).toEqual(['forBoth', 'forEach', 'inTheaters', 'onPlatforms', 'platformNames'])
+  expect(Object.keys(data).sort()).toEqual(['forBoth', 'forEach', 'inTheaters', 'onPlatforms', 'platformNames', 'rows'])
   expect(data.onPlatforms).toBeNull()
   expect(data.platformNames).toEqual([])
   expect(data.forBoth.find((r) => r.tmdbId === 157336)).toBeUndefined()
