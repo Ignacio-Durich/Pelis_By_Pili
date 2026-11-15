@@ -326,3 +326,15 @@ Nacho pidió ver cómo mejorar el diseño. Se mostraron tres direcciones en mock
 - **Duelo del Torneo**: las dos candidatas lado a lado, con "VS" entre los pósters. Cada dato va en una línea con "…" si no entra; el resto está en la "i". El póster mide lo que sobra de la pantalla, hasta 260 px (cuenta de 440 px para lo demás).
 - El "‹" de Volver se dibuja con CSS, porque en Bricolage parecía un paréntesis. El buscador de la Lista dice "Nombre o director" porque el texto anterior no entraba al lado de "Filtros".
 - Top 3 secreto (lista para elegir), Bumble, Ruleta, Preguntas rápidas, Agregar, Ajustes y el detalle no cambian de forma: solo toman la letra, los botones y los chips nuevos.
+
+## Descubrir más variado y en filas por motivo (2026-11-15)
+
+Nacho notó que "Para los dos" era casi todo ciencia ficción, aunque de las 32 vistas con puntaje solo 9 lo son. La causa: cada favorita que traía un título sumaba entero, y las películas de una saga (Star Wars, Duna) recomiendan casi lo mismo, así que sus parecidas ganaban siempre. Eligió dos de las cuatro ideas propuestas: mezclar la tira y armar filas por motivo.
+
+- **Puntaje con rendimiento decreciente** (`scorePool`): la mejor aparición de un título cuenta entera y cada una de las siguientes la mitad que la anterior. Lo que no les gustó sigue restando entero.
+- **Piso de calidad**: nada con menos de 6,5 en TMDB (además de los 50 votos de antes). Vale para "Para los dos" y para cada uno.
+- **Mezcla** (`spread`): nunca tres seguidas del mismo género (el primero de cada título) ni por la misma favorita, mientras quede otra cosa.
+- **Filas** (`buildRows`, solo "Para los dos"): primero "Para ustedes" (5, con la destacada; se muestra sin título); después se alternan "Porque les encantó <favorita>" (hasta 3, de promedio 7 para arriba, sin dos de la misma saga: una favorita que comparte un tercio de lo que trae con otra que ya tiene fila se saltea) y "Si tienen ganas de <género>" (los 3 géneros que más pesan entre lo que les gustó); al final "Joyitas poco conocidas" (7,3 o más en TMDB con menos de 1.500 votos). 8 por fila, ningún título en dos filas, y una fila con menos de 4 no se muestra.
+- Las filas se deslizan de costado. Ahí el detalle (ⓘ) se abre debajo de la fila entera, con el nombre del título. Cada fila pide duración e IMDb recién cuando aparece en pantalla, para no pedir los datos de 60 títulos de una.
+- La función sigue devolviendo `forBoth` (ahora mezclada): es lo que usa la app si no hay con qué armar filas, y lo que entiende una app abierta con la versión anterior.
+- Quedaron afuera, por ahora: filas "Más de <director>" (piden más consultas a TMDB), chips de género y "Algo distinto". Las secciones de cada uno siguen siendo una grilla, ya mezclada.

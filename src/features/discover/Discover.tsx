@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { useOnline } from '../../lib/useOnline'
 import { useCouple } from '../couple/coupleContext'
 import { TitleDetail } from '../titles/TitleDetail'
@@ -52,10 +52,11 @@ export function Discover() {
     })
   }
 
-  const list = (items: Recommendation[], featured = false) => (
+  const list = (items: Recommendation[], look: 'featured' | 'row' | null = null, key = section) => (
     <RecommendationList
-      key={section}
-      featured={featured}
+      key={key}
+      featured={look === 'featured'}
+      row={look === 'row'}
       coupleId={coupleId}
       items={items}
       titles={titles ?? []}
@@ -68,7 +69,7 @@ export function Discover() {
 
   // Una sección por gusto sin resultados lo explica ahí adentro, así Novedades sigue a mano.
   const taste = (items: Recommendation[]) =>
-    items.length === 0 ? <p>Cuando marquen títulos como vistos y les pongan puntaje, acá van a aparecer recomendaciones</p> : list(items, true)
+    items.length === 0 ? <p>Cuando marquen títulos como vistos y les pongan puntaje, acá van a aparecer recomendaciones</p> : list(items, 'featured')
 
   function content(d: DiscoverData) {
     // Un miembro que ya no tiene opción (cambió lo puntuado) vuelve a "Para los dos".
@@ -102,7 +103,21 @@ export function Discover() {
             )}
           </>
         ) : (
-          taste(current === 'both' ? d.forBoth : (d.forEach.find((m) => m.userId === current)?.results ?? []))
+          current === 'both' && d.rows?.length ? (
+            // Filas por motivo: la mezcla va primero, sin título y con la destacada; el resto se desliza de costado.
+            d.rows.map((row, i) =>
+              i === 0 ? (
+                list(row.results, 'featured', row.title)
+              ) : (
+                <Fragment key={row.title}>
+                  <h2>{row.title}</h2>
+                  {list(row.results, 'row', row.title)}
+                </Fragment>
+              ),
+            )
+          ) : (
+            taste(current === 'both' ? d.forBoth : (d.forEach.find((m) => m.userId === current)?.results ?? []))
+          )
         )}
       </>
     )

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import { fetchTitleDetail } from '../titles/detailApi'
 import { searchDetails, type Extra } from '../titles/searchApi'
 import { Icon } from '../../lib/icons'
@@ -13,6 +13,8 @@ type Props = {
   coupleId: string
   // La primera va destacada, a lo ancho de la grilla (las secciones por gusto de Descubrir).
   featured?: boolean
+  // Fila que se desliza de costado: todas a la vista y el detalle se abre debajo de la fila entera.
+  row?: boolean
   items: Recommendation[]
   titles: Title[] // la lista: lo que ya está no se ofrece para agregar
   originNote: (r: Recommendation) => string // "Descubrir", "Parecida a <título>", "Más de <director>" o "Con <actor>"
@@ -33,7 +35,7 @@ const messages = {
 // "A", "A y B", "A, B y C"
 const joinNames = (names: string[]) => (names.length < 2 ? names.join('') : `${names.slice(0, -1).join(', ')} y ${names[names.length - 1]}`)
 
-export function RecommendationList({ coupleId, featured, items, titles, originNote, hidden, onHide, onOpenWatched }: Props) {
+export function RecommendationList({ coupleId, featured, row, items, titles, originNote, hidden, onHide, onOpenWatched }: Props) {
   const [shown, setShown] = useState(10)
   const [extras, setExtras] = useState<Record<string, Extra>>({})
   const [open, setOpen] = useState<Set<string>>(new Set())
@@ -52,9 +54,18 @@ export function RecommendationList({ coupleId, featured, items, titles, originNo
     if (key in added || dismissed.has(key)) return true
     return !hidden.has(key) && (!existing.has(key) || !!r.watchedTitleId)
   })
-  const visible = available.slice(0, shown)
+  const visible = row ? available : available.slice(0, shown)
+  // Una fila de costado pide sus datos extra recién cuando aparece en pantalla (son muchas filas).
+  const list = useRef<HTMLUListElement>(null)
+  const [seen, setSeen] = useState(!row || typeof IntersectionObserver === 'undefined')
+  useEffect(() => {
+    if (seen || !list.current) return
+    const observer = new IntersectionObserver((entries) => entries.some((e) => e.isIntersecting) && setSeen(true), { rootMargin: '200px' })
+    observer.observe(list.current)
+    return () => observer.disconnect()
+  }, [seen])
   // Los datos extra se piden solo para lo que se ve (searchDetails guarda lo ya pedido).
-  const visibleKeys = visible.map(recKey).join('|')
+  const visibleKeys = seen ? visible.map(recKey).join('|') : ''
 
   useEffect(() => {
     if (!visibleKeys) return
@@ -116,11 +127,26 @@ export function RecommendationList({ coupleId, featured, items, titles, originNo
       return next
     })
 
+  // La sinopsis y los datos que no entran en el póster. Debajo de una fila, con el nombre y la línea completa.
+  const detail = (r: Recommendation, named = false) => {
+    const extra = extras[recKey(r)]
+    const people = peopleLine(r.mediaType, extra?.director)
+    return (
+      <div className="rec-detail">
+        {named && <strong>{r.title}</strong>}
+        {named && <small>{kindLine(r.year, r.mediaType, extra?.seasons, extra?.runtime)}</small>}
+        {people && <small>{people}</small>}
+        {r.platforms && r.platforms.length > 0 && <small>{`En ${r.platforms.join(' · ')}`}</small>}
+        {r.overview && <p>{r.overview}</p>}
+        {r.genres.length > 0 && <small>{r.genres.join(' · ')}</small>}
+      </div>
+    )
+  }
 
   return (
     <>
       {error && <p role="alert">{messages[error]}</p>}
-      <ul className={`title-list poster-grid rec-list${featured ? ' featured' : ''}`}>
+      <ul ref={list} className={`title-list poster-grid rec-list${featured ? ' featured' : ''}${row ? ' poster-row' : ''}`}>
         {visible.map((r) => {
           const key = recKey(r)
           if (dismissed.has(key)) {
@@ -143,14 +169,14 @@ export function RecommendationList({ coupleId, featured, items, titles, originNo
           const extra = extras[key]
           const detailOpen = open.has(key)
           return (
-            <li key={key} className={`rec-item${detailOpen ? ' open' : ''}`}>
+            <li key={key} className={`rec-item${detailOpen && !row ? ' open' : ''}`}>
               <button
                 className="result"
                 disabled={!watchedSeries && busyKey !== null}
                 onClick={() => (watchedSeries ? onOpenWatched?.(r.watchedTitleId!) : justAdded ? takeOut(r) : add(r))}
               >
                 <PosterTile title={r.title} posterPath={r.posterPath} imdb={imdbScore(extra?.imdb ?? null)} marked={justAdded}>
-                  <small>{detailOpen ? kindLine(r.year, r.mediaType, extra?.seasons, extra?.runtime) : posterLine(r.year, r.mediaType, extra?.runtime)}</small>
+                  <small>{detailOpen && !row ? kindLine(r.year, r.mediaType, extra?.seasons, extra?.runtime) : posterLine(r.year, r.mediaType, extra?.runtime)}</small>
                   {r.newSeason && !watchedSeries && <small>Temporada nueva</small>}
                   {r.because && r.because.length > 0 && <small className="because">{`Porque vieron ${joinNames(r.because)}`}</small>}
                   {status && <small>{status}</small>}
@@ -173,19 +199,18 @@ export function RecommendationList({ coupleId, featured, items, titles, originNo
                   )}
                 </div>
               )}
-              {detailOpen && (
-                <div className="rec-detail">
-                  {peopleLine(r.mediaType, extra?.director) && <small>{peopleLine(r.mediaType, extra?.director)}</small>}
-                  {r.platforms && r.platforms.length > 0 && <small>{`En ${r.platforms.join(' · ')}`}</small>}
-                  {r.overview && <p>{r.overview}</p>}
-                  {r.genres.length > 0 && <small>{r.genres.join(' · ')}</small>}
-                </div>
-              )}
+              {detailOpen && !row && detail(r)}
             </li>
           )
         })}
       </ul>
-      {available.length > shown && (
+      {row &&
+        visible
+          .filter((r) => open.has(recKey(r)) && !dismissed.has(recKey(r)))
+          .map((r) => (
+            <Fragment key={recKey(r)}>{detail(r, true)}</Fragment>
+          ))}
+      {!row && available.length > shown && (
         <button className="secondary" onClick={() => setShown((n) => n + 10)}>
           Ver más
         </button>

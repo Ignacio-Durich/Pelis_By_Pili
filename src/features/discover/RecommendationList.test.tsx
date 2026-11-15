@@ -195,3 +195,16 @@ test('items in hidden do not show', () => {
   expect(screen.queryByText('Argentina, 1985')).not.toBeInTheDocument()
   expect(screen.getByText('Otra')).toBeInTheDocument()
 })
+
+test('in a sideways row, the detail opens under the whole row with the name of the title', () => {
+  render(
+    withCouple(
+      <RecommendationList row coupleId="c1" items={[argentina, ...many(3)]} titles={[]} originNote={() => 'Descubrir'} hidden={new Set()} onHide={onHide} />,
+    ),
+  )
+  fireEvent.click(screen.getAllByRole('button', { name: 'Ver detalle' })[0])
+  const detail = screen.getByText(argentina.overview).closest('.rec-detail')!
+  expect(detail.closest('ul')).toBeNull()
+  expect(detail).toHaveTextContent('Argentina, 1985')
+  expect(screen.getByRole('button', { name: 'Ocultar detalle' }).closest('li')).not.toHaveClass('open')
+})

@@ -17,6 +17,7 @@ export type TmdbItem = {
   overview?: string
   genre_ids?: number[]
   vote_count?: number
+  vote_average?: number
   popularity?: number
 }
 type MediaType = 'movie' | 'tv'
@@ -28,8 +29,10 @@ export type Recommendation = SearchResult & {
   newSeason?: boolean
   watchedTitleId?: string
 }
+export type Row = { title: string; results: Recommendation[] }
 export type Discover = {
   forBoth: Recommendation[]
+  rows?: Row[] // "Para los dos" en filas por motivo; vacío si no hay con qué armarlas
   forEach: { userId: string; name: string; results: Recommendation[] }[]
   inTheaters: Recommendation[]
   onPlatforms: Recommendation[] | null
@@ -73,32 +76,100 @@ export function toRecommendation(item: TmdbItem, mediaType: MediaType): Recommen
 
 const keyOf = (mediaType: MediaType, id: number) => `${mediaType}:${id}`
 
-// Cada aparición suma peso × (1 − posición / 40): lo que TMDB pone más arriba suma más. Un título
-// que traen varias favoritas sube; uno que trae algo que no les gustó, baja.
-export function rankRecommendations(
-  seeds: { seed: Seed; mediaType: MediaType; results: TmdbItem[] }[],
-  options: { exclude: Set<string>; minVotes: number; limit: number },
-): Recommendation[] {
-  type Entry = { item: TmdbItem; mediaType: MediaType; score: number; parts: { title: string; value: number }[] }
-  const found = new Map<string, Entry>()
+type RankOptions = { exclude: Set<string>; minVotes: number; minRating?: number }
+type Fetched = { seed: Seed; mediaType: MediaType; results: TmdbItem[] }
+type Scored = { key: string; item: TmdbItem; mediaType: MediaType; score: number; rec: Recommendation }
+
+// Cada aparición vale peso × (1 − posición / 40): lo que TMDB pone más arriba vale más. Lo que trae
+// algo que no les gustó resta entero. De lo que suma, la mejor aparición cuenta entera y cada una de
+// las siguientes la mitad que la anterior: así una saga (cuyas películas recomiendan casi lo mismo)
+// no tapa a lo que trae una sola favorita. Queda lo que da positivo, de mayor a menor.
+function scorePool(seeds: Fetched[], options: RankOptions): Scored[] {
+  const found = new Map<string, { item: TmdbItem; mediaType: MediaType; parts: { title: string; value: number }[] }>()
   for (const { seed, mediaType, results } of seeds) {
     results.forEach((item, position) => {
       const key = keyOf(mediaType, item.id)
-      const value = seed.weight * (1 - position / 40)
-      const entry = found.get(key) ?? { item, mediaType, score: 0, parts: [] }
-      entry.score += value
-      entry.parts.push({ title: seed.title, value })
+      const entry = found.get(key) ?? { item, mediaType, parts: [] }
+      entry.parts.push({ title: seed.title, value: seed.weight * (1 - position / 40) })
       found.set(key, entry)
     })
   }
   return [...found.entries()]
-    .filter(([key, e]) => !options.exclude.has(key) && (e.item.vote_count ?? 0) >= options.minVotes && e.score > 0)
-    .sort(([, a], [, b]) => b.score - a.score || (b.item.popularity ?? 0) - (a.item.popularity ?? 0))
-    .slice(0, options.limit)
-    .map(([, e]) => ({
-      ...toRecommendation(e.item, e.mediaType),
-      because: e.parts.filter((p) => p.value > 0).sort((a, b) => b.value - a.value).slice(0, 2).map((p) => p.title),
-    }))
+    .map(([key, e]) => {
+      const good = e.parts.filter((p) => p.value > 0).sort((a, b) => b.value - a.value)
+      const bad = e.parts.filter((p) => p.value <= 0).reduce((sum, p) => sum + p.value, 0)
+      const score = good.reduce((sum, p, i) => sum + p.value * 0.5 ** i, 0) + bad
+      return { key, item: e.item, mediaType: e.mediaType, score, rec: { ...toRecommendation(e.item, e.mediaType), because: good.slice(0, 2).map((p) => p.title) } }
+    })
+    .filter(
+      (e) =>
+        !options.exclude.has(e.key) &&
+        (e.item.vote_count ?? 0) >= options.minVotes &&
+        (!options.minRating || (e.item.vote_average ?? 0) >= options.minRating) &&
+        e.score > 0,
+    )
+    .sort((a, b) => b.score - a.score || (b.item.popularity ?? 0) - (a.item.popularity ?? 0))
+}
+
+export function rankRecommendations(seeds: Fetched[], options: RankOptions & { limit: number }): Recommendation[] {
+  return scorePool(seeds, options).slice(0, options.limit).map((e) => e.rec)
+}
+
+// Mezcla sin perder el orden: no deja tres seguidas del mismo género (el primero de cada una) ni por
+// la misma favorita, mientras quede otra cosa para poner.
+export function spread(recs: Recommendation[]): Recommendation[] {
+  const left = [...recs]
+  const out: Recommendation[] = []
+  while (left.length) {
+    const last = out.slice(-2)
+    const repeats = (r: Recommendation, of: (x: Recommendation) => string | undefined) => last.length === 2 && of(r) !== undefined && last.every((x) => of(x) === of(r))
+    const i = left.findIndex((r) => !repeats(r, (x) => x.genres[0]) && !repeats(r, (x) => x.because?.[0]))
+    out.push(...left.splice(Math.max(i, 0), 1))
+  }
+  return out
+}
+
+// "Para los dos" en filas: una mezcla, y después se alternan "Porque les encantó <favorita>" (hasta 3,
+// de 7 puntos para arriba y sin dos de la misma saga) y "Si tienen ganas de <género>" (los 3 géneros
+// que más pesan entre lo que les gustó); al final, joyitas poco conocidas. Ningún título va en dos
+// filas, y una fila con menos de 4 no se muestra. Sin mezcla no hay filas.
+export function buildRows(seeds: Fetched[], options: RankOptions & { genresOf: (seedKey: string) => string[] }): Row[] {
+  const pool = scorePool(seeds, options)
+  const inPool = new Map(pool.map((e) => [e.key, e]))
+  const used = new Set<string>()
+  const rows: Row[] = []
+  const add = (title: string, candidates: Scored[], limit: number, map: (r: Recommendation) => Recommendation = (r) => r) => {
+    const picked = candidates.filter((e) => !used.has(e.key)).slice(0, limit)
+    if (picked.length < 4) return false
+    picked.forEach((e) => used.add(e.key))
+    rows.push({ title, results: picked.map((e) => map(e.rec)) })
+    return true
+  }
+  const byRec = new Map(pool.map((e) => [e.rec, e]))
+  if (!add('Para ustedes', spread(pool.map((e) => e.rec)).map((r) => byRec.get(r)!), 5)) return []
+
+  const favorites = seeds.filter((s) => s.seed.weight >= 2).sort((a, b) => b.seed.weight - a.seed.weight)
+  const chosen: Set<string>[] = []
+  const nextFavorite = () => {
+    while (favorites.length) {
+      const f = favorites.shift()!
+      const keys = new Set(f.results.map((item) => keyOf(f.mediaType, item.id)))
+      // Misma saga: comparte al menos un tercio de lo que trae con una favorita que ya tiene fila.
+      if (chosen.some((c) => [...keys].filter((k) => c.has(k)).length * 3 >= Math.min(keys.size, c.size))) continue
+      const candidates = [...keys].flatMap((k) => (inPool.has(k) ? [inPool.get(k)!] : []))
+      if (add(`Porque les encantó ${f.seed.title}`, candidates, 8, (r) => ({ ...r, because: undefined }))) return void chosen.push(keys)
+    }
+  }
+  const weightOf = new Map<string, number>()
+  for (const s of seeds) if (s.seed.weight > 0) for (const g of options.genresOf(s.seed.key)) weightOf.set(g, (weightOf.get(g) ?? 0) + s.seed.weight)
+  const genres = [...weightOf.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3).map(([g]) => g)
+  for (let i = 0; i < 3; i++) {
+    nextFavorite()
+    if (genres[i]) add(`Si tienen ganas de ${genres[i].toLowerCase()}`, pool.filter((e) => e.rec.genres.includes(genres[i])), 8)
+  }
+  const gems = pool.filter((e) => (e.item.vote_average ?? 0) >= 7.3 && (e.item.vote_count ?? 0) < 1500)
+  add('Joyitas poco conocidas', gems.sort((a, b) => (b.item.vote_average ?? 0) - (a.item.vote_average ?? 0)), 8)
+  return rows
 }
 
 type Entries = { item: TmdbItem; mediaType: MediaType }[]

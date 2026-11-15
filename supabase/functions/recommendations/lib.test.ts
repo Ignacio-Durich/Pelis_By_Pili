@@ -13,6 +13,8 @@ import {
   pickPeople,
   pickSeeds,
   rankRecommendations,
+  buildRows,
+  spread,
   seedWeight,
   toProviderOptions,
   toRecommendation,
@@ -170,4 +172,64 @@ test('personTitles lists what a director directed (or created) and what an actor
   expect(personTitles(credits, 'cast', new Set(['movie:6']), 20).map((r) => r.title)).toEqual(['Titanic', 'Miniserie'])
   expect(personTitles(credits, 'director', new Set(), 20).map((r) => r.title)).toEqual(['Oppenheimer', 'Creada'])
   expect(personTitles(credits, 'cast', new Set(), 1).map((r) => r.title)).toEqual(['El origen'])
+})
+
+const peli = (id: number, extra: Record<string, unknown> = {}) => ({ id, title: `P${id}`, vote_count: 500, vote_average: 7, ...extra })
+const seedOf = (id: number, title: string, weight: number, results: ReturnType<typeof peli>[]) => ({ seed: { key: `movie:${id}`, title, weight }, mediaType: 'movie' as const, results })
+
+test('rankRecommendations: each extra favorite that brings a title counts half, so a saga does not bury the rest', () => {
+  // La 1 la traen tres de la misma saga (posiciones bajas); la 2, una sola favorita, primera.
+  const saga = [0, 1, 2].map((i) => seedOf(10 + i, `Saga ${i}`, 2, [...Array.from({ length: 20 }, (_, n) => peli(100 + i * 100 + n)), peli(1)]))
+  const ranked = rankRecommendations([...saga, seedOf(20, 'Suelta', 3.6, [peli(2)])], { exclude: new Set(), minVotes: 50, limit: 100 })
+  const ids = ranked.map((r) => r.tmdbId)
+  // Sumando entero, la 1 daría 3 × 2 × 0,5 = 3 y quedaría arriba de todo salvo la 2 (3,6); con la mitad por cada repetición da 1,75.
+  expect(ids.indexOf(2)).toBe(0)
+  expect(ids.indexOf(1)).toBeGreaterThan(3)
+})
+test('rankRecommendations: minRating drops what TMDB rates below it', () => {
+  const ranked = rankRecommendations([seedOf(10, 'X', 4, [peli(1, { vote_average: 5.4 }), peli(2, { vote_average: 6.5 }), peli(3, { vote_average: undefined })])], {
+    exclude: new Set(), minVotes: 50, minRating: 6.5, limit: 30,
+  })
+  expect(ranked.map((r) => r.tmdbId)).toEqual([2])
+})
+test('spread: never three in a row of the same genre or for the same reason, while there is something else', () => {
+  const r = (tmdbId: number, genre: string, why: string) => ({ ...toRecommendation({ id: tmdbId }, 'movie'), genres: [genre], because: [why] })
+  const mixed = spread([r(1, 'Ciencia ficción', 'A'), r(2, 'Ciencia ficción', 'A'), r(3, 'Ciencia ficción', 'B'), r(4, 'Drama', 'A'), r(5, 'Comedia', 'C'), r(6, 'Ciencia ficción', 'B')])
+  expect(mixed.map((x) => x.tmdbId)).toEqual([1, 2, 5, 3, 4, 6])
+  // Si no queda otra cosa, van igual.
+  expect(spread([r(1, 'Drama', 'A'), r(2, 'Drama', 'A'), r(3, 'Drama', 'A')]).map((x) => x.tmdbId)).toEqual([1, 2, 3])
+})
+test('buildRows: a mix first, then rows by favorite and by genre, without repeating a title or a saga', () => {
+  const g = { drama: 18, scifi: 878 }
+  const many = (from: number, genre: number, extra = {}, n = 8) => Array.from({ length: n }, (_, i) => peli(from + i, { genre_ids: [genre], ...extra }))
+  const scifi = many(100, g.scifi, {}, 12)
+  const seeds = [
+    seedOf(1, 'Duna', 4, scifi),
+    seedOf(2, 'Duna: Parte dos', 3.9, [...scifi].reverse()), // misma saga: trae lo mismo
+    seedOf(3, 'El secreto de sus ojos', 3.5, many(200, g.drama)),
+    seedOf(4, 'Floja', 1, many(300, g.drama)), // un 6: no alcanza para tener fila propia
+    seedOf(5, 'Rara', 3, many(400, g.drama, { vote_average: 8, vote_count: 300 })),
+  ]
+  const genresOf = (key: string) => (key === 'movie:1' || key === 'movie:2' ? ['Ciencia ficción'] : ['Drama'])
+  const rows = buildRows(seeds, { exclude: new Set(['movie:100']), minVotes: 50, minRating: 6.5, genresOf })
+  expect(rows.map((r) => r.title)).toEqual([
+    'Para ustedes',
+    'Porque les encantó Duna',
+    'Porque les encantó El secreto de sus ojos',
+    'Si tienen ganas de drama',
+  ])
+  expect(rows[0].results).toHaveLength(5)
+  const all = rows.flatMap((r) => r.results.map((x) => x.tmdbId))
+  expect(new Set(all).size).toBe(all.length)
+  expect(all).not.toContain(100)
+  // En la fila de una favorita no hace falta repetir el motivo en cada póster.
+  expect(rows[1].results.every((x) => x.because === undefined)).toBe(true)
+  expect(rows[3].results.every((x) => x.genres.includes('Drama'))).toBe(true)
+})
+test('buildRows: little-known gems get their own row, and a row with fewer than 4 is left out', () => {
+  const gems = Array.from({ length: 12 }, (_, i) => peli(500 + i, { vote_average: 7.5 + i / 100, vote_count: 400 }))
+  const rows = buildRows([seedOf(1, 'Una', 1.5, gems)], { exclude: new Set(), minVotes: 50, minRating: 6.5, genresOf: () => [] })
+  expect(rows.map((r) => r.title)).toEqual(['Para ustedes', 'Joyitas poco conocidas'])
+  expect(rows[1].results[0].tmdbId).toBe(511)
+  expect(buildRows([seedOf(1, 'Una', 4, gems.slice(0, 3))], { exclude: new Set(), minVotes: 50, minRating: 6.5, genresOf: () => [] })).toEqual([])
 })

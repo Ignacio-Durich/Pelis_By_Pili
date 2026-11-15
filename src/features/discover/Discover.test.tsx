@@ -210,3 +210,20 @@ test('adding from Descubrir notes Descubrir as where it came from', async () => 
   fireEvent.click(await screen.findByRole('button', { name: /Relatos salvajes/ }))
   await waitFor(() => expect(api.addTitle).toHaveBeenCalledWith('c1', relatos, 'Descubrir'))
 })
+
+test('with rows, Para los dos shows the mix and then a sideways row per reason, each under its title', async () => {
+  const rows = [
+    { title: 'Para ustedes', results: [relatos, rec(20, 'Otra de la mezcla')] },
+    { title: 'Porque les encantó El secreto de sus ojos', results: [rec(21, 'La de la fila')] },
+  ]
+  api.invoke.mockResolvedValue({ data: { ...data, rows }, error: null })
+  renderDiscover()
+  expect(await screen.findByText('Otra de la mezcla')).toBeInTheDocument()
+  expect(screen.queryByRole('heading', { name: 'Para ustedes' })).not.toBeInTheDocument()
+  const heading = screen.getByRole('heading', { name: 'Porque les encantó El secreto de sus ojos' })
+  expect(heading.nextElementSibling).toHaveClass('poster-row')
+  expect(heading.nextElementSibling).toHaveTextContent('La de la fila')
+  // Las filas son solo de "Para los dos".
+  fireEvent.click(screen.getByRole('button', { name: 'Tomás' }))
+  expect(screen.queryByText('La de la fila')).not.toBeInTheDocument()
+})

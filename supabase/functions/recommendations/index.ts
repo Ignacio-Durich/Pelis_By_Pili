@@ -16,6 +16,8 @@ import {
   pickPeople,
   pickSeeds,
   rankRecommendations,
+  buildRows,
+  spread,
   seedWeight,
   toProviderOptions,
   type Discover,
@@ -38,7 +40,7 @@ const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!
 const supabase = createClient(url, anonKey)
 
 type MediaType = 'movie' | 'tv'
-type Title = { id: string; tmdb_id: number; media_type: MediaType; title: string; status: string; watched_at: string | null }
+type Title = { id: string; tmdb_id: number; media_type: MediaType; title: string; status: string; watched_at: string | null; genres: string[] | null }
 type SeedOf = Seed & { mediaType: MediaType; tmdbId: number }
 
 type TmdbData = { results?: unknown[]; seasons?: { season_number: number; air_date: string | null }[] }
@@ -143,10 +145,13 @@ async function discover(
     return asked.get(s.key)!
   }
   ;[...both, ...each.flatMap((m) => m.seeds)].forEach(recommendationsOf)
-  const rank = async (seeds: SeedOf[], skip: Set<string>) => {
+  const fetch = async (seeds: SeedOf[]) => {
     const fetched = await Promise.all(seeds.map(async (seed) => ({ seed, mediaType: seed.mediaType, results: await recommendationsOf(seed) })))
-    return rankRecommendations(fetched.flatMap((f) => (f.results ? [{ ...f, results: f.results }] : [])), { exclude: skip, minVotes: 50, limit: 30 })
+    return fetched.flatMap((f) => (f.results ? [{ ...f, results: f.results }] : []))
   }
+  // Nada con menos de 6,5 en TMDB, y mezclado para que no queden tres seguidas del mismo género.
+  const quality = { minVotes: 50, minRating: 6.5 }
+  const rank = async (seeds: SeedOf[], skip: Set<string>) => spread(rankRecommendations(await fetch(seeds), { exclude: skip, ...quality, limit: 30 }))
 
   const inTheaters = (async () => {
     const pages = await Promise.all([1, 2].map((page) => calls.get('movie/now_playing', `language=es-MX&region=AR&page=${page}`)))
@@ -187,6 +192,8 @@ async function discover(
   })()
 
   const forBoth = await rank(both, exclude)
+  const genresOf = new Map(data.titles.map((t) => [keyOf(t.media_type, t.tmdb_id), t.genres ?? []]))
+  const rows = buildRows(await fetch(both), { exclude, ...quality, genresOf: (key) => genresOf.get(key) ?? [] })
   const skip = new Set([...exclude, ...forBoth.map((r) => keyOf(r.mediaType, r.tmdbId))])
   const [forEach, theaters, platforms] = await Promise.all([
     Promise.all(each.map(async (m) => ({ userId: m.user_id, name: m.display_name ?? 'alguien', results: await rank(m.seeds, skip) }))),
@@ -194,7 +201,7 @@ async function discover(
     onPlatforms,
   ])
   calls.check()
-  return { forBoth, forEach, inTheaters: theaters, onPlatforms: platforms.list, platformNames: platforms.names }
+  return { forBoth, rows, forEach, inTheaters: theaters, onPlatforms: platforms.list, platformNames: platforms.names }
 }
 
 Deno.serve(async (req) => {
@@ -219,7 +226,7 @@ Deno.serve(async (req) => {
 
     // ponytail: una sola lectura (hasta 1.000 filas por tabla); un espacio con más títulos que eso necesitaría paginar.
     const [titlesRes, scoresRes, dismissedRes, coupleRes] = await Promise.all([
-      asUser.from('titles').select('id, tmdb_id, media_type, title, status, watched_at'),
+      asUser.from('titles').select('id, tmdb_id, media_type, title, status, watched_at, genres'),
       asUser.from('title_scores').select('title_id, user_id, score'),
       asUser.from('dismissed_titles').select('media_type, tmdb_id'),
       asUser.from('couples').select('platforms').eq('id', members[0].couple_id).maybeSingle(),

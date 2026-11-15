@@ -71,14 +71,14 @@ Tres modos:
 
 **Pesos.** Cada título visto es una "semilla" con un peso: puntaje − 5. Para los dos se usa el promedio de los dos puntajes, o el único que haya. Un 9 pesa +4, un 6 pesa +1 y un 3 pesa −2. Sin puntaje, la semilla no cuenta.
 
-**Candidatos.** Para cada semilla, la primera página de `/{tipo}/{id}/recommendations` de TMDB (hasta 20, en `es-MX`), en paralelo. Cada candidato suma `peso × (1 − posición / 40)`: lo que TMDB pone más arriba suma un poco más. Un título que traen varias favoritas sube; uno que trae algo que no les gustó, baja.
+**Candidatos.** Para cada semilla, la primera página de `/{tipo}/{id}/recommendations` de TMDB (hasta 20, en `es-MX`), en paralelo. Cada candidato suma `peso × (1 − posición / 40)`: lo que TMDB pone más arriba suma un poco más. Un título que traen varias favoritas sube; uno que trae algo que no les gustó, baja. Desde 2026-11-15, de lo que suma cuenta entera la mejor aparición y cada una de las siguientes la mitad que la anterior (para que una saga no tape al resto), queda afuera lo que tiene menos de 6,5 en TMDB y el resultado se mezcla para que no haya tres seguidas del mismo género.
 
 **Exclusiones.** Lo que ya está en la lista (por ver o vistas), lo descartado, lo que tiene menos de 50 votos en TMDB (suelen ser títulos raros y poco confiables) y lo que termina con puntaje cero o negativo.
 
 **Por qué.** Cada recomendación de las secciones por gusto trae las dos semillas que más sumaron: "Porque vieron Relatos salvajes y Argentina, 1985".
 
 **Secciones.**
-- **Para los dos**: las 30 mejores con los pesos de los dos.
+- **Para los dos**: las 30 mejores con los pesos de los dos. Desde 2026-11-15 se muestran en filas por motivo (`rows`): una mezcla, "Porque les encantó …", "Si tienen ganas de …" y "Joyitas poco conocidas"; el detalle está en las notas de decisiones.
 - **Especiales para cada uno**: la misma cuenta con los puntajes de esa persona, sin las 30 de "Para los dos". Reusa las respuestas de TMDB ya pedidas. Si la persona no puntuó nada, la sección no viene.
 - **En cines**: `/movie/now_playing` con `region=AR` (2 páginas), por popularidad, sin lo que ya está en la lista ni lo descartado (sin mínimo de votos: los estrenos todavía tienen pocos). Hasta 30.
 - **En sus plataformas**: `/discover/movie` y `/discover/tv` con `watch_region=AR` y `with_watch_monetization_types=flatrate`, una consulta por plataforma elegida para saber en cuál está cada título. Películas: estrenadas en los últimos 90 días (`primary_release_date.gte`). Series: con algún episodio emitido en los últimos 90 días (`air_date.gte`), así entran las temporadas nuevas de series viejas (pedido de Tomás, 2026-10-19); sin programas de entrevistas, noticias, reality ni telenovelas (géneros 10767, 10763, 10764 y 10766), que emiten todas las semanas. Una serie que se estrenó antes de esos 90 días lleva la marca `newSeason` y la tarjeta dice "Temporada nueva".

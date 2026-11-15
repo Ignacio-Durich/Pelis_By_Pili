@@ -1492,3 +1492,29 @@ button.platform-option img {
 .poster-grid > li.rec-dismissed {
   align-self: center;
 }
+
+/* Descubrir: fila que se desliza de costado, de borde a borde de la pantalla. */
+.title-list.poster-grid.poster-row {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  margin: 0 -16px;
+  padding: 0 16px 4px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scroll-padding-left: 16px;
+  scrollbar-width: none;
+}
+
+.poster-row::-webkit-scrollbar {
+  display: none;
+}
+
+.poster-row > li {
+  flex: 0 0 150px;
+  scroll-snap-align: start;
+}
+
+.rec-detail strong {
+  font-size: 18px;
+}
